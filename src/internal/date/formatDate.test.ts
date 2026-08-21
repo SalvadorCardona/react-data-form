@@ -5,6 +5,11 @@ import {
   formatTimeLabel,
   getYear,
 } from "./formatDate"
+import { configurePorts } from "@/ports"
+
+// These assertions are written against French formatting; without an explicit
+// locale Intl would follow the machine running the tests.
+configurePorts({ intlLocale: "fr-FR" })
 
 describe("Date formatting helpers", () => {
   // Date fixe pour les tests (1er janvier 2023)
