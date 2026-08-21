@@ -122,8 +122,6 @@
     "prettier": "^3.9.5",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "react-mini-i18n": "link:../react-mini-i18n",
-    "resource-registry": "link:../resource-registry",
     "shadcn": "^4.18.0",
     "tsdown": "^0.15.0",
     "typescript": "6.0.3",
@@ -132,11 +130,5 @@
     "@tailwindcss/vite": "^4.3.3",
     "tailwindcss": "^4.3.3"
   },
-  "packageManager": "pnpm@10.33.2",
-  "pnpm": {
-    "overrides": {
-      "jsonld-item": "link:../jsonld-item",
-      "resource-registry": "link:../resource-registry"
-    }
-  }
+  "packageManager": "pnpm@10.33.2"
 }
