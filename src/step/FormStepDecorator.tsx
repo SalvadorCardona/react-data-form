@@ -3,6 +3,7 @@ import { Badge } from "@/ui/badge"
 import { Progress } from "@/ui/progress"
 import { useFormStep } from "@/step/useFormStep"
 import { Text } from "@/ui/Text"
+import { translate } from "react-mini-i18n"
 import { AnimatePresence, motion } from "framer-motion"
 import { CardDescription, CardTitle } from "../ui/card"
 import useFormContext from "@/form/provider/useFormContext"
@@ -44,7 +45,10 @@ export function FormStepDecorator({
       <Progress value={progress} className="h-2 mt-5" />
       {!form.groupOption.hideStepNumber && (
         <Text variant="muted" className="block text-center m-2">
-          Step {currentStep.order} of {steps.length}
+          {translate("Step {{current}} of {{total}}", {
+            current: currentStep.order,
+            total: steps.length,
+          })}
         </Text>
       )}
       <AnimatePresence mode="wait">

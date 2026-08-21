@@ -1,6 +1,7 @@
 import { useFormStep } from "@/step/useFormStep"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/ui/button"
+import { Trans } from "react-mini-i18n"
 
 export function FormStepNavigation() {
   const {
@@ -22,7 +23,7 @@ export function FormStepNavigation() {
           className="flex items-center gap-2 bg-transparent"
         >
           <ChevronLeft className="w-4 h-4" />
-          Previous
+          <Trans>Previous</Trans>
         </Button>
       )}
       {/* Pleine largeur sur mobile pour que le CTA principal soit bien visible */}
@@ -44,7 +45,7 @@ export function FormStepNavigation() {
           </Button>
         ) : (
           <Button size="lg" onClick={onSubmit} className="w-full sm:w-auto">
-            Finish
+            <Trans>Finish</Trans>
           </Button>
         )}
       </div>

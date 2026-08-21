@@ -5,7 +5,7 @@ import reactHooks from "eslint-plugin-react-hooks"
 import prettier from "eslint-config-prettier"
 
 export default [
-  { ignores: ["dist/**", "node_modules/**", "coverage/**"] },
+  { ignores: ["dist/**", "docs/dist/**", "node_modules/**", "coverage/**"] },
   js.configs.recommended,
   {
     files: ["**/*.{ts,tsx}"],
