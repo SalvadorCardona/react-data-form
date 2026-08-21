@@ -1,0 +1,135 @@
+{
+  "name": "@animalink/form",
+  "version": "0.1.0",
+  "description": "Formulaires React pilotés par la donnée : construction déclarative, contrôleurs de champs, groupes, étapes et upload de médias — pensé pour les API JSON-LD / API Platform.",
+  "keywords": [
+    "react",
+    "form",
+    "form-builder",
+    "api-platform",
+    "json-ld",
+    "hydra",
+    "typescript",
+    "tailwind"
+  ],
+  "license": "MIT",
+  "author": "Salvador Cardona",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SalvadorCardona/animalink-form.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SalvadorCardona/animalink-form/issues"
+  },
+  "homepage": "https://github.com/SalvadorCardona/animalink-form#readme",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./group": {
+      "types": "./dist/group/index.d.ts",
+      "import": "./dist/group/index.js"
+    },
+    "./media": {
+      "types": "./dist/media/index.d.ts",
+      "import": "./dist/media/index.js"
+    },
+    "./step": {
+      "types": "./dist/step/index.d.ts",
+      "import": "./dist/step/index.js"
+    },
+    "./i18n": {
+      "types": "./dist/i18n/index.d.ts",
+      "import": "./dist/i18n/index.js"
+    },
+    "./registry": {
+      "types": "./dist/registry/index.d.ts",
+      "import": "./dist/registry/index.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown && cp src/styles.css dist/styles.css",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "ci": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build",
+    "changeset": "changeset",
+    "release": "pnpm run build && changeset publish",
+    "prepublishOnly": "pnpm run build"
+  },
+  "peerDependencies": {
+    "react": "^18.3.0 || ^19.0.0",
+    "react-dom": "^18.3.0 || ^19.0.0",
+    "tailwindcss": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "tailwindcss": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.4.1",
+    "@tiptap/extension-image": "^3.22.0",
+    "@tiptap/extension-link": "^3.22.0",
+    "@tiptap/extension-placeholder": "^3.22.0",
+    "@tiptap/react": "^3.22.0",
+    "@tiptap/starter-kit": "^3.22.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "coooking-pubsub": "^2.0.1",
+    "date-fns": "^4.4.0",
+    "framer-motion": "^12.42.2",
+    "lucide-react": "^0.577.0",
+    "react-day-picker": "^9.14.0",
+    "react-easy-crop": "^6.2.2",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@changesets/cli": "^2.29.8",
+    "@eslint/js": "^10.0.1",
+    "@rolldown/plugin-babel": "^0.2.3",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.64.0",
+    "@typescript-eslint/parser": "^8.64.0",
+    "@vitejs/plugin-react": "^6.0.3",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "eslint": "^10.7.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.9.5",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "tsdown": "^0.15.0",
+    "typescript": "6.0.3",
+    "vitest": "^4.1.10"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "pnpm@10.33.2"
+}
