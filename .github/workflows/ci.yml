@@ -10,73 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: react-data-form
-
-      # Until these packages are published to npm they are resolved through
-      # links to the sibling repositories. Once published, drop these steps and
-      # replace the links with the npm versions.
-      # While those repositories are private, `token` must carry a PAT with read
-      # access; the secret becomes unnecessary once they are public.
-      - uses: actions/checkout@v4
-        with:
-          repository: SalvadorCardona/react-mini-i18n
-          path: react-mini-i18n
-          token: ${{ secrets.DEPS_TOKEN || github.token }}
-
-      - uses: actions/checkout@v4
-        with:
-          repository: SalvadorCardona/jsonld-item
-          path: jsonld-item
-          token: ${{ secrets.DEPS_TOKEN || github.token }}
-
-      - uses: actions/checkout@v4
-        with:
-          repository: SalvadorCardona/resource-registry
-          path: resource-registry
-          token: ${{ secrets.DEPS_TOKEN || github.token }}
-
       - uses: pnpm/action-setup@v4
-        with:
-          package_json_file: react-data-form/package.json
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: react-data-form/pnpm-lock.yaml
-
-      # The linked packages must be built for their type declarations to resolve
-      - run: pnpm install --frozen-lockfile
-        working-directory: jsonld-item
-      - run: pnpm run build
-        working-directory: jsonld-item
 
       - run: pnpm install --frozen-lockfile
-        working-directory: react-mini-i18n
-      - run: pnpm run build
-        working-directory: react-mini-i18n
-
-      - run: pnpm install --frozen-lockfile
-        working-directory: resource-registry
-      - run: pnpm run build
-        working-directory: resource-registry
-
-      - run: pnpm install --frozen-lockfile
-        working-directory: react-data-form
-
       - run: pnpm run typecheck
-        working-directory: react-data-form
-
       - run: pnpm run lint
-        working-directory: react-data-form
-
       - run: pnpm run test
-        working-directory: react-data-form
-
       - run: pnpm run build
-        working-directory: react-data-form
 
       # Check the published package actually holds what it advertises
       - run: pnpm pack --pack-destination /tmp
-        working-directory: react-data-form
