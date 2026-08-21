@@ -1,6 +1,6 @@
 {
   "name": "@animalink/form",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Formulaires React pilotés par la donnée : construction déclarative, contrôleurs de champs, groupes, étapes et upload de médias — pensé pour les API JSON-LD / API Platform.",
   "keywords": [
     "react",
