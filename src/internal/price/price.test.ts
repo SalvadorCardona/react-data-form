@@ -1,5 +1,9 @@
+import { configurePorts } from "@/ports"
 import { describe, expect, it } from "vitest"
 import { centimesToPrice, formatPrice, priceToCentimes } from "./price"
+
+// Intl follows the runtime locale unless one is configured.
+configurePorts({ intlLocale: "fr-FR", currency: "EUR" })
 
 describe("formatPrice", () => {
   it("formats a price in cents into a string using the configured locale", () => {

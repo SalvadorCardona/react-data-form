@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen } from "@testing-library/react"
 import { PriceInputController } from "@/form/component/InputController/PriceInputController"
 import { FormInputInterface } from "@/form/FormInputInterface"
+import { configurePorts } from "@/ports"
+
+// The readonly rendering below expects French formatting.
+configurePorts({ intlLocale: "fr-FR", currency: "EUR" })
 
 const buildFormInput = (
   overrides: Partial<FormInputInterface<number | undefined | null>> = {}
