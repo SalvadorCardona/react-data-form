@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-luma",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/ui",
+    "ui": "@/ui",
+    "utils": "@/ui/cn",
+    "hooks": "@/ui/hooks",
+    "lib": "@/ui"
+  },
+  "iconLibrary": "lucide",
+  "rtl": false,
+  "menuColor": "default-translucent",
+  "menuAccent": "subtle",
+  "registries": {
+    "@shadcn-map": "https://shadcn-map.vercel.app/r/{name}.json"
+  }
+}
