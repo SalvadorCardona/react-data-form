@@ -50,6 +50,22 @@ jobs:
           cache-dependency-path: react-data-form/pnpm-lock.yaml
           registry-url: https://registry.npmjs.org
 
+      # The linked packages must be built for their type declarations to resolve
+      - run: pnpm install --frozen-lockfile
+        working-directory: jsonld-item
+      - run: pnpm run build
+        working-directory: jsonld-item
+
+      - run: pnpm install --frozen-lockfile
+        working-directory: react-mini-i18n
+      - run: pnpm run build
+        working-directory: react-mini-i18n
+
+      - run: pnpm install --frozen-lockfile
+        working-directory: resource-registry
+      - run: pnpm run build
+        working-directory: resource-registry
+
       - run: pnpm install --frozen-lockfile
         working-directory: react-data-form
 
