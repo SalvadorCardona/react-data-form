@@ -46,7 +46,7 @@ export const DatePickerInputController = ({
                 {formInput.value ? (
                   formatDate(formInput.value)
                 ) : (
-                  <span>{translate("Choisir une date")}</span>
+                  <span>{translate("Pick a date")}</span>
                 )}
                 <Calendar1 className="ml-auto h-4 w-4 opacity-50" />
               </Button>

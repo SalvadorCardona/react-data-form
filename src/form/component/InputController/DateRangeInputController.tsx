@@ -130,7 +130,7 @@ export function fallbackEndTime(
 }
 
 function formatDisplayDate(selection: DateTimeSelection): string {
-  if (!selection.date) return translate("Choisir une date")
+  if (!selection.date) return translate("Pick a date")
   return format(selection.date, "d MMM yyyy", { locale: getPorts().dateLocale })
 }
 

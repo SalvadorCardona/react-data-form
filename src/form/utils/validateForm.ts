@@ -43,7 +43,7 @@ export function validateForm<
             }
           } else {
             currentFormInput.violations.push(
-              createViolation({ message: "Erreur inconnue" })
+              createViolation({ message: "Unknown error" })
             )
           }
         }

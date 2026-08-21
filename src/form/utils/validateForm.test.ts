@@ -68,7 +68,7 @@ describe("validateForm", () => {
     const result = validateForm(form)
 
     expect(result.inputs.field.violations).toHaveLength(1)
-    expect(result.inputs.field.violations![0].message).toBe("Erreur inconnue")
+    expect(result.inputs.field.violations![0].message).toBe("Unknown error")
   })
 
   it("creates several violations for a Zod error with multiple issues", () => {
