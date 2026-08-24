@@ -14,6 +14,7 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
-    include: ["src/**/*.test.{ts,tsx}"],
+    // The documentation site lives in the repo and is tested with it.
+    include: ["src/**/*.test.{ts,tsx}", "docs/**/*.test.{ts,tsx}"],
   },
 })
