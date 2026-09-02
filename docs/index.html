@@ -11,6 +11,24 @@
   </head>
   <body class="h-full">
     <div id="root"></div>
+
+    <!--
+      The footer lives here rather than in DocLayout, and outside #root so React
+      never touches it: the site is client-rendered, so anything drawn by the
+      app is missing from the file a crawler downloads. Written in the document,
+      these links are served as they are, on every page.
+    -->
+    <footer class="site-footer">
+      <p>
+        <a href="https://cardona.digital">Créé par Salvador Cardona</a> — other
+        projects:
+        <a href="https://github.com/SalvadorCardona/react-resource-view"
+          >React Resource View</a
+        >
+        and the <a href="https://cardona.digital">portfolio</a>.
+      </p>
+    </footer>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

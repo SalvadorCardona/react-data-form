@@ -13,7 +13,10 @@
     "tailwind"
   ],
   "license": "MIT",
-  "author": "Salvador Cardona",
+  "author": {
+    "name": "Salvador Cardona",
+    "url": "https://cardona.digital"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SalvadorCardona/react-data-form.git"
@@ -21,7 +24,7 @@
   "bugs": {
     "url": "https://github.com/SalvadorCardona/react-data-form/issues"
   },
-  "homepage": "https://github.com/SalvadorCardona/react-data-form#readme",
+  "homepage": "https://cardona.digital",
   "type": "module",
   "sideEffects": [
     "**/*.css"

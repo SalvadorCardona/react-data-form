@@ -15,6 +15,15 @@
   }
 }
 
+/* The footer is written straight into index.html, where utility classes would
+   depend on Tailwind scanning that file — a rule of its own does not. */
+.site-footer {
+  @apply mx-auto max-w-6xl border-t border-border px-4 py-8 text-sm text-muted-foreground lg:px-8;
+}
+.site-footer a {
+  @apply underline underline-offset-4 hover:text-foreground;
+}
+
 /* A minimal prose style, rather than pulling in a typography plugin for the
    handful of paragraphs this page holds. */
 .prose-docs p {
