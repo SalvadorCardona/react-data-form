@@ -33,6 +33,7 @@ return <FormElement {...formContext} />
 - [Concepts](#concepts)
 - [Available field controllers](#available-field-controllers)
 - [Development](#development)
+- [Author](#author)
 
 ## Installation
 
@@ -243,6 +244,10 @@ git commit && git push
 ```
 
 CI publishes to npm once merged to `main`.
+
+## Author
+
+Written by Salvador Cardona — [cardona.digital](https://cardona.digital).
 
 ## License
 

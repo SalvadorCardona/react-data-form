@@ -64,6 +64,33 @@ export function OverviewPage() {
           </li>
         </ul>
       </Section>
+
+      <Section
+        title="Other projects"
+        intro="This library is one piece of a set built around the same JSON-LD conventions."
+      >
+        <ul className="not-prose mt-4 space-y-2 text-muted-foreground">
+          <li>
+            <a
+              className="underline underline-offset-4"
+              href="https://github.com/SalvadorCardona/react-resource-view"
+            >
+              React Resource View
+            </a>{" "}
+            — CRUD views for JSON-LD / Hydra APIs: list, read, create, update
+            and delete, in table, card, calendar or timeline layouts.
+          </li>
+          <li>
+            <a
+              className="underline underline-offset-4"
+              href="https://cardona.digital"
+            >
+              cardona.digital
+            </a>{" "}
+            — the portfolio of Salvador Cardona, who writes both.
+          </li>
+        </ul>
+      </Section>
     </>
   )
 }
