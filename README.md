@@ -1,3 +1,5 @@
+![react-data-form](https://raw.githubusercontent.com/SalvadorCardona/brand-assets/main/projects/react-data-form/banner.png)
+
 # react-data-form
 
 Data-driven React forms: you describe a form as an object, the library renders
