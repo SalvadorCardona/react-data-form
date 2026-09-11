@@ -196,6 +196,84 @@ resources, import `createResource` from `resource-registry` rather than keeping
 a copy of it: two registries in memory would keep `searchMetaData` from
 connecting a resource to its form.
 
+That registry is what makes [asymmetric arrays](#asymmetric-arrays) possible: a
+field can render entries whose shapes it does not know at build time, as long as
+each entry names the form it was created from.
+
+### Asymmetric arrays
+
+An array field whose entries do not share a shape — a title, a rich text, a
+gallery — is what a page builder needs. Three steps.
+
+**Register each shape.** `@for` is the tag: it is what an entry stores as its
+`type`, and what the palette is asked for. `name` and `icon` are what the
+palette displays.
+
+```tsx
+import { addForm, WysiwygInputController } from "react-data-form"
+import { Heading, Text } from "lucide-react"
+
+addForm("titleForm", {
+  "@for": ["title"],
+  name: "Title",
+  icon: Heading,
+  inputs: {
+    order: {},
+    data: { label: "Your title" },
+  },
+})
+
+addForm("longTextForm", {
+  "@for": ["long-text"],
+  name: "Rich text",
+  icon: Text,
+  inputs: {
+    order: {},
+    data: { label: "Your text", controller: WysiwygInputController },
+  },
+})
+```
+
+**Offer them in a field.** `createFormArrayInputController` builds the field and
+wires `FormArrayInputController` as its controller. `forms` names the tags the
+insertion palette offers — those, and nothing else, even if the registry holds
+more.
+
+```ts
+import { createFormArrayInputController } from "react-data-form"
+
+const form: FormInterface = {
+  inputs: {
+    blocks: createFormArrayInputController({
+      label: "Blocks",
+      draggable: true,
+      identifierKey: "order",
+      forms: ["title", "long-text", "gallery"],
+    }),
+  },
+}
+```
+
+**Let each entry find its shape back.** Picking *Gallery* in the palette appends
+`{ id, type: "gallery", order }` to the value. At render, every entry is looked
+up with `getForm({ type })`, so nothing about the shapes is hardcoded in the
+field: store the array as-is and it renders back the same.
+
+Options accepted by `createFormArrayInputController`, on top of the usual field
+keys:
+
+| Option | Effect |
+| --- | --- |
+| `forms` | The `@for` tags offered in the palette. An empty array is **not** the same as omitting the key: it offers *every* registered form. Omitted entirely, there is no palette at all — just an "Add" button appending a blank entry built from `form`. |
+| `draggable` | Adds a grip handle to each block header and lets a block be dropped onto another, which reindexes the whole array. |
+| `identifierKey` | The key holding the position, defaulting to `"order"`. It is edited from the block header, and hidden from the block body when the shape declares it as a field. |
+| `defaultValue` | The entries the field starts with, as a value or a function returning one. |
+| `form` | The fallback shape, rendering entries that carry no `type`, or one no registered form answers to. With a palette wired up every entry has a type, so it rarely comes into play. |
+
+A live, manipulable example sits on the
+[Asymmetric forms](https://salvadorcardona.github.io/react-data-form/?page=multi-forms)
+page of the documentation site.
+
 ## Available field controllers
 
 All exported from `react-data-form`, to be passed as a field's `controller`.
