@@ -1,5 +1,11 @@
 import type { FC } from "react"
-import { BookOpen, ListChecks, ShieldCheck, SlidersHorizontal } from "lucide-react"
+import {
+  Blocks,
+  BookOpen,
+  ListChecks,
+  ShieldCheck,
+  SlidersHorizontal,
+} from "lucide-react"
 
 export interface DocPage {
   id: string
@@ -12,6 +18,7 @@ export const pages: DocPage[] = [
   { id: "overview", name: "Overview", icon: BookOpen },
   { id: "controllers", name: "Field controllers", icon: SlidersHorizontal },
   { id: "forms", name: "Building a form", icon: ListChecks },
+  { id: "multi-forms", name: "Asymmetric forms", icon: Blocks },
   { id: "validation", name: "Validation & errors", icon: ShieldCheck },
 ]
 

@@ -57,6 +57,12 @@ export function OverviewPage() {
             — groups, steps, and a complete example.
           </li>
           <li>
+            <a className="underline underline-offset-4" href={pageHref("multi-forms")}>
+              Asymmetric forms
+            </a>{" "}
+            — one array, entries of different shapes.
+          </li>
+          <li>
             <a className="underline underline-offset-4" href={pageHref("validation")}>
               Validation &amp; errors
             </a>{" "}
