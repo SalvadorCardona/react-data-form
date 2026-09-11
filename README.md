@@ -126,12 +126,12 @@ setTranslation({ "My profile": "Mon profil" })
 
 ## Entry points
 
-| Import | Contents |
-| --- | --- |
-| `react-data-form` | Core: `useForm`, `FormElement`, field controllers, configuration |
-| `react-data-form/group` | Splitting fields into collapsible sections |
-| `react-data-form/media` | Image editor: cropping and rotation |
-| `react-data-form/step` | Multi-step forms with navigation |
+| Import                  | Contents                                                         |
+| ----------------------- | ---------------------------------------------------------------- |
+| `react-data-form`       | Core: `useForm`, `FormElement`, field controllers, configuration |
+| `react-data-form/group` | Splitting fields into collapsible sections                       |
+| `react-data-form/media` | Media fields: upload, gallery, image editor                      |
+| `react-data-form/step`  | Multi-step forms with navigation                                 |
 
 ## Concepts
 
@@ -153,7 +153,7 @@ const form: FormInterface = {
 
 ### Fields delegate rendering to a controller
 
-Every field is rendered by a *controller*: a React component receiving
+Every field is rendered by a _controller_: a React component receiving
 `{ formInput, onChange }` and needing to know nothing else about the form.
 
 Without a `controller`, a field falls back to `DefaultInputController`, an HTML
@@ -254,7 +254,7 @@ const form: FormInterface = {
 }
 ```
 
-**Let each entry find its shape back.** Picking *Gallery* in the palette appends
+**Let each entry find its shape back.** Picking _Gallery_ in the palette appends
 `{ id, type: "gallery", order }` to the value. At render, every entry is looked
 up with `getForm({ type })`, so nothing about the shapes is hardcoded in the
 field: store the array as-is and it renders back the same.
@@ -262,13 +262,13 @@ field: store the array as-is and it renders back the same.
 Options accepted by `createFormArrayInputController`, on top of the usual field
 keys:
 
-| Option | Effect |
-| --- | --- |
-| `forms` | The `@for` tags offered in the palette. An empty array is **not** the same as omitting the key: it offers *every* registered form. Omitted entirely, there is no palette at all — just an "Add" button appending a blank entry built from `form`. |
-| `draggable` | Adds a grip handle to each block header and lets a block be dropped onto another, which reindexes the whole array. |
-| `identifierKey` | The key holding the position, defaulting to `"order"`. It is edited from the block header, and hidden from the block body when the shape declares it as a field. |
-| `defaultValue` | The entries the field starts with, as a value or a function returning one. |
-| `form` | The fallback shape, rendering entries that carry no `type`, or one no registered form answers to. With a palette wired up every entry has a type, so it rarely comes into play. |
+| Option          | Effect                                                                                                                                                                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `forms`         | The `@for` tags offered in the palette. An empty array is **not** the same as omitting the key: it offers _every_ registered form. Omitted entirely, there is no palette at all — just an "Add" button appending a blank entry built from `form`. |
+| `draggable`     | Adds a grip handle to each block header and lets a block be dropped onto another, which reindexes the whole array.                                                                                                                                |
+| `identifierKey` | The key holding the position, defaulting to `"order"`. It is edited from the block header, and hidden from the block body when the shape declares it as a field.                                                                                  |
+| `defaultValue`  | The entries the field starts with, as a value or a function returning one.                                                                                                                                                                        |
+| `form`          | The fallback shape, rendering entries that carry no `type`, or one no registered form answers to. With a palette wired up every entry has a type, so it rarely comes into play.                                                                   |
 
 A live, manipulable example sits on the
 [Asymmetric forms](https://salvadorcardona.github.io/react-data-form/?page=multi-forms)
@@ -300,15 +300,60 @@ All exported from `react-data-form`, to be passed as a field's `controller`.
 (page builder), `FormInputController` (sub-form), `BlockOrderInput`,
 `FileInputController`, `IaImageInputController`.
 
-For media fields, `react-data-form/media` ships `ImageEditor`, a crop-and-rotate
-editor independent of any backend, to plug into the upload controller your own
-API requires.
+**Media** — `react-data-form/media` ships `MediaObjectInputController`
+(upload, drag & drop, document preview), `MediaObjectGalleryInputController`
+and `ImageEditor`, a crop-and-rotate editor.
+
+### Media go through a port
+
+The media controllers know how to render an upload; they know nothing about the
+API behind it. Everything they need is described by `MediaObjectPortInterface`,
+which the application implements and injects — so no route, no payload and no
+authentication ever reaches the library.
+
+```tsx
+import {
+  MediaObjectProvider,
+  MediaObjectPortInterface,
+} from "react-data-form/media"
+
+const mediaObjectPort: MediaObjectPortInterface = {
+  upload: async ({ base64, role, gallery }) => {
+    const media = await api.post("/api/media_objects", {
+      fileInBase64: base64,
+      role,
+      gallery,
+    })
+    return media["@id"]
+  },
+  replace: async ({ iri, base64 }) => { /* … */ },
+  remove: async (iri) => { /* … */ },
+  describe: async (iri) => ({ mimeType: "image/png", label: "photo.png" }),
+  toUrl: (iri, options) => (iri ? `/files/${iri}${options?.download ? "?download=1" : ""}` : undefined),
+  gallery: {
+    create: async ({ role }) => ({ iri: "…", items: [] }),
+    read: async (iri) => ({ iri, items: [] }),
+  },
+  // The library ships no toast of its own: plug yours here.
+  onError: (message) => toast.error(message),
+}
+
+<MediaObjectProvider port={mediaObjectPort} labels={{ edit: "Modifier" }}>
+  <App />
+</MediaObjectProvider>
+```
+
+`useMediaObjectPort()` gives access to the port and throws an explicit error
+outside of the provider. Labels default to English and are overridden one by one
+on the provider. For a test, a story or a demo,
+`createInMemoryMediaObjectPort()` implements the whole port in memory, with no
+server behind it.
 
 ## Development
 
 ```bash
 pnpm install
-pnpm test          # 168 tests (Vitest + Testing Library)
+pnpm test          # 174 tests (Vitest + Testing Library)
 pnpm typecheck
 pnpm lint
 pnpm build         # tsdown → dist/ (ESM + types)
