@@ -1,5 +1,6 @@
 import { CompleteFormExample } from "../CompleteFormExample"
 import { CodeBlock, PageHeader, Section } from "../DocLayout"
+import { pageHref } from "./index"
 
 export function FormsPage() {
   return (
@@ -44,6 +45,19 @@ export function FormsPage() {
         intro="A component satisfying InputControllerInterface. No registration step."
       >
         <CodeBlock>{custom}</CodeBlock>
+      </Section>
+
+      <Section title="Next" intro="Every field type this library ships, running live.">
+        <p>
+          Continue to{" "}
+          <a
+            className="underline underline-offset-4"
+            href={pageHref("controllers")}
+          >
+            Field controllers
+          </a>
+          .
+        </p>
       </Section>
     </>
   )

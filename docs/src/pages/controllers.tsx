@@ -1,6 +1,7 @@
 import { catalog } from "../catalog"
 import { Demo } from "../Demo"
 import { PageHeader, Section } from "../DocLayout"
+import { pageHref } from "./index"
 
 /**
  * The gallery: every field controller, rendered for real, grouped by what it
@@ -39,6 +40,22 @@ export function ControllersPage() {
           </div>
         </Section>
       ))}
+
+      <Section
+        title="Next"
+        intro="One array field, entries of different shapes."
+      >
+        <p>
+          Continue to{" "}
+          <a
+            className="underline underline-offset-4"
+            href={pageHref("multi-forms")}
+          >
+            Asymmetric forms
+          </a>
+          .
+        </p>
+      </Section>
     </>
   )
 }

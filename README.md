@@ -2,6 +2,8 @@
 
 # react-data-form
 
+[Documentation & live demos](https://cardona.digital/react-data-form/)
+
 Data-driven React forms: you describe a form as an object, the library renders
 the fields, holds the state, validates, and reports the errors your API sends
 back.
@@ -271,7 +273,7 @@ keys:
 | `form`          | The fallback shape, rendering entries that carry no `type`, or one no registered form answers to. With a palette wired up every entry has a type, so it rarely comes into play.                                                                   |
 
 A live, manipulable example sits on the
-[Asymmetric forms](https://salvadorcardona.github.io/react-data-form/?page=multi-forms)
+[Asymmetric forms](https://cardona.digital/react-data-form/?page=multi-forms)
 page of the documentation site.
 
 ## Available field controllers

@@ -9,6 +9,7 @@ import {
   useForm,
 } from "react-data-form"
 import { CodeBlock, LiveExample, PageHeader, Section } from "../DocLayout"
+import { pageHref } from "./index"
 
 /**
  * The three shapes an entry can take, registered once when this module loads.
@@ -202,6 +203,22 @@ export function MultiFormsPage() {
             wired up every entry has a type, so it rarely comes into play.
           </li>
         </ul>
+      </Section>
+
+      <Section
+        title="Next"
+        intro="Per-field rules and what the API sends back."
+      >
+        <p>
+          Continue to{" "}
+          <a
+            className="underline underline-offset-4"
+            href={pageHref("validation")}
+          >
+            Validation &amp; errors
+          </a>
+          .
+        </p>
       </Section>
     </>
   )
