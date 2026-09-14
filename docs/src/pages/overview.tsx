@@ -6,7 +6,7 @@ export function OverviewPage() {
     <>
       <PageHeader
         title="react-data-form"
-        intro="Data-driven React forms. You describe a form as an object; the library renders the fields, holds the state, validates, and reports the errors your API sends back."
+        intro="Data-driven React forms. You describe a form as an object; the library renders the fields, holds the state, validates, and reports the errors your API sends back. Built for JSON-LD / API Platform backends, but usable with any of them."
       />
 
       <Section
