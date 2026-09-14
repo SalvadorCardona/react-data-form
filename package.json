@@ -1,6 +1,6 @@
 {
   "name": "react-data-form",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Data-driven React forms: declarative definition, field controllers, groups and steps — built for JSON-LD / API Platform APIs.",
   "keywords": [
     "react",
