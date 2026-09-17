@@ -264,13 +264,14 @@ field: store the array as-is and it renders back the same.
 Options accepted by `createFormArrayInputController`, on top of the usual field
 keys:
 
-| Option          | Effect                                                                                                                                                                                                                                            |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `forms`         | The `@for` tags offered in the palette. An empty array is **not** the same as omitting the key: it offers _every_ registered form. Omitted entirely, there is no palette at all — just an "Add" button appending a blank entry built from `form`. |
-| `draggable`     | Adds a grip handle to each block header and lets a block be dropped onto another, which reindexes the whole array.                                                                                                                                |
-| `identifierKey` | The key holding the position, defaulting to `"order"`. It is edited from the block header, and hidden from the block body when the shape declares it as a field.                                                                                  |
-| `defaultValue`  | The entries the field starts with, as a value or a function returning one.                                                                                                                                                                        |
-| `form`          | The fallback shape, rendering entries that carry no `type`, or one no registered form answers to. With a palette wired up every entry has a type, so it rarely comes into play.                                                                   |
+| Option            | Effect                                                                                                                                                                                                                                            |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `forms`           | The `@for` tags offered in the palette. An empty array is **not** the same as omitting the key: it offers _every_ registered form. Omitted entirely, there is no palette at all — just an "Add" button appending a blank entry built from `form`. |
+| `draggable`       | Adds a grip handle to each block header and lets a block be dropped onto another, which reindexes the whole array.                                                                                                                                |
+| `closedByDefault` | Mounts every block folded. A block header always carries a chevron folding its body away — handle and order stay, so a long page stays reorderable — and folding is display state only, never part of the value. A block just added opens.        |
+| `identifierKey`   | The key holding the position, defaulting to `"order"`. It is edited from the block header, and hidden from the block body when the shape declares it as a field.                                                                                  |
+| `defaultValue`    | The entries the field starts with, as a value or a function returning one.                                                                                                                                                                        |
+| `form`            | The fallback shape, rendering entries that carry no `type`, or one no registered form answers to. With a palette wired up every entry has a type, so it rarely comes into play.                                                                   |
 
 A live, manipulable example sits on the
 [Asymmetric forms](https://cardona.digital/react-data-form/?page=multi-forms)

@@ -17,6 +17,8 @@ setTranslation({
   drag: "Drag",
   order: "Order",
   remove: "Remove",
+  collapse: "Collapse the block",
+  expand: "Expand the block",
   "form.array.add": "Add a block",
   "form.array.add.title": "Add a block",
   "form.array.add.description": "Pick the shape this entry takes.",

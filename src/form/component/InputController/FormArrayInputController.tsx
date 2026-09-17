@@ -16,7 +16,13 @@ import {
 
 import { createUniqId } from "jsonld-item"
 
-import { CirclePlus, GripVertical, Trash2 } from "lucide-react"
+import {
+  ChevronDown,
+  ChevronRight,
+  CirclePlus,
+  GripVertical,
+  Trash2,
+} from "lucide-react"
 import { Button } from "@/ui/button"
 import { Item, ItemActions, ItemContent, ItemHeader } from "@/ui/item"
 import { IdAbleInterface } from "jsonld-item"
@@ -41,6 +47,13 @@ export interface MultiFormInputPropsInterface<
    * based on `form`.
    */
   forms?: string[]
+  /**
+   * Initial state of the collapse toggle carried by every block header: `true`
+   * mounts the list folded, headers only. It applies to the blocks added later
+   * too — except the one just inserted, which opens so that clicking "Add"
+   * shows something.
+   */
+  closedByDefault?: boolean
 }
 
 /**
@@ -69,11 +82,34 @@ export const FormArrayInputController = ({
   const [startItem, setStartItem] = useState<IdAbleInterface | undefined>()
   const [error, setError] = useState<string>("")
   const [dragIndex, setDragIndex] = useState<number | null>(null)
+  // Display state only: which blocks are unfolded, per block key. It never
+  // reaches onChange — folding a block does not change the form value.
+  const [openStates, setOpenStates] = useState<Record<string, boolean>>({})
 
   const identifierKey: keyof IdAbleInterface =
     formInput?.identifierKey ?? ("order" as keyof IdAbleInterface)
 
   const isDraggable = !!formInput?.draggable
+
+  // Same key as the one the list is rendered with: an item does not always
+  // carry an id, so the index takes over.
+  const itemKey = (item: IdAbleInterface, index: number) =>
+    `${String(formInput?.id ?? "array-input")}-${item.id ?? index}`
+
+  const openByDefault = !formInput?.closedByDefault
+
+  const isOpen = (key: string) => openStates[key] ?? openByDefault
+
+  const toggleOpen = (key: string) => () =>
+    setOpenStates((states) => ({
+      ...states,
+      [key]: !(states[key] ?? openByDefault),
+    }))
+
+  // A block just added always opens, otherwise clicking "Add" would do nothing
+  // visible when the list is closed by default.
+  const openAddedItem = (item: IdAbleInterface) =>
+    setOpenStates((states) => ({ ...states, [itemKey(item, values.length)]: true }))
 
   // Palette of forms available for insertion. The picker is active as soon as
   // `forms` is set — even empty, which means every registered form.
@@ -120,19 +156,21 @@ export const FormArrayInputController = ({
   const add = () => {
     if (!canAdd()) return
 
-    changeValues(addValue(values, { id: createUniqId() }))
+    const item = { id: createUniqId() }
+    openAddedItem(item)
+    changeValues(addValue(values, item))
   }
 
   const addBlock = (selectedForm: FormResourceItem) => {
     if (!canAdd()) return
 
-    changeValues(
-      addValue(values, {
-        id: createUniqId(),
-        type: getFormType(selectedForm),
-        [identifierKey]: nextOrder(),
-      })
-    )
+    const item = {
+      id: createUniqId(),
+      type: getFormType(selectedForm),
+      [identifierKey]: nextOrder(),
+    }
+    openAddedItem(item)
+    changeValues(addValue(values, item))
   }
 
   const handleItemChange = (childInput: FormInputInterface, index: number) => {
@@ -245,9 +283,11 @@ export const FormArrayInputController = ({
         const blockLabel = currentForm
           ? getFormLabel(currentForm as FormResourceItem)
           : undefined
+        const key = itemKey(item, index)
+        const isItemOpen = isOpen(key)
         return (
           <Item
-            key={`${String(formInput?.id ?? "array-input")}-${item.id ?? index}`}
+            key={key}
             variant="outline"
             className={cn(
               formInput?.form?.className,
@@ -257,7 +297,9 @@ export const FormArrayInputController = ({
             onDragOver={() => handleDragOver(item)}
             onDragEnd={handleDragEnd}
           >
-            <ItemHeader className="border-b border-border pb-2.5">
+            <ItemHeader
+              className={cn(isItemOpen && "border-b border-border pb-2.5")}
+            >
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 {isDraggable && (
                   <span
@@ -282,6 +324,22 @@ export const FormArrayInputController = ({
                   variant="ghost"
                   size="icon-sm"
                   type="button"
+                  onClick={toggleOpen(key)}
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-expanded={isItemOpen}
+                  aria-label={translate(isItemOpen ? "collapse" : "expand")}
+                >
+                  {isItemOpen ? (
+                    <ChevronDown className="size-4" />
+                  ) : (
+                    <ChevronRight className="size-4" />
+                  )}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  type="button"
                   onClick={remove(item)}
                   className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   aria-label={translate("remove")}
@@ -291,15 +349,17 @@ export const FormArrayInputController = ({
               </ItemActions>
             </ItemHeader>
 
-            <ItemContent>
-              <FormInputController
-                onChange={(childInput) => handleItemChange(childInput, index)}
-                formInput={{
-                  value: item as Required<object>,
-                  form: withoutOrderInput(currentForm),
-                }}
-              />
-            </ItemContent>
+            {isItemOpen && (
+              <ItemContent>
+                <FormInputController
+                  onChange={(childInput) => handleItemChange(childInput, index)}
+                  formInput={{
+                    value: item as Required<object>,
+                    form: withoutOrderInput(currentForm),
+                  }}
+                />
+              </ItemContent>
+            )}
           </Item>
         )
       })}

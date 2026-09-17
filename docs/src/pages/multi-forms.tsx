@@ -124,6 +124,12 @@ export function MultiFormsPage() {
         <LiveExample label="Live">
           <AsymmetricFormExample />
         </LiveExample>
+        <p>
+          The chevron in a block header folds it: the body goes away, the handle and
+          the order stay, so a long page can be reordered without scrolling through
+          its content. It is display state only — the value does not change. Pass{" "}
+          <code>closedByDefault: true</code> to mount the whole list folded.
+        </p>
       </Section>
 
       <Section
@@ -188,6 +194,11 @@ export function MultiFormsPage() {
             a block be dropped onto another, which reindexes the whole array.
           </li>
           <li>
+            <code>closedByDefault</code> — mounts every block folded, headers only.
+            Blocks added later start folded too, except the one just inserted:
+            clicking "Add" has to show something.
+          </li>
+          <li>
             <code>identifierKey</code> — the key holding the position, defaulting to{" "}
             <code>"order"</code>. It is edited from the block header, and hidden from
             the block body when the shape declares it as a field.
@@ -205,16 +216,10 @@ export function MultiFormsPage() {
         </ul>
       </Section>
 
-      <Section
-        title="Next"
-        intro="Per-field rules and what the API sends back."
-      >
+      <Section title="Next" intro="Per-field rules and what the API sends back.">
         <p>
           Continue to{" "}
-          <a
-            className="underline underline-offset-4"
-            href={pageHref("validation")}
-          >
+          <a className="underline underline-offset-4" href={pageHref("validation")}>
             Validation &amp; errors
           </a>
           .
