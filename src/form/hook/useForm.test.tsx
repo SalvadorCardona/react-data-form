@@ -278,4 +278,38 @@ describe("useForm", () => {
       expect(result.current.form.inputs.lastName.value).toBe("Grace")
     })
   })
+
+  describe("form declaration", () => {
+    it("ignores a new form object passed after the first render", () => {
+      const { result, rerender } = renderHook(
+        ({ required }) => useForm({ form: { inputs: { name: { required } } } }),
+        { wrapper, initialProps: { required: false } }
+      )
+
+      rerender({ required: true })
+
+      expect(result.current.form.inputs.name.required).toBe(false)
+    })
+
+    it("switches declaration through updateForm, keeping entered values", () => {
+      const { result } = renderHook(
+        () =>
+          useForm({
+            form: { inputs: { name: {}, email: {} } },
+            data: { name: "Alice", email: "alice@test.fr" },
+          }),
+        { wrapper }
+      )
+
+      act(() => {
+        result.current.updateForm({
+          inputs: { name: { required: true }, age: {} },
+        } as any)
+      })
+
+      expect(result.current.form.inputs.name.required).toBe(true)
+      expect(result.current.form.inputs.name.value).toBe("Alice")
+      expect(result.current.form.inputs.age).toBeDefined()
+    })
+  })
 })

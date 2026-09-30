@@ -12,6 +12,12 @@ import useFormContext from "@/form/provider/useFormContext"
 import { createPubSub, Index } from "coooking-pubsub"
 
 export interface UseFormParams<Data extends object = any> {
+  /**
+   * Declaration of the form, read once on mount — like `defaultValue` on an
+   * uncontrolled input. Passing a different object on a later render has no
+   * effect: to switch declaration, call `updateForm` from the returned context
+   * (entered values are kept), or remount the component with a new `key`.
+   */
   form: FormInterface<Data> | FormBuiltInterface<Data>
   onChange?: (data: Data, form: FormInterface<Data>) => void
   onSubmit?: (data: Data) => void
@@ -32,6 +38,11 @@ export interface FormContextOutput<Data extends object = any> {
   isLoading: BooleanStateInterface
 }
 
+/**
+ * Holds the state of a form: values, validation, submission.
+ *
+ * `form` is only read on the first render; see {@link UseFormParams.form}.
+ */
 export default function useForm<Data extends object = object>({
   form,
   data,

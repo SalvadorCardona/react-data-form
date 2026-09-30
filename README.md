@@ -153,6 +153,30 @@ const form: FormInterface = {
 }
 ```
 
+### The declaration is read once
+
+`useForm` builds its state from `form` on the first render only, the way an
+uncontrolled `<input>` reads `defaultValue`. Passing a different `form` object
+later — another controller, `required` toggled, a field added or removed —
+changes nothing on screen. To switch declaration:
+
+- call `updateForm` from the returned context; the values already entered are
+  kept for the fields that still exist:
+
+  ```tsx
+  const formContext = useForm({ form })
+  useEffect(() => {
+    formContext.updateForm(nextForm)
+  }, [nextForm])
+  ```
+
+- or remount the component holding `useForm` with a new `key`, which starts
+  from a blank state:
+
+  ```tsx
+  <ProfileForm key={formSignature} form={nextForm} />
+  ```
+
 ### Fields delegate rendering to a controller
 
 Every field is rendered by a _controller_: a React component receiving
