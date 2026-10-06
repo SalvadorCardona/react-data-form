@@ -1,6 +1,8 @@
-import { describe, expect, it, vi } from "vitest"
-import { render, screen, within } from "@testing-library/react"
+import { afterEach, describe, expect, it, vi } from "vitest"
+import { fireEvent, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import * as library from "react-data-form"
+import * as media from "react-data-form/media"
 import { App } from "./App"
 
 /**
@@ -12,7 +14,20 @@ const renderAt = (search: string) => {
   return render(<App />)
 }
 
+/**
+ * Every controller the library ships, read off its entry points rather than
+ * listed by hand: a new one fails the gallery test until it is shown there.
+ */
+const exportedControllers = Object.entries({ ...library, ...media })
+  .filter(
+    ([name, value]) =>
+      /^[A-Z]\w*InputController$/.test(name) && typeof value === "function"
+  )
+  .map(([name]) => name)
+
 describe("the documentation site", () => {
+  afterEach(() => document.documentElement.classList.remove("dark"))
+
   it("renders the overview by default", () => {
     renderAt("")
     expect(
@@ -27,6 +42,53 @@ describe("the documentation site", () => {
     ).toBeInTheDocument()
     // Each demo renders a real form, so its labels are in the document.
     expect(screen.getAllByText("SelectInputController").length).toBeGreaterThan(0)
+  })
+
+  it("shows every controller the library exports in the gallery", () => {
+    const { container } = renderAt("?page=controllers")
+
+    expect(exportedControllers).toContain("PasswordInputController")
+    expect(exportedControllers).toContain("MediaObjectInputController")
+
+    const shown = [...container.querySelectorAll("article[id]")].map(
+      (article) => article.id
+    )
+    expect(exportedControllers.filter((name) => !shown.includes(name))).toEqual([])
+  })
+
+  it("shows each controller with how to declare it and in its states", () => {
+    renderAt("?page=controllers")
+    const password = document.getElementById("PasswordInputController")!
+
+    expect(
+      within(password).getByText("controller: PasswordInputController")
+    ).toBeInTheDocument()
+    expect(within(password).getByText(/inputs: \{/)).toBeInTheDocument()
+    for (const state of ["Empty", "Filled", "Error"]) {
+      expect(within(password).getByText(state)).toBeInTheDocument()
+    }
+    expect(
+      within(password).getByText("This value is not valid.")
+    ).toBeInTheDocument()
+
+    // A controller that honours `readonly` is shown that way too.
+    const email = document.getElementById("EmailInputController")!
+    expect(within(email).getByText("Read-only")).toBeInTheDocument()
+  })
+
+  it("renders the controller gallery in the dark theme as well", () => {
+    // The library's dark palette hangs off a class on the root element.
+    document.documentElement.classList.add("dark")
+    renderAt("?page=controllers")
+
+    expect(
+      screen.getByRole("heading", { name: "Field controllers", level: 1 })
+    ).toBeInTheDocument()
+    expect(document.getElementById("PasswordInputController")).toBeInTheDocument()
+
+    // The page offers the way back, and takes it.
+    fireEvent.click(screen.getByText("Light theme"))
+    expect(document.documentElement).not.toHaveClass("dark")
   })
 
   it("renders the form-building page", () => {
