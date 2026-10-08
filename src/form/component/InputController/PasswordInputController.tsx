@@ -36,12 +36,14 @@ export const PasswordInputController = ({
         id={formInput.id ?? formInput.name}
         type={showPassword ? "text" : "password"}
         autoComplete={formInput.autocomplete ?? "current-password"}
+        required={formInput.required ? formInput.required : false}
+        readOnly={formInput.readonly ? formInput.readonly : false}
         className="pr-10"
       />
       <button
         type="button"
         onClick={togglePasswordVisibility}
-        className="absolute right-3.5 top-1/2 z-10 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+        className="absolute right-3.5 top-1/2 z-10 -translate-y-1/2 rounded-full text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/30"
         aria-label={
           showPassword
             ? translate("Masquer le mot de passe")
