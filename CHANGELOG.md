@@ -1,5 +1,26 @@
 # react-data-form
 
+## 0.2.1
+
+### Patch Changes
+
+- 125d485: `PasswordInputController` reprend le rendu des autres champs texte : même
+  `Input` que `DefaultInputController` (hauteur, rayon, fond, bordure, focus),
+  sans cadenas ni placeholder `"..."` par défaut. Le bouton œil est centré sur
+  l'input (`z-10`) et ses libellés passent par `translate`. L'id par défaut
+  devient `formInput.id ?? formInput.name`, pour que mot de passe et
+  confirmation n'aient plus le même id.
+- 68225c6: `PasswordInputController` respecte `readonly` (et `required`) comme
+  `DefaultInputController`, et son bouton œil a un focus visible. `Input` neutralise
+  le fond et la couleur de texte imposés par Chrome sur un champ pré-rempli
+  (`:autofill`) : les champs texte (Email, Password…) gardent les couleurs du
+  thème, en clair et en sombre.
+- fa9f665: Documente que `useForm` ne lit `form` qu'au premier rendu, comme
+  `defaultValue` : repasser un autre objet ensuite n'a aucun effet. Pour changer
+  de déclaration, appeler `updateForm` (les valeurs saisies sont conservées) ou
+  remonter le composant avec une nouvelle `key`. JSDoc de `useForm` et README à
+  jour.
+
 ## 0.2.0
 
 ### Minor Changes
