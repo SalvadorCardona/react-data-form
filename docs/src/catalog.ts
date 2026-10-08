@@ -148,7 +148,6 @@ export const catalog: DemoGroupInterface[] = [
         summary: "Masked entry with a reveal toggle.",
         input: { label: "Password", controller: PasswordInputController },
         filled: "correct horse battery staple",
-        readonly: false,
       },
       {
         name: "WebsiteInputController",

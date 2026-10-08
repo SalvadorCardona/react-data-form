@@ -86,6 +86,27 @@ describe("PasswordInputController", () => {
     expect(password.querySelector("button")!.className).not.toContain("z-80")
   })
 
+  it("honours readonly and required like the default input", () => {
+    const { container } = render(
+      <PasswordInputController
+        formInput={buildFormInput({ readonly: true, required: true })}
+        onChange={vi.fn()}
+      />
+    )
+    const input = getPasswordInput(container)
+
+    expect(input.readOnly).toBe(true)
+    expect(input.required).toBe(true)
+  })
+
+  it("keeps the theme colours on an autofilled field", () => {
+    const { container } = render(
+      <PasswordInputController formInput={buildFormInput()} onChange={vi.fn()} />
+    )
+
+    expect(getPasswordInput(container).className).toContain("autofill:")
+  })
+
   it("propagates the typed value", () => {
     const onChange = vi.fn()
     const { container } = render(
