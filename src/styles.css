@@ -7,7 +7,10 @@
  * - If your application already has a shadcn theme, do NOT import this file:
  *   your own variables are enough, and the library will pick up your palette
  *   automatically.
- * - Otherwise, import it after Tailwind to get a neutral, ready-to-use theme:
+ * - Otherwise, import it after Tailwind to get a ready-to-use theme: the
+ *   Hermez design system (warm "stone" greys, orange primary, rounded corners,
+ *   pill-shaped buttons), with a `.dark` variant on the same hue. Its values
+ *   sit in `@layer base`, so any variable you declare yourself wins:
  *
  *     @import "tailwindcss";
  *     @import "react-data-form/styles.css";
@@ -20,48 +23,77 @@
 
 @layer base {
   :root {
-    --radius: 0.875rem;
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.985 0 0);
-    --border: oklch(0.891 0 0);
-    --input: oklch(0.97 0 0);
-    --ring: oklch(0.457 0 0);
+    /* Typography. The headings' typeface is not shipped with the library: load
+       "Bricolage Grotesque Variable" yourself (Fontsource) or the stack falls
+       back to the system sans-serif. No rule styles your h1–h6 either, it
+       would override your own classes: use `font-heading`, or these tokens. */
+    --typeface-heading:
+      "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+    --typeface-body:
+      ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+      Arial, sans-serif;
+    --typeface-mono: ui-monospace, Menlo, Consolas, monospace;
+    --heading-weight: 800;
+    --heading-tracking: -0.025em;
+
+    --radius: 0.75rem;
+    --background: #fafaf9;
+    --foreground: #1c1917;
+    --card: #ffffff;
+    --card-foreground: #1c1917;
+    --popover: #ffffff;
+    --popover-foreground: #1c1917;
+    --primary: #bf4a02;
+    --primary-foreground: #ffffff;
+    --secondary: #f5f5f4;
+    --secondary-foreground: #292524;
+    --muted: #f5f5f4;
+    --muted-foreground: #57534e;
+    --accent: #fff6ee;
+    --accent-foreground: #1c1917;
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
+    --success: #15803d;
+    --info: #2563eb;
+    --glory: #7c3aed;
+    --warning: #b45309;
+    --border: #e7e5e4;
+    --input: #d6d3d1;
+    --ring: #e46212;
+
+    --chart-1: #e46212;
+    --chart-2: #0f766e;
+    --chart-3: #ca8a04;
+    --chart-4: #7c3aed;
+    --chart-5: #2563eb;
+
+    --shadow-color: 28 25 23;
+    --shadow-strength: 0.08;
   }
 
   .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.274 0.006 286.033);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --destructive-foreground: oklch(0.985 0 0);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
+    --background: #0c0a09;
+    --foreground: #fafaf9;
+    --card: #1c1917;
+    --card-foreground: #fafaf9;
+    --popover: #292524;
+    --popover-foreground: #fafaf9;
+    --primary: #ff8b44;
+    --primary-foreground: #1c1917;
+    --secondary: #292524;
+    --secondary-foreground: #fafaf9;
+    --muted: #292524;
+    --muted-foreground: #a8a29e;
+    --accent: #292524;
+    --accent-foreground: #fafaf9;
+    --destructive: #f87171;
+    --destructive-foreground: #1c1917;
+    --border: #fafaf91c;
+    --input: #fafaf926;
+    --ring: #e46212;
+
+    --shadow-color: 0 0 0;
+    --shadow-strength: 0.4;
   }
 }
 
@@ -82,13 +114,39 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-glory: var(--glory);
+  --color-warning: var(--warning);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --font-sans: var(--typeface-body);
+  --font-heading: var(--typeface-heading);
+  --font-mono: var(--typeface-mono);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
+  /* The shadcn components round in 2xl–4xl: derive those too, so a theme with
+     square corners no longer gets pill-shaped buttons. */
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-3xl: calc(var(--radius) * 1.8);
+  --radius-4xl: calc(var(--radius) * 2.2);
+}
+
+@theme {
+  --shadow-sm: 0 1px 2px 0
+    rgb(var(--shadow-color) / calc(var(--shadow-strength) * 0.8));
+  --shadow-md: 0 4px 12px -2px rgb(var(--shadow-color) / var(--shadow-strength));
+  --shadow-lg: 0 12px 28px -6px
+    rgb(var(--shadow-color) / calc(var(--shadow-strength) * 1.2));
+  --shadow-glow: 0 0 32px -4px color-mix(in srgb, var(--primary) 35%, transparent);
 }
 
 /**
