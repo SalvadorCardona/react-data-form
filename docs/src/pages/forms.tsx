@@ -95,7 +95,7 @@ const form = createStepForm({
 const custom = `const ColorInputController = ({ formInput, onChange }: InputControllerInterface) => (
   <input
     type="color"
-    value={formInput.value ?? "#000000"}
+    value={formInput.value ?? "#e46212"}
     onChange={(e) => onChange({ ...formInput, value: e.target.value })}
   />
 )

@@ -6,13 +6,29 @@
 @source "../../src";
 @source "./";
 
+/* The site is light only: the components' `dark:` variant depends on a `.dark`
+   class that is never set, not on the system setting. */
+@custom-variant dark (&:is(.dark *));
+
 @layer base {
+  :root {
+    color-scheme: light;
+  }
   html {
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background font-sans text-foreground antialiased;
   }
+}
+
+/* Outside any layer, this rule wins over the utilities: every heading takes the
+   design system's typeface, weight and tracking, whatever the page. The library
+   leaves it out of its stylesheet, where it would restyle the app's headings. */
+:where(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--typeface-heading);
+  font-weight: var(--heading-weight);
+  letter-spacing: var(--heading-tracking);
 }
 
 /* The footer is written straight into index.html, where utility classes would
