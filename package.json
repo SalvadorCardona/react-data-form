@@ -14,17 +14,17 @@
   ],
   "license": "MIT",
   "author": {
-    "name": "Salvador Cardona",
-    "url": "https://cardona.digital"
+    "name": "Hermez",
+    "url": "https://hermez.dev"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SalvadorCardona/react-data-form.git"
+    "url": "git+https://github.com/hermez-agency/react-data-form.git"
   },
   "bugs": {
-    "url": "https://github.com/SalvadorCardona/react-data-form/issues"
+    "url": "https://github.com/hermez-agency/react-data-form/issues"
   },
-  "homepage": "https://cardona.digital",
+  "homepage": "https://hermez.dev/react-data-form/",
   "type": "module",
   "sideEffects": [
     "**/*.css"
