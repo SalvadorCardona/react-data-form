@@ -7,12 +7,12 @@
 
 ## Documentation
 
-- [Overview](https://cardona.digital/react-data-form/): what react-data-form is, installation, and where to go next
-- [Field controllers](https://cardona.digital/react-data-form/?page=controllers): every built-in input controller, running live
-- [Building a form](https://cardona.digital/react-data-form/?page=forms): fields, groups, steps and submission
-- [Asymmetric forms](https://cardona.digital/react-data-form/?page=multi-forms): one array field whose entries take different shapes
-- [Validation & errors](https://cardona.digital/react-data-form/?page=validation): per-field rules and reporting API violations
+- [Overview](https://hermez.dev/react-data-form/): what react-data-form is, installation, and where to go next
+- [Field controllers](https://hermez.dev/react-data-form/?page=controllers): every built-in input controller, running live
+- [Building a form](https://hermez.dev/react-data-form/?page=forms): fields, groups, steps and submission
+- [Asymmetric forms](https://hermez.dev/react-data-form/?page=multi-forms): one array field whose entries take different shapes
+- [Validation & errors](https://hermez.dev/react-data-form/?page=validation): per-field rules and reporting API violations
 
 ## Source
 
-- [GitHub repository](https://github.com/SalvadorCardona/react-data-form): source code, README and changelog
+- [GitHub repository](https://github.com/hermez-agency/react-data-form): source code, README and changelog

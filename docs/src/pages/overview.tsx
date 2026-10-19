@@ -79,7 +79,7 @@ export function OverviewPage() {
           <li>
             <a
               className="underline underline-offset-4"
-              href="https://github.com/SalvadorCardona/react-resource-view"
+              href="https://github.com/hermez-agency/react-resource-view"
             >
               React Resource View
             </a>{" "}
@@ -89,11 +89,11 @@ export function OverviewPage() {
           <li>
             <a
               className="underline underline-offset-4"
-              href="https://cardona.digital"
+              href="https://hermez.dev"
             >
-              cardona.digital
+              hermez.dev
             </a>{" "}
-            — the portfolio of Salvador Cardona, who writes both.
+            — Hermez, the agency behind both.
           </li>
         </ul>
       </Section>
