@@ -1,4 +1,4 @@
-![react-data-form](https://raw.githubusercontent.com/SalvadorCardona/brand-assets/main/projects/react-data-form/banner.png)
+![react-data-form](https://raw.githubusercontent.com/hermez-agency/brand-assets/main/projects/react-data-form/banner.png)
 
 # react-data-form
 
