@@ -1,6 +1,7 @@
 import { useFormStep } from "@/step/useFormStep"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/ui/button"
+import { LittleLoader } from "@/ui/Loader"
 import { Trans } from "react-mini-i18n"
 
 export function FormStepNavigation() {
@@ -11,6 +12,7 @@ export function FormStepNavigation() {
     goToPrevStep,
     onSubmit,
     currentStep,
+    isLoading,
   } = useFormStep()
 
   return (
@@ -32,9 +34,13 @@ export function FormStepNavigation() {
           <Button
             size="lg"
             onClick={goToNextStep}
+            disabled={isLoading}
+            aria-busy={isLoading}
             className="flex items-center gap-2 w-full sm:w-auto"
           >
-            {currentStep?.component?.submitButton ? (
+            {isLoading ? (
+              <LittleLoader />
+            ) : currentStep?.component?.submitButton ? (
               <currentStep.component.submitButton />
             ) : (
               <>
@@ -44,7 +50,13 @@ export function FormStepNavigation() {
             )}
           </Button>
         ) : (
-          <Button size="lg" onClick={onSubmit} className="w-full sm:w-auto">
+          <Button
+            size="lg"
+            onClick={onSubmit}
+            disabled={isLoading}
+            aria-busy={isLoading}
+            className="w-full sm:w-auto"
+          >
             <Trans>Finish</Trans>
           </Button>
         )}

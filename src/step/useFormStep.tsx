@@ -22,6 +22,7 @@ interface UseFormStepResult {
   goToNextStep: () => void
   goToPrevStep: () => void
   onSubmit: () => void
+  isLoading: boolean
   form: FormWithStepsBuild
 }
 
@@ -64,7 +65,7 @@ export function useFormStep(): UseFormStepResult {
   }
 
   async function goToNextStep() {
-    if (!nextStep || !currentStep) return
+    if (!nextStep || !currentStep || formContext.isLoading.value) return
 
     let validatedForm = validateForm(mainForm) as FormWithStepsBuild
 
@@ -73,23 +74,26 @@ export function useFormStep(): UseFormStepResult {
       return
     }
 
+    // The form stays mounted while the step hooks run: only the button shows it.
     formContext.isLoading.setTrue()
 
-    if (mainForm.groupOption?.onNextStep) {
-      validatedForm = await mainForm.groupOption?.onNextStep?.({
-        step: currentStep,
-        form: validatedForm,
-      })
-    }
+    try {
+      if (mainForm.groupOption?.onNextStep) {
+        validatedForm = await mainForm.groupOption?.onNextStep?.({
+          step: currentStep,
+          form: validatedForm,
+        })
+      }
 
-    if (currentStep?.onNextStep) {
-      validatedForm = await currentStep?.onNextStep?.({
-        step: currentStep,
-        form: validatedForm,
-      })
+      if (currentStep?.onNextStep) {
+        validatedForm = await currentStep?.onNextStep?.({
+          step: currentStep,
+          form: validatedForm,
+        })
+      }
+    } finally {
+      formContext.isLoading.setFalse()
     }
-
-    formContext.isLoading.setFalse()
 
     formContext.updateForm(applyStep({ ...validatedForm }, nextStep))
   }
@@ -109,5 +113,6 @@ export function useFormStep(): UseFormStepResult {
     goToNextStep,
     goToPrevStep,
     onSubmit,
+    isLoading: formContext.isLoading.value,
   }
 }

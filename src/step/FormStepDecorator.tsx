@@ -6,8 +6,6 @@ import { Text } from "@/ui/Text"
 import { translate } from "react-mini-i18n"
 import { AnimatePresence, motion } from "framer-motion"
 import { CardDescription, CardTitle } from "../ui/card"
-import useFormContext from "@/form/provider/useFormContext"
-import Loader from "@/ui/Loader"
 
 export type FormStepDecoratorPropsInterface = PropsWithChildren & {
   className?: string
@@ -25,14 +23,8 @@ export function FormStepDecorator({
   className,
 }: FormStepDecoratorPropsInterface) {
   const { progress, steps, currentStep, form } = useFormStep()
-  const { isLoading } = useFormContext()
-  const saveOnChange = !!form.saveOnChange
 
   if (!currentStep) return <Badge>Invalid Form</Badge>
-
-  if (!saveOnChange && isLoading.value) {
-    return <Loader />
-  }
 
   return (
     <div className={className}>

@@ -1,5 +1,6 @@
 import { CompleteFormExample } from "../CompleteFormExample"
 import { CodeBlock, PageHeader, Section } from "../DocLayout"
+import { StepFormExample } from "../StepFormExample"
 import { pageHref } from "./index"
 
 export function FormsPage() {
@@ -34,9 +35,15 @@ export function FormsPage() {
       >
         <CodeBlock>{steps}</CodeBlock>
         <p>
-          The navigation labels — <code>Previous</code>, <code>Finish</code>,
-          the step counter — go through the translation dictionary, so they
-          follow your application's language.
+          Moving to the next step never unmounts the form. When a step has an
+          asynchronous <code>onNextStep</code> hook, the button shows a loader and
+          the typed values stay in place:
+        </p>
+        <StepFormExample />
+        <p>
+          The navigation labels — <code>Previous</code>, <code>Finish</code>, the
+          step counter — go through the translation dictionary, so they follow your
+          application's language.
         </p>
       </Section>
 
