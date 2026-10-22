@@ -46,8 +46,9 @@ pnpm add react-data-form react-mini-i18n resource-registry
 ```
 
 `react` and `react-dom` (18.3+ or 19),
-[`react-mini-i18n`](https://github.com/SalvadorCardona/react-mini-i18n) and
+[`react-mini-i18n`](https://github.com/hermez-agency/react-mini-i18n) and
 [`resource-registry`](https://github.com/hermez-agency/resource-registry) are
+
 peer dependencies — your copies are the ones used.
 
 Those two are peer dependencies rather than plain dependencies because each owns
@@ -117,7 +118,7 @@ setFormConfig({
 ### Translation
 
 Labels go through
-[`react-mini-i18n`](https://github.com/SalvadorCardona/react-mini-i18n), so your
+[`react-mini-i18n`](https://github.com/hermez-agency/react-mini-i18n), so your
 application and the forms share one dictionary:
 
 ```ts
