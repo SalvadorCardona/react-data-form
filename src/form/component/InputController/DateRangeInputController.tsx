@@ -144,6 +144,9 @@ export const DateRangeInputController = ({
   const startKey = formInput.startKey ?? "startDate"
   const endKey = formInput.endKey ?? "endDate"
   const withTime = formInput.withTime ?? true
+  // Long localised formats: the locale words the link between date and time
+  // ("at" in English, "à" in French) instead of a hard-coded literal.
+  const summaryFormat = withTime ? "PPPp" : "PPP"
 
   const formInputStart = getFormInputInForm(formContext.form, startKey)
   const formInputEnd = getFormInputInForm(formContext.form, endKey)
@@ -448,17 +451,13 @@ export const DateRangeInputController = ({
               <span className="font-medium text-foreground">
                 {translate("Selected range")}:
               </span>{" "}
-              {format(
-                startCombined!,
-                withTime ? "d MMMM yyyy 'at' HH:mm" : "d MMMM yyyy",
-                { locale: getPorts().dateLocale }
-              )}
+              {format(startCombined!, summaryFormat, {
+                locale: getPorts().dateLocale,
+              })}
               {" → "}
-              {format(
-                endCombined!,
-                withTime ? "d MMMM yyyy 'at' HH:mm" : "d MMMM yyyy",
-                { locale: getPorts().dateLocale }
-              )}
+              {format(endCombined!, summaryFormat, {
+                locale: getPorts().dateLocale,
+              })}
             </p>
           </div>
         )}
