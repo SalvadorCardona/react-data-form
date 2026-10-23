@@ -38,7 +38,7 @@ describe("addErrorFromViolations", () => {
     expect(result.inputs.name.violations![0].message).toBe("Nom requis")
   })
 
-  it("ignores violations on unknown property paths", () => {
+  it("sends violations on unknown property paths to form.errors", () => {
     const form = createForm({
       inputs: {
         name: { value: "Alice" },
@@ -46,34 +46,91 @@ describe("addErrorFromViolations", () => {
     })
 
     const apiError = {
-      violations: [{ propertyPath: "unknown_field", message: "Champ inconnu" }],
+      violations: [{ propertyPath: "unknown_field", message: "Unknown field" }],
     } as any
 
     const result = addErrorFromViolations(form, apiError)
 
     expect(result.inputs.name.violations).toEqual([])
+    expect(result.errors).toEqual(["Unknown field"])
   })
 
-  it("adds no global error when propertyPath is empty", () => {
-    // With the current implementation, `if (!propertyPath) return` prevents
-    // d'atteindre la branche `propertyPath === ""`. Ce test documente ce comportement.
-    const form = createForm(
-      {
-        inputs: {
-          name: {},
-        },
-      },
-      { name: "Bob" }
-    )
+  it("sends violations with an empty propertyPath to form.errors", () => {
+    const form = createForm({ inputs: { a: {} } })
 
     const apiError = {
-      violations: [{ propertyPath: "", message: "General error" }],
+      violations: [{ propertyPath: "", message: "Global" }, { message: "No path" }],
     } as any
 
     const result = addErrorFromViolations(form, apiError)
 
-    // The violation is silently dropped — no error is added
-    expect(result.errors ?? []).toHaveLength(0)
+    expect(result.errors).toEqual(["Global", "No path"])
+    expect(result.inputs.a.violations).toEqual([])
+  })
+
+  it("falls back to an English message when a violation has none", () => {
+    const form = createForm({ inputs: { a: {} } })
+
+    const result = addErrorFromViolations(form, {
+      violations: [{ propertyPath: "" }],
+    } as any)
+
+    expect(result.errors).toEqual(["Invalid value"])
+  })
+
+  it.each(["address.street", "address[0].street", "address.0.street"])(
+    "puts the nested violation %s on the parent field",
+    (propertyPath) => {
+      const form = createForm({ inputs: { address: {}, name: {} } })
+
+      const result = addErrorFromViolations(form, {
+        violations: [{ propertyPath, message: "nested" }],
+      } as any)
+
+      expect(result.inputs.address.violations).toEqual([
+        { propertyPath, message: "nested" },
+      ])
+      expect(result.inputs.name.violations).toEqual([])
+      expect(result.errors).toEqual([])
+    }
+  )
+
+  it("prefers the input whose key matches the longest part of the path", () => {
+    const form = createForm({
+      inputs: { address: {}, "address.street": {} },
+    })
+
+    const result = addErrorFromViolations(form, {
+      violations: [{ propertyPath: "address.street.number", message: "nested" }],
+    } as any)
+
+    expect(result.inputs["address.street"].violations).toHaveLength(1)
+    expect(result.inputs.address.violations).toEqual([])
+  })
+
+  it("resets form.errors on each call instead of accumulating", () => {
+    const form = createForm({ inputs: { a: {} } })
+    const apiError = { violations: [{ propertyPath: "", message: "Global" }] } as any
+
+    const first = addErrorFromViolations(form, apiError)
+    const second = addErrorFromViolations(first, apiError)
+
+    expect(second.errors).toEqual(["Global"])
+    expect(addErrorFromViolations(second, { violations: [] } as any).errors).toEqual(
+      []
+    )
+  })
+
+  it("does not leak form errors to another form", () => {
+    const form = createForm({ inputs: { a: {} } })
+    const other = createForm({ inputs: { b: {} } })
+
+    addErrorFromViolations(form, {
+      violations: [{ propertyPath: "", message: "Global" }],
+    } as any)
+
+    expect(other.errors).toEqual([])
+    expect(createForm({ inputs: { c: {} } }).errors).toEqual([])
   })
 
   it("returns the form unchanged when apiError carries no violations", () => {

@@ -128,8 +128,12 @@ export function ValidationPage() {
         <p>
           <code>addErrorFromViolations</code> maps each one onto the field named by
           its <code>propertyPath</code>, so a server-side rule is displayed exactly
-          like a local one. A violation with an empty path becomes a form-level error
-          instead.
+          like a local one. A nested path such as <code>address.street</code> or{" "}
+          <code>items[0].name</code> lands on the parent field (<code>address</code>,{" "}
+          <code>items</code>). A violation with an empty path, or a path no field
+          matches, becomes a form-level error in <code>form.errors</code>, displayed
+          by <code>FormErrors</code>. Each call replaces the previous errors rather
+          than adding to them.
         </p>
         <CodeBlock>{apiErrors}</CodeBlock>
       </Section>
@@ -170,7 +174,10 @@ setTranslation({ "This field is required": "Ce champ est obligatoire" })`
 
 const apiErrors = `// { "violations": [{ "propertyPath": "email", "message": "Already taken" }] }
 const withErrors = addErrorFromViolations(form, apiError)
-// → the message appears under the email field`
+// → the message appears under the email field
+
+// { "violations": [{ "propertyPath": "", "message": "Fully booked" }] }
+// → withErrors.errors is ["Fully booked"], shown above the submit button`
 
 const zod = `inputs: {
   email: {
