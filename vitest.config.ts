@@ -24,6 +24,9 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
+    // The gallery tests render every controller (about 3 s here): the 5 s
+    // default fails on a loaded CI runner without anything being broken.
+    testTimeout: 30_000,
     // The documentation site lives in the repo and is tested with it.
     include: ["src/**/*.test.{ts,tsx}", "docs/**/*.test.{ts,tsx}"],
   },
