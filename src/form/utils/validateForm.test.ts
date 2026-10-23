@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { createForm } from "@/form/utils/createForm"
 import { validateForm } from "@/form/utils/validateForm"
 import { formHasError } from "@/form/utils/formHasError"
+import { SelectInputController } from "@/form/component/InputController/SelectInputController"
 
 describe("validateForm", () => {
   it("returns the form unchanged when no validator is defined", () => {
@@ -160,5 +161,126 @@ describe("validateForm", () => {
 
     expect(result.inputs.email.violations).toHaveLength(0)
     expect(formHasError(result)).toBe(false)
+  })
+
+  describe("required", () => {
+    it.each([
+      ["undefined", undefined],
+      ["null", null],
+      ["an empty string", ""],
+      ["an empty array", []],
+    ])("adds a violation when a required input is %s", (_, value) => {
+      const form = createForm(
+        { inputs: { name: { required: true } } },
+        { name: value }
+      )
+
+      const result = validateForm(form)
+
+      expect(result.inputs.name.violations).toHaveLength(1)
+      expect(result.inputs.name.violations![0].message).toBe(
+        "This field is required"
+      )
+      expect(formHasError(result)).toBe(true)
+    })
+
+    it("applies whatever the controller", () => {
+      const form = createForm({
+        inputs: {
+          a: {
+            required: true,
+            controller: SelectInputController,
+            valueOptions: [{ label: "x", value: "x" }],
+          },
+        },
+      })
+
+      expect(formHasError(validateForm(form))).toBe(true)
+    })
+
+    it.each([
+      ["false", false],
+      ["0", 0],
+      ["a string", "x"],
+      ["a non-empty array", ["x"]],
+    ])("does not consider %s as empty", (_, value) => {
+      const form = createForm(
+        { inputs: { name: { required: true } } },
+        { name: value }
+      )
+
+      expect(formHasError(validateForm(form))).toBe(false)
+    })
+
+    it("does not run the validator of an empty required input", () => {
+      const validator = vi.fn()
+      const form = createForm({
+        inputs: { name: { required: true, validator } },
+      })
+
+      const result = validateForm(form)
+
+      expect(validator).not.toHaveBeenCalled()
+      expect(result.inputs.name.violations).toHaveLength(1)
+    })
+
+    it("still runs the validator of a filled required input", () => {
+      const form = createForm(
+        {
+          inputs: {
+            email: {
+              required: true,
+              validator: () => {
+                throw new Error("Email invalide")
+              },
+            },
+          },
+        },
+        { email: "invalid" }
+      )
+
+      const result = validateForm(form)
+
+      expect(result.inputs.email.violations).toHaveLength(1)
+      expect(result.inputs.email.violations![0].message).toBe("Email invalide")
+    })
+
+    it("skips hidden and generated inputs", () => {
+      const form = createForm({
+        inputs: {
+          typeHidden: { required: true, type: "hidden" },
+          hiddenByLogic: { required: true, hidden: () => true },
+          generated: { required: true, generatedValue: true },
+        },
+      })
+
+      expect(formHasError(validateForm(form))).toBe(false)
+    })
+
+    it("checks an input whose hidden() returns false", () => {
+      const form = createForm({
+        inputs: { name: { required: true, hidden: () => false } },
+      })
+
+      expect(formHasError(validateForm(form))).toBe(true)
+    })
+
+    it("skips inputs outside the current group", () => {
+      const form = createForm(
+        {
+          groups: ["contact"],
+          inputs: {
+            firstName: { required: true, groups: ["identity"] },
+            email: { required: true, groups: ["contact"] },
+          },
+        },
+        { email: "a@b.c" }
+      )
+
+      const result = validateForm(form)
+
+      expect(result.inputs.firstName.violations ?? []).toHaveLength(0)
+      expect(formHasError(result)).toBe(false)
+    })
   })
 })
