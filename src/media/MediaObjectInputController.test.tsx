@@ -411,6 +411,35 @@ describe("MediaObjectInputController", () => {
     expect(screen.getByRole("img")).toBeTruthy()
   })
 
+  describe("previews a JSON-LD value", () => {
+    it("shows the picture of an IRI", async () => {
+      const port = buildPort()
+      const iri = await seedMedia(port)
+      const { container } = renderController(port, { value: iri })
+
+      expect(getImageSource(container)).toBe(PNG_DATA_URL)
+    })
+
+    it("shows the picture of an embedded media object", async () => {
+      const port = buildPort()
+      const iri = await seedMedia(port)
+      const { container } = renderController(port, { value: { "@id": iri } })
+
+      expect(getImageSource(container)).toBe(PNG_DATA_URL)
+    })
+
+    it("shows the picture of an embedded media object in readonly", async () => {
+      const port = buildPort()
+      const iri = await seedMedia(port)
+      const { container } = renderController(port, {
+        value: { "@id": iri },
+        readonly: true,
+      })
+
+      expect(getImageSource(container)).toBe(PNG_DATA_URL)
+    })
+  })
+
   describe("follows formInput.value", () => {
     const rerenderController = (
       rerender: (ui: ReactNode) => void,

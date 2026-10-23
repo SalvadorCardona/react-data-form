@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useId, useRef, useState } from "react"
-import { getLdIri } from "jsonld-item"
+import { BaseJsonLdItemInterface, getLdIri } from "jsonld-item"
 import { Download, FileText, Loader2, Pencil, Upload, X } from "lucide-react"
 import { InputControllerInterface } from "@/form/InputControllerInterface"
 import { FormInputInterface } from "@/form/FormInputInterface"
@@ -14,7 +14,13 @@ import {
   useMediaObjectPort,
 } from "@/media/MediaObjectPortInterface"
 
-export interface MediaObjectInputControllerInputInterface extends FormInputInterface {
+/**
+ * The value is the IRI of the media, or the media object embedded by the API
+ * (`{ "@id": "/api/media_objects/1", contentUrl: … }`).
+ */
+export interface MediaObjectInputControllerInputInterface extends FormInputInterface<
+  string | BaseJsonLdItemInterface | null
+> {
   gallery?: string
   /** Accepted file types. Defaults to images (PNG/JPG). */
   acceptedTypes?: MediaObjectAcceptedFileType[]
@@ -242,7 +248,9 @@ const MediaObjectInputControllerView = ({
     setPreviousValueIri(valueIri)
     setPendingPreview(null)
   }
-  const preview = pendingPreview ?? formInput.value
+  // An embedded media object is previewed through its IRI: the port only
+  // knows how to turn an IRI into a URL.
+  const preview = pendingPreview ?? valueIri
 
   useEffect(() => {
     if (!valueIri) return
