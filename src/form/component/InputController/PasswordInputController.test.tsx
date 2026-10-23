@@ -24,10 +24,10 @@ describe("PasswordInputController", () => {
     const input = getPasswordInput(container)
     expect(input.type).toBe("password")
 
-    fireEvent.click(screen.getByRole("button", { name: "Afficher le mot de passe" }))
+    fireEvent.click(screen.getByRole("button", { name: "Show password" }))
     expect(input.type).toBe("text")
 
-    fireEvent.click(screen.getByRole("button", { name: "Masquer le mot de passe" }))
+    fireEvent.click(screen.getByRole("button", { name: "Hide password" }))
     expect(input.type).toBe("password")
   })
 

@@ -46,10 +46,10 @@ describe("FormArrayInputController, removing a block", () => {
       { id: "2", title: "two" },
     ])
 
-    await user.click(screen.getAllByLabelText("remove")[0])
+    await user.click(screen.getAllByLabelText("Remove")[0])
 
     expect(lastValue(onChange)).toEqual([{ id: "2", title: "two" }])
-    expect(screen.getAllByLabelText("remove")).toHaveLength(1)
+    expect(screen.getAllByLabelText("Remove")).toHaveLength(1)
   })
 
   it("removes a JSON-LD block that only carries @id", async () => {
@@ -59,19 +59,19 @@ describe("FormArrayInputController, removing a block", () => {
       { "@id": "/api/blocks/2", title: "two" },
     ])
 
-    await user.click(screen.getAllByLabelText("remove")[0])
+    await user.click(screen.getAllByLabelText("Remove")[0])
 
     expect(lastValue(onChange)).toEqual([{ "@id": "/api/blocks/2", title: "two" }])
-    expect(screen.getAllByLabelText("remove")).toHaveLength(1)
+    expect(screen.getAllByLabelText("Remove")).toHaveLength(1)
   })
 
   it("removes a block without any identifier, such as the initial blank one", async () => {
     const user = userEvent.setup()
     const { onChange } = renderController([{ title: "one" }, { title: "two" }])
 
-    await user.click(screen.getAllByLabelText("remove")[1])
+    await user.click(screen.getAllByLabelText("Remove")[1])
 
     expect(lastValue(onChange)).toEqual([{ title: "one" }])
-    expect(screen.getAllByLabelText("remove")).toHaveLength(1)
+    expect(screen.getAllByLabelText("Remove")).toHaveLength(1)
   })
 })

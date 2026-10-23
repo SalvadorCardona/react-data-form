@@ -3,6 +3,8 @@ import { fireEvent, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import * as library from "react-data-form"
 import * as media from "react-data-form/media"
+import { fr, translationKeys } from "react-data-form/i18n"
+import { getTranslations } from "react-mini-i18n"
 import { App } from "./App"
 
 /**
@@ -24,6 +26,34 @@ const exportedControllers = Object.entries({ ...library, ...media })
       /^[A-Z]\w*InputController$/.test(name) && typeof value === "function"
   )
   .map(([name]) => name)
+
+/**
+ * What a reader sees or hears off the page: text outside the code samples, and
+ * the accessible names and placeholders.
+ */
+const visibleStrings = (root: HTMLElement): string[] => {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+  const texts: string[] = []
+  while (walker.nextNode()) {
+    const node = walker.currentNode
+    if (node.parentElement?.closest("pre, code")) continue
+    texts.push(node.textContent ?? "")
+  }
+  const attributes = [
+    ...root.querySelectorAll("[aria-label], [placeholder]"),
+  ].flatMap((element) => [
+    element.getAttribute("aria-label") ?? "",
+    element.getAttribute("placeholder") ?? "",
+  ])
+  return [...texts, ...attributes].map((text) => text.trim()).filter(Boolean)
+}
+
+/** A translation key left as is: `form.array.add`, `drag`, `create`… */
+const looksLikeKey = (text: string) =>
+  /^[a-z]+([._][a-z]+)+$/.test(text) ||
+  ["drag", "order", "collapse", "expand", "remove", "create", "update"].includes(
+    text
+  )
 
 describe("the documentation site", () => {
   afterEach(() => document.documentElement.classList.remove("dark"))
@@ -74,6 +104,25 @@ describe("the documentation site", () => {
     // A controller that honours `readonly` is shown that way too.
     const email = document.getElementById("EmailInputController")!
     expect(within(email).getByText("Read-only")).toBeInTheDocument()
+  })
+
+  it("shows no translation key on screen, with no dictionary loaded", async () => {
+    // The site loads none: what it shows is what an application gets by default.
+    expect(getTranslations()).toEqual({})
+    const user = userEvent.setup()
+
+    const gallery = renderAt("?page=controllers")
+    expect(visibleStrings(gallery.container).filter(looksLikeKey)).toEqual([])
+    gallery.unmount()
+
+    renderAt("?page=multi-forms")
+    await user.click(screen.getByRole("button", { name: "Add a block" }))
+    // The block palette is not part of the gallery: its title and description.
+    const palette = await screen.findByRole("dialog")
+    expect(
+      within(palette).getByText("Pick the shape this entry takes.")
+    ).toBeVisible()
+    expect(visibleStrings(palette).filter(looksLikeKey)).toEqual([])
   })
 
   it("renders the controller gallery in the dark theme as well", () => {
@@ -152,6 +201,21 @@ describe("the documentation site", () => {
       screen.getByRole("heading", { name: "Validation & errors", level: 1 })
     ).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /Book/ })).toBeInTheDocument()
+  })
+
+  it("lists every translation key with its French wording", () => {
+    renderAt("?page=translations")
+    expect(
+      screen.getByRole("heading", { name: "Translations", level: 1 })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/import \{ fr \} from "react-data-form\/i18n"/)
+    ).toBeInTheDocument()
+
+    const rows = screen.getAllByRole("row").slice(1)
+    expect(rows).toHaveLength(translationKeys.length)
+    expect(within(rows[0]).getByText(translationKeys[0])).toBeInTheDocument()
+    expect(within(rows[0]).getByText(fr[translationKeys[0]])).toBeInTheDocument()
   })
 
   it("falls back to the overview for an unknown page", () => {

@@ -11,6 +11,7 @@ export default defineConfig({
     // `dist` exists, so the name is resolved to the source, as the site does.
     alias: [
       { find: /^react-data-form\/group$/, replacement: `${src}/group/index.ts` },
+      { find: /^react-data-form\/i18n$/, replacement: `${src}/i18n/index.ts` },
       { find: /^react-data-form\/media$/, replacement: `${src}/media/index.ts` },
       { find: /^react-data-form\/step$/, replacement: `${src}/step/index.ts` },
       { find: /^react-data-form$/, replacement: `${src}/index.ts` },

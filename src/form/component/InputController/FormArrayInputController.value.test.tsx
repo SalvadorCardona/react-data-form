@@ -61,13 +61,13 @@ const renderController = (
 const lastValue = (onChange: ReturnType<typeof vi.fn>) =>
   onChange.mock.lastCall?.[0].value
 
-const addButton = () => screen.getByRole("button", { name: /form.array.add/ })
+const addButton = () => screen.getByRole("button", { name: /Add a block/ })
 
 describe("FormArrayInputController, value", () => {
   it("renders no block when the value is empty", () => {
     renderController(undefined)
 
-    expect(screen.queryAllByLabelText("remove")).toHaveLength(0)
+    expect(screen.queryAllByLabelText("Remove")).toHaveLength(0)
   })
 
   it("adds only the new block to an empty value", async () => {
@@ -77,7 +77,7 @@ describe("FormArrayInputController, value", () => {
     await user.click(addButton())
 
     expect(lastValue(onChange)).toEqual([{ id: expect.any(String) }])
-    expect(screen.getAllByLabelText("remove")).toHaveLength(1)
+    expect(screen.getAllByLabelText("Remove")).toHaveLength(1)
   })
 
   it("follows a value changed from outside", () => {
@@ -87,10 +87,10 @@ describe("FormArrayInputController, value", () => {
       { id: "1", title: "one" },
       { id: "2", title: "two" },
     ])
-    expect(screen.getAllByLabelText("remove")).toHaveLength(2)
+    expect(screen.getAllByLabelText("Remove")).toHaveLength(2)
 
     rerenderWith(undefined)
-    expect(screen.queryAllByLabelText("remove")).toHaveLength(0)
+    expect(screen.queryAllByLabelText("Remove")).toHaveLength(0)
   })
 
   it("lets blocks be added below min", async () => {

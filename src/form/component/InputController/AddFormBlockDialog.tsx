@@ -51,14 +51,14 @@ export const AddFormBlockDialog = ({
         }
       >
         <CirclePlus />
-        {translate("form.array.add")}
+        {translate("Add a block")}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{translate("form.array.add.title")}</DialogTitle>
+          <DialogTitle>{translate("Add a block")}</DialogTitle>
           <DialogDescription>
-            {translate("form.array.add.description")}
+            {translate("Pick the shape this entry takes.")}
           </DialogDescription>
         </DialogHeader>
 

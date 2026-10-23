@@ -63,7 +63,7 @@ describe("FormArrayInputController, collapsing a block", () => {
     // Only the first block folded: its header stays, its body is gone.
     expect(screen.getAllByLabelText("Block body")).toHaveLength(1)
     expect(toggles()[0]).toHaveAttribute("aria-expanded", "false")
-    expect(screen.getAllByLabelText("order")).toHaveLength(2)
+    expect(screen.getAllByLabelText("Order")).toHaveLength(2)
 
     await user.click(toggles()[0])
 
@@ -77,9 +77,9 @@ describe("FormArrayInputController, collapsing a block", () => {
 
     await user.click(toggles()[0])
 
-    expect(screen.getAllByLabelText("drag")).toHaveLength(2)
+    expect(screen.getAllByLabelText("Drag")).toHaveLength(2)
 
-    const orderInput = screen.getAllByLabelText("order")[0].querySelector("input")
+    const orderInput = screen.getAllByLabelText("Order")[0].querySelector("input")
     expect(orderInput).toHaveValue(0)
   })
 
@@ -117,7 +117,7 @@ describe("FormArrayInputController, collapsing a block", () => {
     const user = userEvent.setup()
     renderController({ closedByDefault: true })
 
-    await user.click(screen.getByRole("button", { name: /form.array.add/ }))
+    await user.click(screen.getByRole("button", { name: /Add a block/ }))
 
     // The two initial blocks stay folded, the new one shows its body.
     expect(screen.getAllByLabelText("Block body")).toHaveLength(1)

@@ -378,7 +378,7 @@ export const DateRangeInputController = ({
                 2
               </div>
               <Label className="text-sm font-medium text-foreground">
-                {translate("Date de fin")}
+                {translate("End date")}
               </Label>
             </div>
 
