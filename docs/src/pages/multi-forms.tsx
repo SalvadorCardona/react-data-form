@@ -204,6 +204,12 @@ export function MultiFormsPage() {
             the block body when the shape declares it as a field.
           </li>
           <li>
+            <code>min</code> / <code>max</code> — bounds on the number of blocks.{" "}
+            <code>max</code> disables adding past it; <code>min</code> is checked on
+            submission and raises a violation, so blocks can always be added up to
+            it.
+          </li>
+          <li>
             <code>defaultValue</code> — the entries the field starts with, as a value
             or a function returning one. Used when the form is built without data for
             that field.
