@@ -115,6 +115,10 @@ setFormConfig({
 })
 ```
 
+`label.error` is shown after a submission that fails validation, and the first
+invalid field gets the focus; `label.success` is announced after a successful
+one. Set `showSuccess: false` when your application confirms the save itself.
+
 ### Translation
 
 Labels go through

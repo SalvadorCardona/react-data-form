@@ -67,6 +67,9 @@ function ReadonlyField({
     components: { formSubmitAction: () => null },
     inputs: { field: input, ...fixture?.inputs },
     onSubmit: (data) => data,
+    // Clicking the hidden submit input sends the form: "Saved" is not a change
+    // made by the field.
+    showSuccess: false,
   }
   const formContext = useForm({ form, data: fixture?.data })
 
