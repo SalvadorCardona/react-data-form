@@ -276,6 +276,21 @@ describe("MediaObjectInputController", () => {
     await waitFor(() => expect(port.medias.size).toBe(0))
   })
 
+  it("reports a media whose description fails to load", async () => {
+    const failure = new Error("404")
+    const port = buildPort({ describe: () => Promise.reject(failure) })
+    const iri = await seedMedia(port)
+    const { container } = renderController(port, { value: iri })
+
+    await waitFor(() =>
+      expect(port.onError).toHaveBeenCalledWith(
+        defaultMediaObjectLabels.describeFailed,
+        failure
+      )
+    )
+    expect(getImageSource(container)).toBe(PNG_DATA_URL)
+  })
+
   it("empties the field of a real form when the picture is deleted", async () => {
     const port = buildPort()
     const iri = await seedMedia(port)

@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react"
+import { FC, useEffect, useMemo, useState } from "react"
 import { getLdIri } from "jsonld-item"
 import { AlertCircle, Loader2, Upload } from "lucide-react"
 import type { InputControllerInterface } from "@/form/InputControllerInterface"
@@ -6,6 +6,8 @@ import type { FormInputInterface } from "@/form/FormInputInterface"
 import { Item, ItemContent } from "@/ui/item"
 import { cn } from "@/ui/cn"
 import {
+  DOCUMENT_ACCEPTED_TYPES,
+  MediaObjectAcceptedFileType,
   MediaObjectDocumentInputController,
   MediaObjectInputController,
 } from "@/media/MediaObjectInputController"
@@ -18,7 +20,24 @@ import {
 export interface MediaObjectGalleryInputControllerInputInterface extends FormInputInterface<
   string | null | undefined
 > {
+  /**
+   * Extensions accepted for the media of the gallery (`"png"` or `".png"`).
+   * Only the known formats ({@link DOCUMENT_ACCEPTED_TYPES}) are kept; without
+   * any, the item controller keeps its own defaults.
+   */
   allowedExtension?: string[]
+}
+
+const toAcceptedTypes = (
+  extensions: string[] | undefined
+): MediaObjectAcceptedFileType[] | undefined => {
+  const wanted = (extensions ?? []).map(
+    (ext) => "." + ext.replace(/^\./, "").toLowerCase()
+  )
+  const types = DOCUMENT_ACCEPTED_TYPES.filter((t) =>
+    t.extensions.some((ext) => wanted.includes(ext))
+  )
+  return types.length > 0 ? types : undefined
 }
 
 export interface MediaObjectGalleryInputControllerOptions {
@@ -74,6 +93,13 @@ const MediaObjectGalleryInputControllerView = ({
   const gallery = loadedGallery?.iri === uri ? loadedGallery : undefined
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Keyed on the extensions themselves: a new array on every render would
+  // reload each item's description.
+  const allowedExtensionKey = formInput.allowedExtension?.join(",")
+  const acceptedTypes = useMemo(
+    () => toAcceptedTypes(allowedExtensionKey?.split(",")),
+    [allowedExtensionKey]
+  )
 
   async function createGallery() {
     setIsLoading(true)
@@ -108,13 +134,32 @@ const MediaObjectGalleryInputControllerView = ({
     }
   }
 
+  // A deleted media leaves the list at once: reading the gallery now would
+  // race the removal still running on the port and bring the media back.
+  const onItemChange = (item: string, value: unknown) => {
+    if (value === null && gallery) {
+      setGallery({ ...gallery, items: gallery.items.filter((e) => e !== item) })
+      return
+    }
+    refreshGallery()
+  }
+
   // Loads the gallery already attached to the field: only its IRI matters here.
   useEffect(() => {
     if (uri && !gallery) {
       let cancelled = false
-      port.gallery.read(uri).then((read) => {
-        if (!cancelled) setGallery(read)
-      })
+      port.gallery.read(uri).then(
+        (read) => {
+          if (cancelled) return
+          setError(null)
+          setGallery(read)
+        },
+        (err) => {
+          if (cancelled) return
+          setError(labels.galleryLoadFailed)
+          port.onError?.(labels.galleryLoadFailed, err)
+        }
+      )
       return () => {
         cancelled = true
       }
@@ -143,7 +188,8 @@ const MediaObjectGalleryInputControllerView = ({
             <AlertCircle className="w-10 h-10 text-destructive" />
             <p className="text-sm text-destructive">{error}</p>
             <button
-              onClick={createGallery}
+              type="button"
+              onClick={uri ? refreshGallery : createGallery}
               className="text-sm text-primary hover:underline"
             >
               {labels.retry}
@@ -188,11 +234,6 @@ const MediaObjectGalleryInputControllerView = ({
               <span className="font-medium text-foreground">
                 {isLoading ? labels.galleryCreating : labels.galleryCreateTitle}
               </span>
-              {!isLoading && (
-                <span className="text-muted-foreground">
-                  {labels.galleryCreateHint}
-                </span>
-              )}
             </div>
             {!isLoading &&
               formInput?.allowedExtension &&
@@ -227,8 +268,13 @@ const MediaObjectGalleryInputControllerView = ({
           (gallery?.items ?? []).map((e) => (
             <ItemController
               key={"item-gallery-" + e}
-              formInput={{ value: e, gallery: uri, readonly: formInput.readonly }}
-              onChange={() => refreshGallery()}
+              formInput={{
+                value: e,
+                gallery: uri,
+                readonly: formInput.readonly,
+                acceptedTypes,
+              }}
+              onChange={(changed) => onItemChange(e, changed.value)}
             />
           ))}
 
@@ -237,7 +283,12 @@ const MediaObjectGalleryInputControllerView = ({
             key={
               (gallery?.items?.length ?? "") + (gallery?.iri ?? "") + "item-galery"
             }
-            formInput={{ value: undefined, for: "gallery", gallery: uri }}
+            formInput={{
+              value: undefined,
+              for: "gallery",
+              gallery: uri,
+              acceptedTypes,
+            }}
             onChange={() => refreshGallery()}
           />
         )}
