@@ -4,6 +4,7 @@ export default defineConfig({
   entry: {
     index: "src/index.ts",
     "group/index": "src/group/index.ts",
+    "hydra/index": "src/hydra/index.ts",
     "i18n/index": "src/i18n/index.ts",
     "media/index": "src/media/index.ts",
     "step/index": "src/step/index.ts",

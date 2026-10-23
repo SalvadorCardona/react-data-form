@@ -48,6 +48,7 @@ src/
   form/        # useForm, FormElement, providers, hooks — le cœur
   ui/          # composants shadcn (style base-luma)
   group/       # sections repliables — entrée `react-data-form/group`
+  hydra/       # formulaire généré depuis la doc Hydra — entrée `react-data-form/hydra`
   media/       # upload, galerie, éditeur d'image — entrée `react-data-form/media`
   step/        # formulaires multi-étapes — entrée `react-data-form/step`
   internal/    # utilitaires internes non exportés
@@ -56,7 +57,7 @@ components.json # config shadcn (alias @/ui, style base-luma, iconLibrary lucide
 .changeset/    # changelogs en attente, un fichier par changement publiable
 ```
 
-Les cinq points d'entrée publiés (`.`, `./group`, `./i18n`, `./media`, `./step`)
+Les six points d'entrée publiés (`.`, `./group`, `./hydra`, `./i18n`, `./media`, `./step`)
 correspondent chacun à une entrée dans `tsdown.config.ts` — un nouveau
 sous-module doit être déclaré aux deux endroits (`src/<nom>/index.ts` et
 `tsdown.config.ts`).
