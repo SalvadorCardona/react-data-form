@@ -196,4 +196,27 @@ describe("MediaObjectInputController", () => {
     expect(getFileInput(container)).toBeInTheDocument()
     expect(screen.queryByLabelText(defaultMediaObjectLabels.deleteAction)).toBeNull()
   })
+
+  it("displays the URL returned by the port as is", async () => {
+    const port = buildPort({ toUrl: () => "/api/media_objects/12/content" })
+    const iri = await seedMedia(port)
+    const { container } = renderController(port, {
+      value: iri,
+      readonly: true,
+    })
+
+    expect(getImageSource(container)).toBe("/api/media_objects/12/content")
+  })
+
+  it("renders a local fallback when the port has no URL", async () => {
+    const port = buildPort({ toUrl: () => undefined })
+    const iri = await seedMedia(port)
+    const { container } = renderController(port, {
+      value: iri,
+      readonly: true,
+    })
+
+    expect(container.querySelector("img")).toBeNull()
+    expect(screen.getByRole("img")).toBeTruthy()
+  })
 })

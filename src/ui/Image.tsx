@@ -1,9 +1,9 @@
-import { BaseJsonLdItemInterface } from "jsonld-item"
-import { mediaObjetToUrl } from "@/internal/utils/mediaObjetToUrl"
+import { BaseJsonLdItemInterface, getLdIri } from "jsonld-item"
 import { ComponentProps, useEffect, useState } from "react"
 import { cva, VariantProps } from "class-variance-authority"
 import { cn } from "@/ui/cn"
 import { ImageOff } from "lucide-react"
+import { translate } from "react-mini-i18n"
 
 const imageVariants = cva("object-contain", {
   variants: {
@@ -28,9 +28,11 @@ export const Image = ({
   className,
   variant,
   src,
+  onError,
   ...props
 }: ImagePropsInterface) => {
-  const url = mediaObjetToUrl(src)
+  // The source is used as is: resolving a media to a URL is the media port's job.
+  const url = src ? getLdIri(src) : undefined
   const [hasError, setHasError] = useState(false)
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export const Image = ({
     return (
       <div
         role="img"
-        aria-label={alt ?? "Image indisponible"}
+        aria-label={alt ?? translate("Image unavailable")}
         className={cn(
           imageVariants({ variant, className }),
           "flex items-center justify-center bg-muted text-muted-foreground"
@@ -56,9 +58,12 @@ export const Image = ({
     <img
       src={url}
       alt={alt ?? ""}
-      onError={() => setHasError(true)}
       className={cn(imageVariants({ variant, className }))}
       {...props}
+      onError={(event) => {
+        onError?.(event)
+        setHasError(true)
+      }}
     />
   )
 }
