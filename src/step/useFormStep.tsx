@@ -12,6 +12,7 @@ import { validateForm } from "@/form/utils/validateForm"
 import { formHasError } from "@/form/utils/formHasError"
 import getFormInputsFromForm from "@/form/utils/getFormInputsFromForm"
 import { getSortedItemGroup } from "@/group/getSortedItemGroup"
+import { useEffectCallback } from "@/internal/hook/useEffectCallback"
 
 interface UseFormStepResult {
   currentStep?: FormStep
@@ -48,7 +49,7 @@ export function useFormStep(): UseFormStepResult {
   const steps = getSortedItemGroup(mainForm.groupOption)
   const submitAttemptedRef = useRef(false)
 
-  useEffect(() => {
+  const showStepWithViolation = useEffectCallback(() => {
     if (!submitAttemptedRef.current) return
     submitAttemptedRef.current = false
 
@@ -56,7 +57,11 @@ export function useFormStep(): UseFormStepResult {
     if (stepWithError && stepWithError.group !== currentStep?.group) {
       formContext.updateForm(applyStep({ ...mainForm }, stepWithError))
     }
-  }, [mainForm.version])
+  })
+
+  useEffect(() => {
+    showStepWithViolation()
+  }, [showStepWithViolation, mainForm.version])
 
   function goToPrevStep() {
     if (!previousStep) return

@@ -1,11 +1,11 @@
-import {
-  FormBuiltInterface,
-  FormInterfaceValueType,
-} from "@/form/FormInterface"
+import { FormBuiltInterface, FormInterfaceValueType } from "@/form/FormInterface"
 import { FormInputInterface } from "@/form/FormInputInterface"
 import { getDataFromForm } from "@/form/utils/getDataFromForm"
 import getFormInputInForm from "@/form/utils/getFormInputInForm"
-import { setDataFromKey } from "@/internal/utils/object/nestedProperty"
+import {
+  isNestedProperty,
+  setDataFromKey,
+} from "@/internal/utils/object/nestedProperty"
 
 export function updateFormByFormInput<
   Data extends FormInterfaceValueType = FormInterfaceValueType,
@@ -28,23 +28,22 @@ export function updateFormByFormInput<
     return form
   }
 
-  const newFormInpu = {
+  const updatedFormInput = {
     ...currentFormInput,
     ...newFormInput,
   }
 
-  const updatedInputs = setDataFromKey(form.inputs, newFormInput.name, newFormInpu)
+  // The input is replaced where getFormInputInForm found it: a dotted name may
+  // be a plain key as well as a nested path.
+  const updatedInputs = isNestedProperty(form.inputs, newFormInput.name)
+    ? setDataFromKey(form.inputs, newFormInput.name, updatedFormInput)
+    : { ...form.inputs, [newFormInput.name]: updatedFormInput }
 
   const updatedForm = {
     ...form,
     inputs: updatedInputs,
   }
 
-  currentFormInput.value = newFormInput.value
-
   // Recompute the data from the updated form
-  updatedForm.data = getDataFromForm(updatedForm)
-  form.data = updatedForm.data
-
-  return updatedForm
+  return { ...updatedForm, data: getDataFromForm(updatedForm) }
 }

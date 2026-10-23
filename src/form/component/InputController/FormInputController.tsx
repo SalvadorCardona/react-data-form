@@ -5,6 +5,7 @@ import useForm from "@/form/hook/useForm"
 import FormElement from "@/form/component/form/FormElement"
 import { PropsWithChildren, useEffect, useRef } from "react"
 import useFormContext from "@/form/provider/useFormContext"
+import { useEffectCallback } from "@/internal/hook/useEffectCallback"
 
 interface FormInputControllerPropsInterface
   extends
@@ -53,9 +54,12 @@ export const FormInputController = ({
   useEffect(() => registerSubForm?.(() => validateRef.current()), [registerSubForm])
 
   // On mount only: a block opened by a failed submission shows why
-  useEffect(() => {
+  const validateMountedForm = useEffectCallback(() => {
     if (validateOnMount) form.validate()
-  }, [])
+  })
+  useEffect(() => {
+    validateMountedForm()
+  }, [validateMountedForm])
 
   return (
     <>

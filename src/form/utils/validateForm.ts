@@ -21,9 +21,13 @@ function isHiddenInput(formInput: FormInputInterface): boolean {
 export function validateForm<
   Data extends FormInterfaceValueType = FormInterfaceValueType,
 >(form: FormBuiltInterface<Data>): FormBuiltInterface<Data> {
-  const newForm = { ...form }
+  if (!form.inputs) return { ...form }
 
-  if (!newForm.inputs) return newForm
+  // Every validated input is copied: the inputs of the given form are left as
+  // they are.
+  const inputs: Record<string, FormInputInterface> = { ...form.inputs }
+  const newForm = { ...form, inputs }
+
   getFormInputsFromForm(newForm)
     .filter((e) => e.generatedValue !== true)
     .forEach((formInput) => {
@@ -31,8 +35,11 @@ export function validateForm<
         return
       }
 
-      const currentFormInput = newForm.inputs[formInput.name]
-      currentFormInput.violations = []
+      const currentFormInput = {
+        ...newForm.inputs[formInput.name],
+        violations: [] as ViolationInterface[],
+      }
+      inputs[formInput.name] = currentFormInput
 
       if (
         currentFormInput.required &&
@@ -117,5 +124,5 @@ export function validateForm<
       }
     })
 
-  return newForm
+  return newForm as FormBuiltInterface<Data>
 }

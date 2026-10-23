@@ -11,6 +11,14 @@ import { getFormConfig } from "@/form/FormConfig"
 import { ValueOptionInterface } from "@/form/utils/valueOption"
 import useDebounceCallback from "@/internal/hook/useDebounceCallback"
 import { ActionList } from "@/internal/action/ActionList"
+import { useEffectCallback } from "@/internal/hook/useEffectCallback"
+
+const sameItems = <T,>(a: T[] | undefined, b: T[] | undefined) =>
+  a === b ||
+  (!!a &&
+    !!b &&
+    a.length === b.length &&
+    a.every((item, index) => item === b[index]))
 
 const BaseDecorator = (props: BaseDecoratorFormInputInterface) => {
   return <div className={props.className}>{props.children}</div>
@@ -23,14 +31,42 @@ export default function InputControllerProvider({
 }) {
   const formContext = useFormContext()
   const form = formContext.form
+
+  // The field stays mounted when the form changes, focus and local state
+  // included. Only a new value brought by a new version of the form
+  // (updateData, updateForm, async load) mounts it again: controllers may read
+  // their value once, on mount. Its own changes keep the same version.
+  const [mount, setMount] = useState({
+    version: form.version,
+    value: formInput.value,
+    key: 0,
+  })
+  const versionChanged = form.version !== mount.version
+  const valueChanged = !Object.is(formInput.value, mount.value)
+  if (versionChanged || valueChanged) {
+    setMount({
+      version: form.version,
+      value: formInput.value,
+      key: versionChanged && valueChanged ? mount.key + 1 : mount.key,
+    })
+  }
   const [valueOptions, setValueOptions] = useState<ValueOptionInterface[]>(
     formInput.valueOptions ?? []
   )
 
-  const apiCallInProgressRef = useRef(false)
-  const formInputRef = useRef(formInput)
+  // The field stays mounted when the form is updated: options declared anew
+  // replace the current ones.
+  const [declaredValueOptions, setDeclaredValueOptions] = useState(
+    formInput.valueOptions
+  )
+  if (!sameItems(formInput.valueOptions, declaredValueOptions)) {
+    setDeclaredValueOptions(formInput.valueOptions)
+    setValueOptions(formInput.valueOptions ?? [])
+  }
 
-  useEffect(() => {
+  const apiCallInProgressRef = useRef(false)
+
+  const fetchValueOptions = useEffectCallback(() => {
     if (
       formInput.getValueOptions &&
       valueOptions.length === 0 &&
@@ -47,11 +83,16 @@ export default function InputControllerProvider({
           apiCallInProgressRef.current = false
         })
     }
-  }, [formInput.getValueOptions])
+  })
 
+  useEffect(() => {
+    fetchValueOptions()
+  }, [fetchValueOptions, formInput.getValueOptions])
+
+  // useDebounceCallback runs the latest callback, hence the latest onSearch
   const debouncedSearch = useDebounceCallback(async (query: string, formContext) => {
-    if (!formInputRef.current.onSearch) return
-    const data = await formInputRef.current.onSearch(query, formContext)
+    if (!formInput.onSearch) return
+    const data = await formInput.onSearch(query, formContext)
 
     setValueOptions(data)
 
@@ -104,6 +145,7 @@ export default function InputControllerProvider({
 
   return (
     <CurrentDecorator
+      key={mount.key}
       formInput={currentFormInput}
       className={cn(formInput?.className, className)}
     >
