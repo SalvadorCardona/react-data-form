@@ -32,7 +32,12 @@ export function upsertForm<
     newForm = deepCopy(form as FormBuiltInterface) as FormBuiltInterface
     if (!newForm.errors) newForm.errors = []
   } else {
-    newForm = deepMerge(getFormConfig().defaultForm, form) as FormBuiltInterface
+    // The defaults are copied first: deepMerge would otherwise hand the same
+    // `errors`, `label`… of the global config to every form.
+    newForm = deepMerge(
+      deepCopy(getFormConfig().defaultForm),
+      form
+    ) as FormBuiltInterface
     newForm.id = newForm.id ?? createUniqId()
 
     // deepMerge reuses the input references of the source form, so they must be
