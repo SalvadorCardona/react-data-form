@@ -6,6 +6,8 @@ import { validateForm } from "@/form/utils/validateForm"
 import { formHasError } from "@/form/utils/formHasError"
 import { updateFormByFormInput } from "@/form/utils/updateFormByFormInput"
 import { updateForm } from "@/form/utils/updateForm"
+import { addErrorFromViolations } from "@/form/utils/addErrorFromViolations"
+import { getFormConfig } from "@/form/FormConfig"
 import useDebounceCallback from "@/internal/hook/useDebounceCallback"
 import { BooleanStateInterface, useBoolean } from "@/internal/hook/useBoolean"
 import { useEffectCallback } from "@/internal/hook/useEffectCallback"
@@ -22,7 +24,13 @@ export interface UseFormParams<Data extends object = any> {
    */
   form: FormInterface<Data> | FormBuiltInterface<Data>
   onChange?: (data: Data, form: FormBuiltInterface<Data>) => void
-  onSubmit?: (data: Data) => void
+  onSubmit?: (data: Data) => void | Promise<void>
+  /**
+   * Called when the submission rejects — `form.onSubmit` or `onSubmit` — with
+   * the error as thrown and the form as displayed. Violations found by
+   * `extractViolations` (see `setFormConfig`) are already under their fields.
+   */
+  onError?: (error: unknown, form: FormBuiltInterface<Data>) => void
   // TODO : merge async Data and data
   asyncData?: () => Promise<Data>
   /**
@@ -69,6 +77,7 @@ export default function useForm<Data extends object = object>({
   data,
   onChange,
   onSubmit,
+  onError,
   asyncData,
   onLoadError,
 }: UseFormParams<Data>): FormContextOutput<Data> {
@@ -83,6 +92,8 @@ export default function useForm<Data extends object = object>({
     ? (parentContext as FormContextOutput<Data>)
     : undefined
   const subForms = useRef(new Set<() => boolean>())
+  // The form errors set by the last failed submission, cleared by the next one
+  const submitErrors = useRef<string[]>(undefined)
   const [isReady, setIsReady] = useState<boolean>(false)
   const [loadError, setLoadError] = useState<unknown>()
   const [currentForm, setCurrentForm] = useState<FormBuiltInterface<Data>>(
@@ -140,15 +151,34 @@ export default function useForm<Data extends object = object>({
       return
     }
 
+    if (latestForm.current.errors === submitErrors.current) {
+      commitForm({ ...latestForm.current, errors: [] })
+    }
+
     const { data: validatedData, onSubmit: formOnSubmit } = latestForm.current
     let submittedData = validatedData
 
-    if (formOnSubmit) {
-      // form.onSubmit may be sync or async, and may return nothing
-      submittedData = (await formOnSubmit(submittedData)) ?? submittedData
-    }
+    try {
+      if (formOnSubmit) {
+        // form.onSubmit may be sync or async, and may return nothing
+        submittedData = (await formOnSubmit(submittedData)) ?? submittedData
+      }
 
-    await onSubmit?.(submittedData)
+      await onSubmit?.(submittedData)
+    } catch (error) {
+      const apiError = getFormConfig().extractViolations(error)
+      const failedForm = apiError
+        ? commitForm(addErrorFromViolations(latestForm.current, apiError))
+        : latestForm.current
+      submitErrors.current = apiError ? failedForm.errors : undefined
+
+      isLoading.setFalse()
+      onError?.(error, failedForm)
+
+      // Nobody to tell: the error is not swallowed
+      if (!apiError && !onError) throw error
+      return
+    }
 
     isLoading.setFalse()
 

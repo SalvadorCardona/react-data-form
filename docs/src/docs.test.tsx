@@ -203,6 +203,14 @@ describe("the documentation site", () => {
     expect(screen.getByRole("button", { name: /Book/ })).toBeInTheDocument()
   })
 
+  it("shows the violation the demo API sends back under the email field", async () => {
+    renderAt("?page=validation")
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText(/Email/), "taken@example.com")
+    await user.click(screen.getByRole("button", { name: /Book/ }))
+    expect(await screen.findByText("Already taken")).toBeInTheDocument()
+  })
+
   it("lists every translation key with its French wording", () => {
     renderAt("?page=translations")
     expect(
