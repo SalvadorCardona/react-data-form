@@ -10,6 +10,7 @@ import useDebounceCallback from "@/internal/hook/useDebounceCallback"
 import { BooleanStateInterface, useBoolean } from "@/internal/hook/useBoolean"
 import useFormContext from "@/form/provider/useFormContext"
 import { createPubSub, Index } from "coooking-pubsub"
+import { translate } from "react-mini-i18n"
 
 export interface UseFormParams<Data extends object = any> {
   /**
@@ -23,6 +24,11 @@ export interface UseFormParams<Data extends object = any> {
   onSubmit?: (data: Data) => void
   // TODO : merge async Data and data
   asyncData?: () => Promise<Data>
+  /**
+   * Called when `asyncData` (or `form.getData`) rejects. The form stops
+   * loading and shows a form error either way.
+   */
+  onLoadError?: (error: unknown) => void
   data?: Data
 }
 
@@ -33,6 +39,10 @@ export interface FormContextOutput<Data extends object = any> {
   onChange: (input: FormInputInterface) => void
   onSubmit: () => Promise<Data | undefined>
   ready: boolean
+  /**
+   * The reason `asyncData` (or `form.getData`) rejected, if it did.
+   */
+  loadError?: unknown
   updateForm: (form: FormBuiltInterface) => FormBuiltInterface
   onSuccess: Index<Data>
   isLoading: BooleanStateInterface
@@ -59,6 +69,7 @@ export default function useForm<Data extends object = object>({
   onChange,
   onSubmit,
   asyncData,
+  onLoadError,
 }: UseFormParams<Data>): FormContextOutput<Data> {
   // Extraire les constantes
   const DEBOUNCE_DELAY = 1500
@@ -68,6 +79,7 @@ export default function useForm<Data extends object = object>({
   const parentFormContext = useFormContext()
   const subForms = useRef(new Set<() => boolean>())
   const [isReady, setIsReady] = useState<boolean>(false)
+  const [loadError, setLoadError] = useState<unknown>()
   const [currentForm, setCurrentForm] = useState<FormBuiltInterface<Data>>(
     form.isBuilt
       ? (form as FormBuiltInterface<Data>)
@@ -155,11 +167,22 @@ export default function useForm<Data extends object = object>({
 
     isFetching.current = true
 
-    dataLoader().then((data) => {
-      updateFormData({ ...currentForm.data, ...data }, false)
-      isFetching.current = false
-      setIsReady(true)
-    })
+    dataLoader()
+      .then((data) => {
+        updateFormData({ ...currentForm.data, ...data }, false)
+      })
+      .catch((error: unknown) => {
+        setLoadError(error)
+        setCurrentForm((form) => ({
+          ...form,
+          errors: [translate("Unable to load the data")],
+        }))
+        onLoadError?.(error)
+      })
+      .finally(() => {
+        isFetching.current = false
+        setIsReady(true)
+      })
   }, [currentForm.id])
 
   const updateFormHandler = (newForm: FormInterface): FormBuiltInterface => {
@@ -181,6 +204,7 @@ export default function useForm<Data extends object = object>({
     onSuccess: onSuccess,
     updateForm: updateFormHandler,
     ready: isReady,
+    loadError,
     onChange: handleChange,
     onSubmit: handleSubmit,
     form: currentForm,

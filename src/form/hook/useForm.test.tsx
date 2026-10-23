@@ -72,6 +72,45 @@ describe("useForm", () => {
       expect(result.current.ready).toBe(true)
       expect(result.current.form.inputs.name.value).toBe("Charlie")
     })
+
+    it("stops loading and exposes the error when asyncData rejects", async () => {
+      const error = new Error("404")
+      const onLoadError = vi.fn()
+
+      const { result } = renderHook(
+        () =>
+          useForm({
+            form: { inputs: { a: {} } },
+            asyncData: () => Promise.reject(error),
+            onLoadError,
+          }),
+        { wrapper }
+      )
+
+      await act(async () => {})
+
+      expect(result.current.ready).toBe(true)
+      expect(result.current.loadError).toBe(error)
+      expect(onLoadError).toHaveBeenCalledWith(error)
+      expect(result.current.form.errors).toEqual(["Unable to load the data"])
+    })
+
+    it("stops loading when form.getData rejects", async () => {
+      const error = new Error("403")
+
+      const { result } = renderHook(
+        () =>
+          useForm({
+            form: { inputs: { a: {} }, getData: () => Promise.reject(error) },
+          }),
+        { wrapper }
+      )
+
+      await act(async () => {})
+
+      expect(result.current.ready).toBe(true)
+      expect(result.current.loadError).toBe(error)
+    })
   })
 
   describe("onChange", () => {
