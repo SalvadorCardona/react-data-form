@@ -282,6 +282,38 @@ describe("validateForm", () => {
       expect(formHasError(validateForm(form))).toBe(false)
     })
 
+    it("skips every rule of an input hidden by the data", () => {
+      const validator = vi.fn(() => {
+        throw new Error("should not be called")
+      })
+      const form = createForm(
+        {
+          inputs: {
+            type: {},
+            company: {
+              required: true,
+              min: 10,
+              validator,
+              hidden: (data: any) => data.type !== "pro",
+            },
+          },
+        },
+        { type: "private", company: 1 }
+      )
+
+      expect(formHasError(validateForm(form))).toBe(false)
+      expect(validator).not.toHaveBeenCalled()
+    })
+
+    it("hands the data and the form to hidden()", () => {
+      const hidden = vi.fn(() => false)
+      const form = createForm({ inputs: { name: { hidden } } }, { name: "Ada" })
+
+      validateForm(form)
+
+      expect(hidden).toHaveBeenCalledWith(form.data, form)
+    })
+
     it("checks an input whose hidden() returns false", () => {
       const form = createForm({
         inputs: { name: { required: true, hidden: () => false } },

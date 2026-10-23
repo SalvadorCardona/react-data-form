@@ -6,6 +6,7 @@ import { validateForm } from "@/form/utils/validateForm"
 import { formHasError } from "@/form/utils/formHasError"
 import { updateFormByFormInput } from "@/form/utils/updateFormByFormInput"
 import { updateForm } from "@/form/utils/updateForm"
+import { getDataFromForm } from "@/form/utils/getDataFromForm"
 import { addErrorFromViolations } from "@/form/utils/addErrorFromViolations"
 import { getFormConfig } from "@/form/FormConfig"
 import useDebounceCallback from "@/internal/hook/useDebounceCallback"
@@ -174,8 +175,10 @@ export default function useForm<Data extends object = object>({
       commitForm({ ...latestForm.current, errors: [] })
     }
 
-    const { data: validatedData, onSubmit: formOnSubmit } = latestForm.current
-    let submittedData = validatedData
+    const { onSubmit: formOnSubmit } = latestForm.current
+    let submittedData = getDataFromForm(latestForm.current, {
+      withoutHiddenValues: true,
+    })
 
     try {
       if (formOnSubmit) {

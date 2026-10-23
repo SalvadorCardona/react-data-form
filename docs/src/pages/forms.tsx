@@ -1,5 +1,6 @@
 import { CompleteFormExample } from "../CompleteFormExample"
-import { CodeBlock, PageHeader, Section } from "../DocLayout"
+import { ConditionalFormExample } from "../ConditionalFormExample"
+import { CodeBlock, LiveExample, PageHeader, Section } from "../DocLayout"
 import { StepFormExample } from "../StepFormExample"
 import { pageHref } from "./index"
 
@@ -16,6 +17,24 @@ export function FormsPage() {
         intro="Everything below runs in your browser. Submit it and watch the data appear."
       >
         <CompleteFormExample />
+      </Section>
+
+      <Section
+        title="Conditional fields"
+        intro="hidden(data, form) shows a field only when the data calls for it."
+      >
+        <p>
+          <code>hidden</code> receives the current data of the form, and the form
+          itself: the field follows the other values as they are typed. A hidden
+          field is not validated — <code>required</code>, <code>min</code>,{" "}
+          <code>max</code> and <code>validator</code> included — and its value is
+          left out of the submitted data. Set <code>keepHiddenValue: true</code> to
+          send it anyway.
+        </p>
+        <CodeBlock>{conditional}</CodeBlock>
+        <LiveExample label="Switch the customer type">
+          <ConditionalFormExample />
+        </LiveExample>
       </Section>
 
       <Section
@@ -95,6 +114,15 @@ export function FormsPage() {
     </>
   )
 }
+
+const conditional = `inputs: {
+  type: { label: "Customer", controller: SelectInputController, valueOptions },
+  company: {
+    label: "Company",
+    required: true, // only checked while the field shows
+    hidden: (data) => data.type !== "pro",
+  },
+}`
 
 const submitting = `const formContext = useForm({
   form: {

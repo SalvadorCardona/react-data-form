@@ -37,7 +37,7 @@ export interface GroupOption {
 export type FormInputsInterface<Data extends object = any> =
   string extends keyof Data
     ? Record<string, FormInputInterface>
-    : { [K in keyof Data]?: FormInputInterface<Data[K]> } & {
+    : { [K in keyof Data]?: FormInputInterface<Data[K], Data> } & {
         [K in `${keyof Data & string}.${string}`]?: FormInputInterface
       }
 

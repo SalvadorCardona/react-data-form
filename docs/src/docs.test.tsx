@@ -170,6 +170,23 @@ describe("the documentation site", () => {
     ).toBeInTheDocument()
   })
 
+  it("hides the company of a private customer, and submits without it", async () => {
+    renderAt("?page=forms")
+    const example = screen
+      .getByText("Switch the customer type")
+      .closest("div") as HTMLElement
+
+    expect(
+      within(example)
+        .getByLabelText(/Company/)
+        .closest(".hidden")
+    ).not.toBeNull()
+
+    fireEvent.click(within(example).getByRole("button", { name: "Save" }))
+    expect(await within(example).findByText(/"type": "private"/)).toBeInTheDocument()
+    expect(within(example).queryByText(/"company"/)).toBeNull()
+  })
+
   it("renders the asymmetric-form demo, one block per shape", () => {
     renderAt("?page=multi-forms")
     expect(

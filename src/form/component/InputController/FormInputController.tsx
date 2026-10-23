@@ -5,6 +5,7 @@ import useForm from "@/form/hook/useForm"
 import FormElement from "@/form/component/form/FormElement"
 import { PropsWithChildren, useEffect, useRef } from "react"
 import useFormContext from "@/form/provider/useFormContext"
+import { isFormInputHidden } from "@/form/utils/isFormInputHidden"
 import { useEffectCallback } from "@/internal/hook/useEffectCallback"
 
 interface FormInputControllerPropsInterface
@@ -45,9 +46,7 @@ export const FormInputController = ({
   const validateRef = useRef(form.validate)
   useEffect(() => {
     validateRef.current = () =>
-      formInput.type === "hidden" || formInput.hidden?.() === true
-        ? true
-        : form.validate()
+      isFormInputHidden(formInput, formContext.form) ? true : form.validate()
   })
 
   const { registerSubForm } = formContext
