@@ -40,9 +40,18 @@ const DROPPED_TAGS = new Set([
   "EMBED",
 ])
 
+const URL_ATTRS = ["href", "src"]
+
+// Relative URLs (no scheme) are accepted along with these schemes.
+const ALLOWED_PROTOCOLS = new Set(["http", "https", "mailto", "tel"])
+
 export function sanitizeHtml(html: string): string {
-  if (!html || typeof window === "undefined" || typeof DOMParser === "undefined") {
-    return html ?? ""
+  if (!html) return ""
+
+  // Without a DOM (server render) there is nothing to sanitize with: the
+  // markup is escaped so that it is shown as text rather than injected.
+  if (typeof window === "undefined" || typeof DOMParser === "undefined") {
+    return escapeHtml(html)
   }
 
   const doc = new DOMParser().parseFromString(html, "text/html")
@@ -75,11 +84,19 @@ function sanitizeNode(node: Element): void {
       }
     }
 
-    if (tag === "A") {
-      const href = child.getAttribute("href")
-      if (href && /^\s*javascript:/i.test(href)) {
-        child.removeAttribute("href")
+    for (const name of URL_ATTRS) {
+      const url = child.getAttribute(name)
+      if (url !== null && !isSafeUrl(url)) {
+        child.removeAttribute(name)
       }
+    }
+
+    if (tag === "A" && child.getAttribute("target") === "_blank") {
+      const rel = (child.getAttribute("rel") ?? "").split(/\s+/).filter(Boolean)
+      for (const token of ["noopener", "noreferrer"]) {
+        if (!rel.includes(token)) rel.push(token)
+      }
+      child.setAttribute("rel", rel.join(" "))
     }
   }
 
@@ -88,4 +105,22 @@ function sanitizeNode(node: Element): void {
     while (el.firstChild) el.parentNode!.insertBefore(el.firstChild, el)
     el.remove()
   }
+}
+
+function isSafeUrl(url: string): boolean {
+  // Browsers ignore control characters and whitespace inside a scheme
+  // ("java\tscript:"), so they are removed before reading it.
+  // eslint-disable-next-line no-control-regex
+  const normalized = url.replace(/[\u0000-\u0020\u007f-\u009f]/g, "")
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(normalized)
+  return !scheme || ALLOWED_PROTOCOLS.has(scheme[1].toLowerCase())
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
 }

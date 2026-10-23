@@ -1,4 +1,5 @@
 import { cn } from "@/ui/cn"
+import { sanitizeHtml } from "@/ui/sanitizeHtml"
 
 export function WysiwygReader({
   content,
@@ -15,7 +16,7 @@ export function WysiwygReader({
             "whitespace-pre-line [&_p]:min-h-[1lh] [&_p+p]:mt-2",
             className
           )}
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
         />
       )}
     </>
