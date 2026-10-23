@@ -35,6 +35,7 @@ export const FileInputController = ({
       type="file"
       defaultValue={formInput.value ?? ""}
       onChange={(e) => onFileChange(e)}
+      disabled={formInput.readonly}
     />
   )
 }
