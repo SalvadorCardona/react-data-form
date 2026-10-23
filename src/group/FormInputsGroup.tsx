@@ -1,4 +1,5 @@
 import InputControllerProvider from "@/form/component/InputControllerProvider"
+import { FormInputInterface } from "@/form/FormInputInterface"
 import useFormContext from "@/form/provider/useFormContext"
 import getFormInputsFromForm from "@/form/utils/getFormInputsFromForm"
 import { SectionCard } from "@/ui/SectionCard"
@@ -16,24 +17,40 @@ export function FormInputsGroup() {
     return null
   }
 
+  const knownGroups = items.map((item) => item.group)
+  // Fields whose groups match no itemGroup would otherwise be rendered nowhere
+  const ungroupedInputs = getFormInputsFromForm(form).filter(
+    (formInput) => !formInput.groups?.some((group) => knownGroups.includes(group))
+  )
+
+  const renderInputs = (inputs: FormInputInterface[]) =>
+    inputs.map((formInput) => {
+      return (
+        <InputControllerProvider
+          key={(formInput?.id as string) + formInput?.name + form.version}
+          formInput={formInput}
+        />
+      )
+    })
+
+  const ungroupedSection = ungroupedInputs.length > 0 && (
+    <SectionCard className={"mt-5"}>{renderInputs(ungroupedInputs)}</SectionCard>
+  )
+  const ungroupedAtStart = groupsOption?.ungroupedPosition === "start"
+
   return (
     <>
+      {ungroupedAtStart && ungroupedSection}
       {items.map((item) => {
         const inputs = getFormInputsFromForm({ ...form, groups: [item.group] })
 
         return (
           <SectionCard className={"mt-5"} key={item.group + "form-groups"} {...item}>
-            {inputs.map((formInput) => {
-              return (
-                <InputControllerProvider
-                  key={(formInput?.id as string) + formInput?.name + form.version}
-                  formInput={formInput}
-                />
-              )
-            })}
+            {renderInputs(inputs)}
           </SectionCard>
         )
       })}
+      {!ungroupedAtStart && ungroupedSection}
     </>
   )
 }
