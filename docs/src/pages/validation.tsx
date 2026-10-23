@@ -97,8 +97,8 @@ export function ValidationPage() {
       >
         <CodeBlock>{validator}</CodeBlock>
         <p>
-          <code>FormInterface</code> also exposes a <code>validator</code> key,
-          but nothing calls it — rules belong on{" "}
+          <code>FormInterface</code> also exposes a <code>validator</code> key, but
+          nothing calls it — rules belong on{" "}
           <code>inputs.&lt;name&gt;.validator</code>.
         </p>
         <LiveExample label="Try to break it">
@@ -107,14 +107,29 @@ export function ValidationPage() {
       </Section>
 
       <Section
+        title="Required fields"
+        intro="An empty required field gets a violation before its validator runs, whatever its controller."
+      >
+        <CodeBlock>{required}</CodeBlock>
+        <p>
+          <code>undefined</code>, <code>null</code>, <code>""</code> and{" "}
+          <code>[]</code> count as empty; <code>false</code> and <code>0</code> are
+          answers. Hidden fields (<code>type: "hidden"</code> or{" "}
+          <code>hidden()</code> returning true), generated values and fields outside
+          the current group or step are not checked. The message is the translation
+          key <code>This field is required</code>.
+        </p>
+      </Section>
+
+      <Section
         title="Errors from the API"
         intro="An API Platform response carries its violations in the problem+json body."
       >
         <p>
-          <code>addErrorFromViolations</code> maps each one onto the field named
-          by its <code>propertyPath</code>, so a server-side rule is displayed
-          exactly like a local one. A violation with an empty path becomes a
-          form-level error instead.
+          <code>addErrorFromViolations</code> maps each one onto the field named by
+          its <code>propertyPath</code>, so a server-side rule is displayed exactly
+          like a local one. A violation with an empty path becomes a form-level error
+          instead.
         </p>
         <CodeBlock>{apiErrors}</CodeBlock>
       </Section>
@@ -140,6 +155,18 @@ const validator = `inputs: {
     },
   },
 }`
+
+const required = `inputs: {
+  country: {
+    label: "Country",
+    required: true,
+    controller: SelectInputController,
+    valueOptions: [{ label: "France", value: "fr" }],
+  },
+}
+// Submitting with no country → "This field is required" under the field
+
+setTranslation({ "This field is required": "Ce champ est obligatoire" })`
 
 const apiErrors = `// { "violations": [{ "propertyPath": "email", "message": "Already taken" }] }
 const withErrors = addErrorFromViolations(form, apiError)

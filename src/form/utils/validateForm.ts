@@ -1,9 +1,22 @@
-import {
-  FormBuiltInterface,
-  FormInterfaceValueType,
-} from "@/form/FormInterface"
+import { FormBuiltInterface, FormInterfaceValueType } from "@/form/FormInterface"
 import getFormInputsFromForm from "@/form/utils/getFormInputsFromForm"
 import { createViolation, isZodError } from "@/form/Violation"
+import { FormInputInterface } from "@/form/FormInputInterface"
+import { translate } from "react-mini-i18n"
+
+// false and 0 are answers, not missing values
+function isEmptyValue(value: unknown): boolean {
+  return (
+    value === undefined ||
+    value === null ||
+    value === "" ||
+    (Array.isArray(value) && value.length === 0)
+  )
+}
+
+function isHiddenInput(formInput: FormInputInterface): boolean {
+  return formInput.type === "hidden" || formInput.hidden?.() === true
+}
 
 export function validateForm<
   Data extends FormInterfaceValueType = FormInterfaceValueType,
@@ -20,6 +33,21 @@ export function validateForm<
 
       const currentFormInput = newForm.inputs[formInput.name]
       currentFormInput.violations = []
+
+      if (
+        currentFormInput.required &&
+        !isHiddenInput(currentFormInput) &&
+        isEmptyValue(currentFormInput.value)
+      ) {
+        currentFormInput.violations.push(
+          createViolation({
+            propertyPath: formInput.name,
+            code: "required",
+            message: translate("This field is required"),
+          })
+        )
+        return
+      }
 
       if (currentFormInput?.validator) {
         try {
