@@ -28,7 +28,8 @@ export interface FormInputInterface<Value = any> {
   ) => Promise<ValueOptionInterface[]>
   className?: string
   violations?: ViolationInterface[]
-  validator?: (value: Value) => Value | never
+  /** `data` holds the whole form data, for rules spanning several keys. */
+  validator?: (value: Value, data?: any) => Value | never
   type?: string | "hidden"
   // Todo : merge default value to default Value in the same property
   defaultValue?: Value | ((value: Value | any) => any)
