@@ -44,6 +44,10 @@ export function IconInputController({
     setOpen(false)
   }
 
+  if (formInput.readonly) {
+    return <span className="text-lg leading-none">{value ?? "-"}</span>
+  }
+
   return (
     <div className="flex items-center gap-2">
       <Popover open={open} onOpenChange={setOpen}>

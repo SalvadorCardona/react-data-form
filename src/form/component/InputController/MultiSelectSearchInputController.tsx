@@ -1,7 +1,4 @@
-import {
-  ComboboxMulti,
-  ComboBoxMultiPropsInterface,
-} from "@/ui/comboboxMulti"
+import { ComboboxMulti, ComboBoxMultiPropsInterface } from "@/ui/comboboxMulti"
 import { InputControllerInterface } from "@/form/InputControllerInterface"
 import { FormInputInterface } from "@/form/FormInputInterface"
 
@@ -26,6 +23,7 @@ export const MultiSelectSearchInputController = ({
       placeholder={formInput.placeholder}
       onSearch={formInput.onSearch}
       hasGroups={formInput.hasGroups}
+      readonly={formInput.readonly}
     />
   )
 }

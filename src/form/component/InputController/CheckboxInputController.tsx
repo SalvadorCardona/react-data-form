@@ -2,6 +2,7 @@ import { Checkbox } from "@/ui/checkbox"
 import { InputControllerInterface } from "@/form/InputControllerInterface"
 import { FormInputInterface } from "@/form/FormInputInterface"
 import { Item, ItemContent } from "@/ui/item"
+import { cn } from "@/ui/cn"
 
 export interface CheckboxFormInputInterface extends FormInputInterface {
   title?: string
@@ -25,18 +26,23 @@ export const CheckboxInputController = ({
 
   const value = !!formInput?.value
   const toggle = () => {
+    if (formInput.readonly) return
     change(!value)
   }
 
   return (
     <Item
       onClick={toggle}
-      className="cursor-pointer border-muted hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:bg-primary/10 has-[[aria-checked=true]]:border-primary dark:has-[[aria-checked=true]]:border-primary dark:has-[[aria-checked=true]]:bg-primary"
+      className={cn(
+        "border-muted hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:bg-primary/10 has-[[aria-checked=true]]:border-primary dark:has-[[aria-checked=true]]:border-primary dark:has-[[aria-checked=true]]:bg-primary",
+        !formInput.readonly && "cursor-pointer"
+      )}
     >
       <div>
         <Checkbox
           name={formInput.name}
           checked={value}
+          readOnly={formInput.readonly}
           onCheckedChange={(e) => change(e as boolean)}
           id={formInput.id}
         />
@@ -46,7 +52,10 @@ export const CheckboxInputController = ({
           {formInput.title && (
             <label
               htmlFor={formInput.id}
-              className="cursor-pointer text-sm leading-none font-medium"
+              className={cn(
+                "text-sm leading-none font-medium",
+                !formInput.readonly && "cursor-pointer"
+              )}
             >
               {formInput.title}
             </label>

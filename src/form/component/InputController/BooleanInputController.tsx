@@ -14,7 +14,8 @@ export const BooleanInputController = ({
     <div>
       <Checkbox
         name={formInput.name}
-        defaultChecked={formInput?.value ?? false}
+        checked={formInput?.value ?? false}
+        readOnly={formInput.readonly}
         onCheckedChange={(e) => change(e as boolean)}
         id={formInput.id}
       />

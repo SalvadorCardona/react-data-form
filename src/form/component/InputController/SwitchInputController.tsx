@@ -18,7 +18,8 @@ export const SwitchInputController = ({
         aria-label={
           typeof formInput.label === "string" ? formInput.label : undefined
         }
-        defaultChecked={formInput?.value ?? false}
+        checked={formInput?.value ?? false}
+        readOnly={formInput.readonly}
         onCheckedChange={(e) => change(e as boolean)}
       />
     </div>

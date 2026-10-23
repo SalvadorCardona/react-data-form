@@ -252,7 +252,6 @@ export const catalog: DemoGroupInterface[] = [
         summary:
           "A range with times. Moving the start shifts the end to preserve the duration.",
         input: { label: "Period", controller: DateRangeInputController },
-        readonly: false,
       },
       {
         name: "MomentInputController",
@@ -363,35 +362,30 @@ export const catalog: DemoGroupInterface[] = [
           onSearch: searchCountries,
         },
         filled: ["FR", "JP"],
-        readonly: false,
       },
       {
         name: "CheckboxInputController",
         summary: "A single checkbox.",
         input: { label: "I accept the terms", controller: CheckboxInputController },
         filled: true,
-        readonly: false,
       },
       {
         name: "SwitchInputController",
         summary: "A toggle, for settings applied immediately.",
         input: { label: "Notifications", controller: SwitchInputController },
         filled: true,
-        readonly: false,
       },
       {
         name: "BooleanInputController",
         summary: "Yes / no as two buttons.",
         input: { label: "Subscribed", controller: BooleanInputController },
         filled: true,
-        readonly: false,
       },
       {
         name: "IconInputController",
         summary: "Emoji picker; the grid loads only when opened.",
         input: { label: "Icon", controller: IconInputController },
         filled: "🦊",
-        readonly: false,
       },
     ],
   },
@@ -406,7 +400,6 @@ export const catalog: DemoGroupInterface[] = [
         summary: "A list of values, added and removed inline.",
         input: { label: "Keywords", controller: ArrayInputController },
         filled: ["forms", "react"],
-        readonly: false,
       },
       {
         name: "FormInputController",
@@ -440,7 +433,6 @@ export const catalog: DemoGroupInterface[] = [
         name: "FileInputController",
         summary: "A native file input; the value is the file as a base64 data URL.",
         input: { label: "Attachment", controller: FileInputController },
-        readonly: false,
       },
       {
         name: "IaImageInputController",
@@ -478,7 +470,6 @@ export const catalog: DemoGroupInterface[] = [
         summary: "A gallery of images; the value is the gallery's IRI.",
         input: { label: "Photos", controller: MediaObjectGalleryInputController },
         filled: "/media_objects/galleries/sample",
-        readonly: false,
         from: "react-data-form/media",
       },
       {
@@ -489,7 +480,6 @@ export const catalog: DemoGroupInterface[] = [
           controller: MediaObjectDocumentGalleryInputController,
         },
         filled: "/media_objects/galleries/sample",
-        readonly: false,
         from: "react-data-form/media",
       },
     ],

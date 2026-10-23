@@ -262,6 +262,21 @@ export const DateRangeInputController = ({
       ? translate(END_BEFORE_START)
       : null
 
+  if (formInput.readonly) {
+    if (!startCombined && !endCombined) return <span>-</span>
+
+    const formatBound = (date: Date | undefined) =>
+      date ? format(date, summaryFormat, { locale: getPorts().dateLocale }) : "-"
+
+    return (
+      <span>
+        {formatBound(startCombined)}
+        {" → "}
+        {formatBound(endCombined)}
+      </span>
+    )
+  }
+
   return (
     <div className="w-full max-w-2xl">
       <div className="relative">
