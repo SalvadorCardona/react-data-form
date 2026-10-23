@@ -175,6 +175,12 @@ describe("MediaObjectGalleryInputController port lifecycle", () => {
     )
     expect(deleteButtons).toHaveLength(2)
     fireEvent.click(deleteButtons[0])
+    // A media of the gallery is deleted on the server: it is confirmed first.
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: defaultMediaObjectLabels.deleteConfirm,
+      })
+    )
 
     // One remaining media and the empty tile adding a new one.
     await waitFor(() =>

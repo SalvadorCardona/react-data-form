@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { PropsWithChildren, ReactNode } from "react"
+import { PropsWithChildren, ReactNode, useEffect } from "react"
 import {
   MediaObjectInputController,
   MediaObjectInputControllerInputInterface,
@@ -17,6 +17,26 @@ import {
 } from "@/media/inMemoryMediaObjectPort"
 import FormElement from "@/form/component/form/FormElement"
 import useForm from "@/form/hook/useForm"
+
+// jsdom loads no image: the cropper reports its area right away and the
+// canvas work is stubbed.
+function Cropper({
+  onCropComplete,
+}: {
+  onCropComplete: (area: unknown, areaPixels: unknown) => void
+}) {
+  useEffect(() => {
+    const area = { x: 0, y: 0, width: 10, height: 10 }
+    onCropComplete(area, area)
+  }, [onCropComplete])
+  return null
+}
+vi.mock("react-easy-crop", () => ({ default: Cropper }))
+
+const EDITED_DATA_URL = "data:image/jpeg;base64,BBBB"
+vi.mock("@/media/cropImage", () => ({
+  getCroppedImg: () => Promise.resolve("data:image/jpeg;base64,BBBB"),
+}))
 
 const PNG_DATA_URL = "data:image/png;base64,AAAA"
 
@@ -333,19 +353,173 @@ describe("MediaObjectInputController", () => {
     expect(getFileInput(container)).not.toBeDisabled()
   })
 
-  it("removes the media through the port", async () => {
-    const port = buildPort()
-    const iri = await seedMedia(port)
-    const { onChange } = renderController(port, { value: iri })
+  describe("deleteOn", () => {
+    const clickDelete = async () =>
+      fireEvent.click(
+        await screen.findByLabelText(defaultMediaObjectLabels.deleteAction)
+      )
 
-    fireEvent.click(
-      await screen.findByLabelText(defaultMediaObjectLabels.deleteAction)
-    )
+    const saveEditedImage = async () => {
+      fireEvent.click(
+        await screen.findByLabelText(defaultMediaObjectLabels.editAction)
+      )
+      fireEvent.click(
+        await screen.findByRole("button", {
+          name: defaultMediaObjectLabels.editorSave,
+        })
+      )
+    }
 
-    expect(onChange).toHaveBeenLastCalledWith(
-      expect.objectContaining({ value: null })
-    )
-    await waitFor(() => expect(port.medias.size).toBe(0))
+    describe('"never" (default)', () => {
+      it("only detaches the media on delete, without confirmation", async () => {
+        const port = buildPort()
+        const remove = vi.spyOn(port, "remove")
+        const iri = await seedMedia(port)
+        const { onChange } = renderController(port, { value: iri })
+
+        await clickDelete()
+
+        expect(onChange).toHaveBeenLastCalledWith(
+          expect.objectContaining({ value: null })
+        )
+        expect(screen.queryByRole("dialog")).toBeNull()
+        expect(remove).not.toHaveBeenCalled()
+        expect(port.medias.has(iri)).toBe(true)
+      })
+
+      it("keeps the replaced media when a new file is chosen", async () => {
+        const port = buildPort()
+        const remove = vi.spyOn(port, "remove")
+        const iri = await seedMedia(port)
+        const { container, onChange } = renderController(port, { value: iri })
+
+        selectFile(container, "new.png")
+
+        await waitFor(() => expect(onChange).toHaveBeenCalled())
+        const uploaded = onChange.mock.calls.at(-1)?.[0].value
+        expect(uploaded).not.toBe(iri)
+        expect(port.medias.has(uploaded)).toBe(true)
+        expect(port.medias.has(iri)).toBe(true)
+        expect(remove).not.toHaveBeenCalled()
+      })
+
+      it("saves the edited image as a new media, leaving the stored one", async () => {
+        const port = buildPort()
+        const replace = vi.spyOn(port, "replace")
+        const iri = await seedMedia(port)
+        const { onChange } = renderController(port, {
+          value: iri,
+          isEditable: true,
+        })
+
+        await saveEditedImage()
+
+        await waitFor(() => expect(onChange).toHaveBeenCalled())
+        const uploaded = onChange.mock.calls.at(-1)?.[0].value
+        expect(uploaded).not.toBe(iri)
+        expect(port.medias.get(uploaded)?.base64).toBe(EDITED_DATA_URL)
+        expect(port.medias.get(iri)?.base64).toBe(PNG_DATA_URL)
+        expect(replace).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('"immediate"', () => {
+      it("deletes the media through the port once confirmed", async () => {
+        const port = buildPort()
+        const iri = await seedMedia(port)
+        const { onChange } = renderController(port, {
+          value: iri,
+          deleteOn: "immediate",
+        })
+
+        await clickDelete()
+        expect(onChange).not.toHaveBeenCalled()
+        fireEvent.click(
+          await screen.findByRole("button", {
+            name: defaultMediaObjectLabels.deleteConfirm,
+          })
+        )
+
+        expect(onChange).toHaveBeenLastCalledWith(
+          expect.objectContaining({ value: null })
+        )
+        await waitFor(() => expect(port.medias.size).toBe(0))
+      })
+
+      it("keeps the media when the confirmation is cancelled", async () => {
+        const port = buildPort()
+        const remove = vi.spyOn(port, "remove")
+        const iri = await seedMedia(port)
+        const { onChange } = renderController(port, {
+          value: iri,
+          deleteOn: "immediate",
+        })
+
+        await clickDelete()
+        fireEvent.click(
+          await screen.findByRole("button", {
+            name: defaultMediaObjectLabels.deleteCancel,
+          })
+        )
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+        expect(onChange).not.toHaveBeenCalled()
+        expect(remove).not.toHaveBeenCalled()
+        expect(port.medias.has(iri)).toBe(true)
+      })
+
+      it("deletes the replaced media when a new file is chosen", async () => {
+        const port = buildPort()
+        const iri = await seedMedia(port)
+        const { container, onChange } = renderController(port, {
+          value: iri,
+          deleteOn: "immediate",
+        })
+
+        selectFile(container, "new.png")
+
+        await waitFor(() => expect(onChange).toHaveBeenCalled())
+        const uploaded = onChange.mock.calls.at(-1)?.[0].value
+        expect(port.medias.has(uploaded)).toBe(true)
+        expect(port.medias.has(iri)).toBe(false)
+      })
+
+      it("keeps the new file when deleting the replaced one fails", async () => {
+        const failure = new Error("403")
+        const port = buildPort({ remove: () => Promise.reject(failure) })
+        const iri = await seedMedia(port)
+        const { container, onChange } = renderController(port, {
+          value: iri,
+          deleteOn: "immediate",
+        })
+
+        selectFile(container, "new.png")
+
+        await waitFor(() => expect(onChange).toHaveBeenCalled())
+        expect(onChange.mock.calls.at(-1)?.[0].value).not.toBe(iri)
+        expect(port.onError).toHaveBeenCalledWith(
+          defaultMediaObjectLabels.deleteFailed,
+          failure
+        )
+      })
+
+      it("replaces the file of the stored media with the edited image", async () => {
+        const port = buildPort()
+        const iri = await seedMedia(port)
+        const { onChange } = renderController(port, {
+          value: iri,
+          isEditable: true,
+          deleteOn: "immediate",
+        })
+
+        await saveEditedImage()
+
+        await waitFor(() => expect(onChange).toHaveBeenCalled())
+        expect(onChange.mock.calls.at(-1)?.[0].value).toBe(iri)
+        expect(port.medias.size).toBe(1)
+        expect(port.medias.get(iri)?.base64).toBe(EDITED_DATA_URL)
+      })
+    })
   })
 
   it("reports a media whose description fails to load", async () => {
@@ -377,7 +551,8 @@ describe("MediaObjectInputController", () => {
     )
     expect(getFileInput(container)).toBeInTheDocument()
     expect(container.querySelector("img")).toBeNull()
-    await waitFor(() => expect(port.medias.size).toBe(0))
+    // Detached only: the media is cleaned up by the API, not by the field.
+    expect(port.medias.has(iri)).toBe(true)
   })
 
   it("mounts in a real form whose value is null", () => {
