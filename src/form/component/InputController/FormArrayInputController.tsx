@@ -379,7 +379,7 @@ export const FormArrayInputController = ({
                     className="cursor-grab text-muted-foreground/60 transition-colors hover:text-foreground active:cursor-grabbing"
                     draggable
                     onDragStart={() => handleDragStart(item)}
-                    aria-label={translate("drag")}
+                    aria-label={translate("Drag")}
                   >
                     <GripVertical className="size-4" />
                   </span>
@@ -387,7 +387,7 @@ export const FormArrayInputController = ({
                 <BlockOrderInput
                   value={itemOrder}
                   onChange={changeOrder(item)}
-                  label={translate("order")}
+                  label={translate("Order")}
                 />
                 {blockLabel}
               </div>
@@ -400,7 +400,9 @@ export const FormArrayInputController = ({
                   onClick={toggleOpen(key)}
                   className="text-muted-foreground hover:text-foreground"
                   aria-expanded={isItemOpen}
-                  aria-label={translate(isItemOpen ? "collapse" : "expand")}
+                  aria-label={translate(
+                    isItemOpen ? "Collapse the block" : "Expand the block"
+                  )}
                 >
                   {isItemOpen ? (
                     <ChevronDown className="size-4" />
@@ -415,7 +417,7 @@ export const FormArrayInputController = ({
                   type="button"
                   onClick={remove(item)}
                   className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                  aria-label={translate("remove")}
+                  aria-label={translate("Remove")}
                 >
                   <Trash2 className="size-4" />
                 </Button>
@@ -448,7 +450,7 @@ export const FormArrayInputController = ({
           type="button"
         >
           <CirclePlus />
-          {translate("form.array.add")}
+          {translate("Add a block")}
         </Button>
       )}
     </>

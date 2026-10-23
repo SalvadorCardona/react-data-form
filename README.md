@@ -127,12 +127,24 @@ import { setTranslation } from "react-mini-i18n"
 setTranslation({ "My profile": "Mon profil" })
 ```
 
+The library's own labels are plain English, so they read fine with no
+dictionary. `react-data-form/i18n` lists them all in `translationKeys` and ships
+a French dictionary, `fr`, covering exactly those keys:
+
+```ts
+import { setTranslation } from "react-mini-i18n"
+import { fr } from "react-data-form/i18n"
+
+setTranslation({ ...fr, "My profile": "Mon profil" })
+```
+
 ## Entry points
 
 | Import                  | Contents                                                         |
 | ----------------------- | ---------------------------------------------------------------- |
 | `react-data-form`       | Core: `useForm`, `FormElement`, field controllers, configuration |
 | `react-data-form/group` | Splitting fields into collapsible sections                       |
+| `react-data-form/i18n`  | `translationKeys` and the French dictionary `fr`                 |
 | `react-data-form/media` | Media fields: upload, gallery, image editor                      |
 | `react-data-form/step`  | Multi-step forms with navigation                                 |
 

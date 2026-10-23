@@ -45,9 +45,7 @@ export const PasswordInputController = ({
         onClick={togglePasswordVisibility}
         className="absolute right-3.5 top-1/2 z-10 -translate-y-1/2 rounded-full text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/30"
         aria-label={
-          showPassword
-            ? translate("Masquer le mot de passe")
-            : translate("Afficher le mot de passe")
+          showPassword ? translate("Hide password") : translate("Show password")
         }
       >
         {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}

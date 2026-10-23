@@ -3,6 +3,7 @@ import {
   Blocks,
   BookOpen,
   ListChecks,
+  Languages,
   ShieldCheck,
   SlidersHorizontal,
 } from "lucide-react"
@@ -20,6 +21,7 @@ export const pages: DocPage[] = [
   { id: "forms", name: "Building a form", icon: ListChecks },
   { id: "multi-forms", name: "Asymmetric forms", icon: Blocks },
   { id: "validation", name: "Validation & errors", icon: ShieldCheck },
+  { id: "translations", name: "Translations", icon: Languages },
 ]
 
 /**

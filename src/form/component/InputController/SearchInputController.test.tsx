@@ -51,7 +51,7 @@ describe("SearchInputController", () => {
       />
     )
 
-    fireEvent.click(screen.getByRole("button", { name: "Effacer la recherche" }))
+    fireEvent.click(screen.getByRole("button", { name: "Clear search" }))
 
     expect(screen.getByRole<HTMLInputElement>("textbox").value).toBe("")
 

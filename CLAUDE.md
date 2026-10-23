@@ -55,7 +55,7 @@ components.json # config shadcn (alias @/ui, style base-luma, iconLibrary lucide
 .changeset/    # changelogs en attente, un fichier par changement publiable
 ```
 
-Les quatre points d'entrée publiés (`.`, `./group`, `./media`, `./step`)
+Les cinq points d'entrée publiés (`.`, `./group`, `./i18n`, `./media`, `./step`)
 correspondent chacun à une entrée dans `tsdown.config.ts` — un nouveau
 sous-module doit être déclaré aux deux endroits (`src/<nom>/index.ts` et
 `tsdown.config.ts`).

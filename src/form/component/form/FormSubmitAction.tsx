@@ -27,7 +27,8 @@ export default function FormSubmitAction() {
 export function DefaultFormSubmitAction() {
   const formContext = useFormContext()
   const form = formContext.form
-  const label = form.label?.submit
+  const label =
+    form.label?.submit ?? (form.action === ActionList.create ? "Create" : "Save")
   const isLoading = !!form.loading
 
   if (formContext.form.action === ActionList.read || form?.saveOnChange) {
@@ -47,7 +48,7 @@ export function DefaultFormSubmitAction() {
         >
           {isLoading && <LittleLoader />}
           <span className={"fc"}>
-            <Trans>{label ?? form.action}</Trans>
+            <Trans>{label}</Trans>
           </span>
         </Button>
       </div>

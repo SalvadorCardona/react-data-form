@@ -45,7 +45,7 @@ export const SearchInputController = ({
         <button
           type="button"
           onClick={() => change("")}
-          aria-label={translate("Effacer la recherche")}
+          aria-label={translate("Clear search")}
           className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
         >
           <X className="size-4" />
