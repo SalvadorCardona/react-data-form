@@ -23,6 +23,8 @@ export const fr: Record<TranslationKey, string> = {
   "Pick the shape this entry takes.": "Choisissez la forme de ce bloc.",
   Drag: "Déplacer",
   Order: "Ordre",
+  "Move up": "Monter",
+  "Move down": "Descendre",
   "Collapse the block": "Replier le bloc",
   "Expand the block": "Déplier le bloc",
   Remove: "Supprimer",

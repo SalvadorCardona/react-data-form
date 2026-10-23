@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 
 import { cn } from "@/ui/cn"
 
@@ -12,6 +13,9 @@ interface BlockOrderInputProps {
  * Compact order control shown in the header of a page-builder block.
  * Replaces the full-width "Order" field with a small numeric pill prefixed
  * de « # ».
+ *
+ * The value is committed on blur or Enter, not on every keystroke: the order
+ * moves the block, and typing "12" must not move it to 1 first.
  */
 export const BlockOrderInput = ({
   value,
@@ -19,6 +23,20 @@ export const BlockOrderInput = ({
   className,
   label,
 }: BlockOrderInputProps) => {
+  const [draft, setDraft] = useState<string>(value != null ? String(value) : "")
+
+  useEffect(() => {
+    setDraft(value != null ? String(value) : "")
+  }, [value])
+
+  const commit = () => {
+    if (draft === "" || Number(draft) === value) {
+      setDraft(value != null ? String(value) : "")
+      return
+    }
+    onChange(Number(draft))
+  }
+
   return (
     <label
       className={cn(
@@ -31,8 +49,19 @@ export const BlockOrderInput = ({
       <span className="select-none text-muted-foreground/60">#</span>
       <input
         type="number"
-        value={value ?? ""}
-        onChange={(event) => onChange(Number(event.target.value))}
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            // Enter commits the order, it does not submit the whole form.
+            event.preventDefault()
+            commit()
+          }
+          if (event.key === "Escape") {
+            setDraft(value != null ? String(value) : "")
+          }
+        }}
         onClick={(event) => event.stopPropagation()}
         className="w-9 bg-transparent text-center tabular-nums text-foreground outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
       />
