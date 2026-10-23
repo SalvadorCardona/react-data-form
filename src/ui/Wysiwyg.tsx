@@ -252,7 +252,7 @@ export default function WysiwygEditor(props: {
         },
       }),
     ],
-    content: props.value ?? "",
+    content: sanitizeHtml(props.value ?? ""),
     onUpdate: ({ editor }) => {
       props.onChange(editor.getHTML())
     },
