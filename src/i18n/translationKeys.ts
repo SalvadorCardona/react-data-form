@@ -38,6 +38,8 @@ export const translationKeys = [
   "Clear search",
   "Select...",
   "Nothing found.",
+  "{{count}} selected",
+  "Unable to load the options.",
   // Dates
   "Pick a date",
   "Start date",
