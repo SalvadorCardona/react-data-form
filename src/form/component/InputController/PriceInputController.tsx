@@ -8,6 +8,7 @@ import {
 import { ChangeEvent, useEffect, useState } from "react"
 import { cn } from "@/ui/cn"
 import { getPorts } from "@/ports"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 interface CurrencyFormat {
   symbol: string
@@ -64,6 +65,7 @@ export const PriceInputController = ({
   onChange,
 }: InputControllerProps<number | undefined | null>) => {
   const currencyFormat = getCurrencyFormat()
+  const aria = useFieldControlAria()
   const [displayValue, setDisplayValue] = useState<string>(() =>
     centimesToDisplay(formInput.value, currencyFormat.decimal)
   )
@@ -121,6 +123,8 @@ export const PriceInputController = ({
     <div className="relative">
       {currencyFormat.symbolBefore && symbol}
       <Input
+        id={formInput.id}
+        {...aria}
         type="text"
         inputMode={currencyFormat.fractionDigits > 0 ? "decimal" : "numeric"}
         value={displayValue}

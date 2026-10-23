@@ -2,11 +2,13 @@ import { Input } from "@/ui/input"
 import { Primitive } from "@/internal/utils/type/Primitive"
 import { InputControllerProps } from "@/form/InputControllerInterface"
 import { translate } from "react-mini-i18n"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 export const DefaultInputController = ({
   formInput,
   onChange,
 }: InputControllerProps<Primitive>) => {
+  const aria = useFieldControlAria()
   const localChange = (value: string) => {
     let newValue: Primitive = value
     if (formInput.type === "number") {
@@ -20,6 +22,7 @@ export const DefaultInputController = ({
   return (
     <Input
       id={formInput.id}
+      {...aria}
       name={formInput.name}
       defaultValue={(formInput.value as string) ?? ""}
       onChange={(e) => localChange(e.target.value)}

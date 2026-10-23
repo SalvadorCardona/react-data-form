@@ -16,6 +16,7 @@ import {
 } from "@/ui/select"
 import { Trans } from "react-mini-i18n"
 import { Badge } from "@/ui/badge"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 export interface SelectFormInputInterface extends FormInputInterface {
   itemComponent?: FC<SelectItemPropsInterface>
@@ -52,9 +53,10 @@ function DefaultDecoratorComponent({
   placeholder = "Select",
   formInput,
 }: SelectDecoratorPropsInterface) {
+  const aria = useFieldControlAria()
   return (
     <Select onValueChange={onToggle} value={(option?.value ?? null) as string}>
-      <SelectTrigger className={"w-full"}>
+      <SelectTrigger id={formInput?.id} {...aria} className={"w-full"}>
         <SelectValue placeholder={placeholder}>
           <Trans className={"fc"}>
             {option?.label ?? formInput?.placeholder ?? "Select..."}

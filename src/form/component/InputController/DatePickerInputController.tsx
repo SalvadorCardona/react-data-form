@@ -8,12 +8,14 @@ import { cn } from "@/ui/cn"
 import { InputControllerProps } from "@/form/InputControllerInterface"
 import { useBoolean } from "@/internal/hook/useBoolean"
 import { Calendar1, CircleX } from "lucide-react"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 export const DatePickerInputController = ({
   formInput,
   onChange,
 }: InputControllerProps<string | null | undefined>) => {
   const { value, setValue } = useBoolean(false)
+  const aria = useFieldControlAria()
   const change = (value: Date | undefined) => {
     setValue(false)
 
@@ -37,6 +39,8 @@ export const DatePickerInputController = ({
           <PopoverTrigger
             render={
               <Button
+                id={formInput.id}
+                {...aria}
                 variant={"outline"}
                 className={cn(
                   "grow justify-between border-r-1 rounded-r-none",

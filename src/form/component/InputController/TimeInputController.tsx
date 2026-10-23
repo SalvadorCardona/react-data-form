@@ -1,11 +1,13 @@
 import { InputControllerInterface } from "@/form/InputControllerInterface"
 import { Input } from "@/ui/input"
 import { formatDateToDateWithHours } from "@/internal/date/formatDate"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 export const TimeInputController = ({
   formInput,
   onChange,
 }: InputControllerInterface) => {
+  const aria = useFieldControlAria()
   const setHour = (newHour: string | undefined) => {
     if (!newHour) {
       onChange({
@@ -37,6 +39,8 @@ export const TimeInputController = ({
   return (
     <>
       <Input
+        id={formInput.id}
+        {...aria}
         className={"w-auto"}
         type="time"
         defaultValue={content}

@@ -5,6 +5,7 @@ import React, { useRef, useState } from "react"
 import { cn } from "@/ui/cn"
 import { ValueOptionInterface } from "@/form/utils/valueOption"
 import { Trans } from "react-mini-i18n"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 export const AutocompleteInputController = ({
   formInput,
@@ -17,6 +18,7 @@ export const AutocompleteInputController = ({
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const aria = useFieldControlAria()
 
   const localChange = (value: string) => {
     onChange({ ...formInput, value })
@@ -75,6 +77,8 @@ export const AutocompleteInputController = ({
     <div ref={containerRef} className="relative w-full" onBlur={handleBlur}>
       <Input
         ref={inputRef}
+        id={formInput.id}
+        {...aria}
         type="text"
         value={inputValue}
         onChange={(e) => handleInputChange(e.target.value)}

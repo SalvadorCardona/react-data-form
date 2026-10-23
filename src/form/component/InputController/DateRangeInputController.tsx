@@ -20,6 +20,7 @@ import {
 import { translate } from "react-mini-i18n"
 import { getPorts } from "@/ports"
 import getFormInputInForm from "@/form/utils/getFormInputInForm"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 export interface DateRangeFormInputInterface extends FormInputInterface {
   startKey?: string
@@ -163,6 +164,7 @@ export const DateRangeInputController = ({
   onChange,
 }: InputControllerInterface<DateRangeFormInputInterface>) => {
   const formContext = useFormContext()
+  const aria = useFieldControlAria()
   const [startOpen, setStartOpen] = React.useState(false)
   const [endOpen, setEndOpen] = React.useState(false)
   const startKey = formInput.startKey ?? "startDate"
@@ -299,6 +301,8 @@ export const DateRangeInputController = ({
                 <PopoverTrigger
                   render={
                     <Button
+                      id={formInput.id}
+                      {...aria}
                       variant="outline"
                       className={cn(
                         "w-full justify-start text-left font-normal transition-all hover:border-primary/50 hover:bg-primary/5",

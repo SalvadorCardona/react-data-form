@@ -2,6 +2,7 @@ import { InputControllerInterface } from "@/form/InputControllerInterface"
 import { FormInputInterface } from "@/form/FormInputInterface"
 import { ChangeEvent } from "react"
 import { Input } from "@/ui/input"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 function fileToBase64(file: File): Promise<string | null | ArrayBuffer> {
   return new Promise((resolve, reject) => {
@@ -16,6 +17,7 @@ export const FileInputController = ({
   formInput,
   onChange,
 }: InputControllerInterface<FormInputInterface<string | undefined>>) => {
+  const aria = useFieldControlAria()
   const change = (value: string | undefined) => {
     onChange({ ...formInput, ...{ value } })
   }
@@ -32,6 +34,8 @@ export const FileInputController = ({
 
   return (
     <Input
+      id={formInput.id}
+      {...aria}
       type="file"
       defaultValue={formInput.value ?? ""}
       onChange={(e) => onFileChange(e)}

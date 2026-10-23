@@ -3,6 +3,7 @@ import { InputControllerInterface } from "@/form/InputControllerInterface"
 import { FormInputInterface } from "@/form/FormInputInterface"
 import { Item, ItemContent } from "@/ui/item"
 import { cn } from "@/ui/cn"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 export interface CheckboxFormInputInterface extends FormInputInterface {
   title?: string
@@ -20,6 +21,7 @@ export const CheckboxInputController = ({
   formInput,
   onChange,
 }: InputControllerInterface<CheckboxFormInputInterface>) => {
+  const aria = useFieldControlAria()
   const change = (value: boolean) => {
     onChange({ ...formInput, ...{ value: Boolean(value) } })
   }
@@ -45,6 +47,7 @@ export const CheckboxInputController = ({
           readOnly={formInput.readonly}
           onCheckedChange={(e) => change(e as boolean)}
           id={formInput.id}
+          {...aria}
         />
       </div>
       <ItemContent>

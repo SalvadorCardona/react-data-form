@@ -5,6 +5,7 @@ import { InputControllerProps } from "@/form/InputControllerInterface"
 import { translate } from "react-mini-i18n"
 import useDebounceCallback from "@/internal/hook/useDebounceCallback"
 import { cn } from "@/ui/cn"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 /**
  * Text search field: magnifier on the left, clear button on the right.
@@ -16,6 +17,7 @@ export const SearchInputController = ({
   formInput,
   onChange,
 }: InputControllerProps<string>) => {
+  const aria = useFieldControlAria()
   const [value, setValue] = useState<string>((formInput.value as string) ?? "")
 
   const propagate = useDebounceCallback((newValue: string) => {
@@ -32,6 +34,7 @@ export const SearchInputController = ({
       <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         id={formInput.id}
+        {...aria}
         name={formInput.name}
         value={value}
         onChange={(event) => change(event.target.value)}

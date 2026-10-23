@@ -5,6 +5,7 @@ import { cn } from "@/ui/cn"
 import { Eye, EyeOff } from "lucide-react"
 import { Input } from "@/ui/input"
 import { translate } from "react-mini-i18n"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 /**
  * Masked text field with a reveal toggle on the right.
@@ -16,6 +17,7 @@ export const PasswordInputController = ({
   formInput,
   onChange,
 }: InputControllerInterface) => {
+  const aria = useFieldControlAria()
   const [showPassword, setShowPassword] = useState(false)
 
   const togglePasswordVisibility = () => {
@@ -34,6 +36,7 @@ export const PasswordInputController = ({
         defaultValue={(formInput.value as string) ?? ""}
         placeholder={translate(formInput.placeholder ?? "")}
         id={formInput.id ?? formInput.name}
+        {...aria}
         type={showPassword ? "text" : "password"}
         autoComplete={formInput.autocomplete ?? "current-password"}
         required={formInput.required ? formInput.required : false}

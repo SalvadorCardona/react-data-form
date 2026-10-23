@@ -6,6 +6,7 @@ import { cn } from "@/ui/cn"
 import { Loader2, X } from "lucide-react"
 import { ValueOptionInterface } from "@/form/utils/valueOption"
 import { getEmojiValueOptions } from "@/form/component/InputController/getEmojiValueOptions"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 /**
  * Icon picker based on native emojis: opens an emoji grid and
@@ -24,6 +25,7 @@ export function IconInputController({
   const [loading, setLoading] = useState(false)
   const loadStartedRef = useRef(false)
   const value = formInput.value ?? undefined
+  const aria = useFieldControlAria()
 
   // Emojis are loaded asynchronously the first time the popover opens, unless
   // a list was already provided through `valueOptions`.
@@ -53,7 +55,13 @@ export function IconInputController({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           render={
-            <Button type="button" variant="outline" className="gap-2">
+            <Button
+              id={formInput.id}
+              {...aria}
+              type="button"
+              variant="outline"
+              className="gap-2"
+            >
               <span className="text-lg leading-none">{value ?? "🙂"}</span>
               <span className="text-sm">
                 {value ? "Change emoji" : "Pick an emoji"}

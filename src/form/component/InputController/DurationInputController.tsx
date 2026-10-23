@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useState } from "react"
 import { InputControllerProps } from "@/form/InputControllerInterface"
 import { Input } from "@/ui/input"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 const SECONDS_PER_HOUR = 3600
 const SECONDS_PER_MINUTE = 60
@@ -45,6 +46,7 @@ export const DurationInputController = ({
   formInput,
   onChange,
 }: InputControllerProps<number | null | undefined>) => {
+  const aria = useFieldControlAria()
   const [parts, setParts] = useState<DurationParts>(() =>
     secondsToParts(formInput.value)
   )
@@ -82,6 +84,8 @@ export const DurationInputController = ({
     <div className="flex items-center gap-2">
       <div className="relative w-24">
         <Input
+          id={formInput.id}
+          {...aria}
           type="text"
           inputMode="numeric"
           value={parts.hours}

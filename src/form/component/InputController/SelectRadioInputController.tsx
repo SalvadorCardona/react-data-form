@@ -9,6 +9,7 @@ import {
   SelectInputController,
   SelectItemPropsInterface,
 } from "./SelectInputController"
+import { useFieldControlAria } from "@/form/component/FieldControlContext"
 
 const nextKeys = ["ArrowDown", "ArrowRight"]
 const previousKeys = ["ArrowUp", "ArrowLeft"]
@@ -39,10 +40,12 @@ function RadioDecoratorComponent({
   children,
   formInput,
 }: SelectDecoratorPropsInterface) {
+  const aria = useFieldControlAria()
   return (
     <div
       role="radiogroup"
       id={formInput?.id}
+      {...aria}
       className={"flex gap-2"}
       onKeyDown={handleKeyDown}
     >
