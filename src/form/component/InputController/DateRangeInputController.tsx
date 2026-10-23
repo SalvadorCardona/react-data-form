@@ -449,7 +449,11 @@ export const DateRangeInputController = ({
           <div className="mt-6 rounded-lg border bg-muted/20 px-4 py-3">
             <p className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">
-                {translate("Selected range")}:
+                {/* The colon is translated too: French sets it off with a
+                    non-breaking space ("Période sélectionnée :"). */}
+                {translate("{{label}}:", {
+                  label: translate("Selected range"),
+                })}
               </span>{" "}
               {format(startCombined!, summaryFormat, {
                 locale: getPorts().dateLocale,

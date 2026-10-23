@@ -8,6 +8,7 @@ import {
   DateRangeInputController,
 } from "@/form/component/InputController/DateRangeInputController"
 import { configurePorts } from "@/ports"
+import { setTranslation } from "react-mini-i18n"
 
 interface EventData {
   startDate: string | null
@@ -37,7 +38,10 @@ function Harness({ withTime }: { withTime: boolean }) {
 const summary = () => screen.getByText(/→/).textContent
 
 describe("DateRangeInputController — selected range summary", () => {
-  afterEach(() => configurePorts({ dateLocale: undefined }))
+  afterEach(() => {
+    configurePorts({ dateLocale: undefined })
+    setTranslation({})
+  })
 
   it("joins date and time with the words of the date locale", () => {
     configurePorts({ dateLocale: fr })
@@ -52,5 +56,21 @@ describe("DateRangeInputController — selected range summary", () => {
     render(<Harness withTime={false} />)
 
     expect(summary()).toContain("2 novembre 2026 → 2 novembre 2026")
+  })
+
+  it("lets the translations punctuate the label", () => {
+    setTranslation({
+      "Selected range": "Période sélectionnée",
+      "{{label}}:": "{{label}}\u00a0:",
+    })
+    render(<Harness withTime />)
+
+    expect(summary()).toMatch(/^Période sélectionnée\u00a0: /)
+  })
+
+  it("keeps a plain colon without translations", () => {
+    render(<Harness withTime />)
+
+    expect(summary()).toMatch(/^Selected range: /)
   })
 })
