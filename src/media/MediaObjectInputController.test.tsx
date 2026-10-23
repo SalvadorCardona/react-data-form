@@ -14,6 +14,8 @@ import {
   createInMemoryMediaObjectPort,
   InMemoryMediaObjectPortInterface,
 } from "@/media/inMemoryMediaObjectPort"
+import FormElement from "@/form/component/form/FormElement"
+import useForm from "@/form/hook/useForm"
 
 const PNG_DATA_URL = "data:image/png;base64,AAAA"
 
@@ -44,6 +46,34 @@ const getFileInput = (container: HTMLElement) =>
 
 const getImageSource = (container: HTMLElement) =>
   container.querySelector("img")?.getAttribute("src")
+
+function MediaForm({
+  data,
+  onChange,
+}: {
+  data: { pic: string | null }
+  onChange?: (data: any) => void
+}) {
+  const formContext = useForm({
+    form: { inputs: { pic: { controller: MediaObjectInputController } } },
+    data,
+    onChange,
+  })
+  return <FormElement {...formContext} />
+}
+
+const renderForm = (
+  port: MediaObjectPortInterface,
+  data: { pic: string | null },
+  onChange = vi.fn()
+) => {
+  const utils = render(
+    <MediaObjectProvider port={port}>
+      <MediaForm data={data} onChange={onChange} />
+    </MediaObjectProvider>
+  )
+  return { ...utils, onChange }
+}
 
 /** Seeds the port with an already persisted media and returns its IRI. */
 const seedMedia = async (port: MediaObjectPortInterface) =>
@@ -140,5 +170,30 @@ describe("MediaObjectInputController", () => {
       expect.objectContaining({ value: null })
     )
     await waitFor(() => expect(port.medias.size).toBe(0))
+  })
+
+  it("empties the field of a real form when the picture is deleted", async () => {
+    const port = buildPort()
+    const iri = await seedMedia(port)
+    const { container, onChange } = renderForm(port, { pic: iri })
+
+    fireEvent.click(
+      await screen.findByLabelText(defaultMediaObjectLabels.deleteAction)
+    )
+
+    await waitFor(() =>
+      expect(onChange).toHaveBeenLastCalledWith({ pic: null }, expect.anything())
+    )
+    expect(getFileInput(container)).toBeInTheDocument()
+    expect(container.querySelector("img")).toBeNull()
+    await waitFor(() => expect(port.medias.size).toBe(0))
+  })
+
+  it("mounts in a real form whose value is null", () => {
+    const port = buildPort()
+    const { container } = renderForm(port, { pic: null })
+
+    expect(getFileInput(container)).toBeInTheDocument()
+    expect(screen.queryByLabelText(defaultMediaObjectLabels.deleteAction)).toBeNull()
   })
 })
