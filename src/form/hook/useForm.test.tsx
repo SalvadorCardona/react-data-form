@@ -317,10 +317,15 @@ describe("useForm", () => {
       )
 
       act(() => {
-        result.current.updateData({ name: "Grace" } as any)
+        result.current.updateData({ name: "Grace" })
       })
 
       expect(result.current.form.inputs.name.value).toBe("Grace")
+      expect(result.current.form.inputs.email.value).toBe("alice@test.fr")
+      expect(result.current.form.data).toEqual({
+        name: "Grace",
+        email: "alice@test.fr",
+      })
     })
 
     it("replaces the form data entirely", () => {
@@ -334,7 +339,7 @@ describe("useForm", () => {
       )
 
       act(() => {
-        result.current.updateData({ lastName: "Grace" } as any)
+        result.current.updateData({ lastName: "Grace" } as any, false)
       })
 
       expect(result.current.form.inputs.name.value).toBe(undefined)
