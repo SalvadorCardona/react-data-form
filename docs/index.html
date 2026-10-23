@@ -12,15 +12,17 @@
       The site is served from hermez.dev and from hermez-agency.github.io: the
       canonical names the first. Share tags take absolute URLs, so they point
       there too rather than following DOCS_BASE.
+
+      Every page is this same file, so the canonical and og:url are not written
+      here — they would name the overview on every page. App writes them, with
+      the title and descriptions of the page shown (siteUrl in src/pages).
     -->
-    <link rel="canonical" href="https://hermez.dev/react-data-form/" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/favicon-180.png" />
     <meta name="theme-color" content="#e8611a" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Hermez" />
-    <meta property="og:url" content="https://hermez.dev/react-data-form/" />
     <meta property="og:title" content="react-data-form — data-driven React forms" />
     <meta
       property="og:description"

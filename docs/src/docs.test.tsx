@@ -8,6 +8,7 @@ import * as media from "react-data-form/media"
 import { fr, translationKeys } from "react-data-form/i18n"
 import { getTranslations } from "react-mini-i18n"
 import { App } from "./App"
+import { canonicalUrl, pages, pageTitle, sitemap } from "./pages"
 
 /**
  * The site is a live demonstration, so it is worth checking it renders: a page
@@ -57,6 +58,31 @@ const looksLikeKey = (text: string) =>
     text
   )
 
+/** What the head of the document says the page shown is. */
+const describedAs = () => ({
+  title: document.title,
+  canonical: [...document.head.querySelectorAll('link[rel="canonical"]')].map(
+    (link) => link.getAttribute("href")
+  ),
+  url: document.head
+    .querySelector('meta[property="og:url"]')
+    ?.getAttribute("content"),
+  description: document.head
+    .querySelector('meta[name="description"]')
+    ?.getAttribute("content"),
+})
+
+/** What it should say for the page `id`. */
+const described = (id: string) => {
+  const page = pages.find((item) => item.id === id)!
+  return {
+    title: pageTitle(page),
+    canonical: [canonicalUrl(id)],
+    url: canonicalUrl(id),
+    description: page.description,
+  }
+}
+
 describe("the documentation site", () => {
   afterEach(() => document.documentElement.classList.remove("dark"))
 
@@ -90,6 +116,10 @@ describe("the documentation site", () => {
     afterAll(() => {
       act(() => root.unmount())
       gallery.remove()
+    })
+
+    it("gives the gallery its own canonical, title and share URL", () => {
+      expect(describedAs()).toEqual(described("controllers"))
     })
 
     it("renders the controller gallery, with live fields", () => {
@@ -314,6 +344,32 @@ describe("the documentation site", () => {
     expect(
       screen.getByRole("heading", { name: "react-data-form", level: 1 })
     ).toBeInTheDocument()
+  })
+
+  // The gallery is checked in its own block, where it is already rendered.
+  it.each(pages.map((page) => page.id).filter((id) => id !== "controllers"))(
+    "gives the %s page its own canonical, title and share URL",
+    (id) => {
+      renderAt(id === "overview" ? "" : `?page=${id}`)
+      expect(describedAs()).toEqual(described(id))
+    }
+  )
+
+  it("names no two pages alike", () => {
+    expect(new Set(pages.map(pageTitle)).size).toBe(pages.length)
+    expect(new Set(pages.map((page) => canonicalUrl(page.id))).size).toBe(
+      pages.length
+    )
+    expect(canonicalUrl("validation")).toBe(
+      "https://hermez.dev/react-data-form/?page=validation"
+    )
+  })
+
+  it("lists every page in the sitemap", () => {
+    const listed = [...sitemap().matchAll(/<loc>(.*?)<\/loc>/g)].map(
+      ([, url]) => url
+    )
+    expect(listed).toEqual(pages.map((page) => canonicalUrl(page.id)))
   })
 
   it("links every page through the query parameter", () => {
