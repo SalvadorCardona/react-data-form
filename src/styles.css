@@ -152,7 +152,8 @@
 /**
  * Theme-independent utilities the library expects.
  * `fc` capitalises the first letter of labels coming from the API, and
- * `animate-spin-slow` drives the outer ring of the loader.
+ * `animate-spin-slow` drives the outer ring of the loader and stops when the
+ * user asks for reduced motion.
  */
 @layer utilities {
   .fc::first-letter {
@@ -161,6 +162,12 @@
 
   .animate-spin-slow {
     animation: rdf-spin 3s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-spin-slow {
+      animation: none;
+    }
   }
 }
 

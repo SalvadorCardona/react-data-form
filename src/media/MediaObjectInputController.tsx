@@ -520,7 +520,7 @@ const MediaObjectInputControllerView = ({
 
         {isUploading && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none text-primary" />
           </div>
         )}
 

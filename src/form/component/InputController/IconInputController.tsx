@@ -64,7 +64,7 @@ export function IconInputController({
         <PopoverContent className="w-72">
           {loading ? (
             <div className="flex h-32 items-center justify-center text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none" />
             </div>
           ) : (
             <div className="grid max-h-64 grid-cols-8 gap-1 overflow-y-auto">

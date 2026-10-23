@@ -43,11 +43,11 @@ function LoaderSpinner({ className }: { className?: string }) {
     >
       <div className="relative size-20">
         {/* Outer ring */}
-        <div className="absolute inset-0 rounded-full border-4 border-muted animate-spin-slow" />
+        <div className="absolute inset-0 rounded-full border-4 border-muted animate-spin-slow motion-reduce:animate-none" />
         {/* Inner rotating element */}
-        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin" />
+        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin motion-reduce:animate-none" />
         {/* Center dot */}
-        <div className="absolute inset-0 m-auto size-3 rounded-full animate-pulse flex items-center justify-center ">
+        <div className="absolute inset-0 m-auto size-3 rounded-full animate-pulse motion-reduce:animate-none flex items-center justify-center ">
           <LogoPort />
         </div>
       </div>
@@ -59,9 +59,9 @@ export function LittleLoader() {
   return (
     <div className="relative size-5">
       {/* Outer ring */}
-      <div className="absolute inset-0 rounded-full border-4 border-muted animate-spin-slow" />
+      <div className="absolute inset-0 rounded-full border-4 border-muted animate-spin-slow motion-reduce:animate-none" />
       {/* Inner rotating element */}
-      <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin" />
+      <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin motion-reduce:animate-none" />
     </div>
   )
 }
@@ -79,19 +79,19 @@ export function DotLoader({ className, dotClassName, text }: DotLoaderProps) {
       <div className="flex items-center gap-1">
         <span
           className={cn(
-            "size-2 rounded-full bg-current animate-bounce [animation-delay:-0.3s] text-muted-foreground",
+            "size-2 rounded-full bg-current animate-bounce motion-reduce:animate-none [animation-delay:-0.3s] text-muted-foreground",
             dotClassName
           )}
         />
         <span
           className={cn(
-            "size-2 rounded-full bg-current animate-bounce [animation-delay:-0.15s] text-muted-foreground",
+            "size-2 rounded-full bg-current animate-bounce motion-reduce:animate-none [animation-delay:-0.15s] text-muted-foreground",
             dotClassName
           )}
         />
         <span
           className={cn(
-            "size-2 rounded-full bg-current animate-bounce text-muted-foreground",
+            "size-2 rounded-full bg-current animate-bounce motion-reduce:animate-none text-muted-foreground",
             dotClassName
           )}
         />
@@ -119,13 +119,13 @@ export function PageLoader({
       <div className="flex flex-col items-center gap-8">
         {/* Loading text */}
         <div className="flex flex-col items-center gap-2">
-          <div className="text-lg font-medium text-foreground animate-pulse">
+          <div className="text-lg font-medium text-foreground animate-pulse motion-reduce:animate-none">
             <LogoPort />
           </div>
           <div className="flex gap-1">
-            <span className="size-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
-            <span className="size-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
-            <span className="size-2 rounded-full bg-primary animate-bounce" />
+            <span className="size-2 rounded-full bg-primary animate-bounce motion-reduce:animate-none [animation-delay:-0.3s]" />
+            <span className="size-2 rounded-full bg-primary animate-bounce motion-reduce:animate-none [animation-delay:-0.15s]" />
+            <span className="size-2 rounded-full bg-primary animate-bounce motion-reduce:animate-none" />
           </div>
         </div>
       </div>

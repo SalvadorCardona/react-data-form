@@ -172,7 +172,7 @@ const MediaObjectGalleryInputControllerView = ({
       <Item variant={"outline"}>
         <ItemContent className="p-8">
           <div className="flex flex-col items-center gap-2">
-            <Loader2 className="w-10 h-10 text-muted-foreground animate-spin" />
+            <Loader2 className="w-10 h-10 text-muted-foreground animate-spin motion-reduce:animate-none" />
             <p className="text-sm text-muted-foreground">{labels.loading}</p>
           </div>
         </ItemContent>
@@ -229,7 +229,7 @@ const MediaObjectGalleryInputControllerView = ({
         <ItemContent className="p-8">
           <div className="flex flex-col items-center gap-2">
             {isLoading ? (
-              <Loader2 className="w-10 h-10 text-muted-foreground animate-spin" />
+              <Loader2 className="w-10 h-10 text-muted-foreground animate-spin motion-reduce:animate-none" />
             ) : (
               <Upload className="w-10 h-10 text-muted-foreground" />
             )}
@@ -257,7 +257,7 @@ const MediaObjectGalleryInputControllerView = ({
     <Item variant={"outline"} className="relative">
       {isLoading && (
         <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          <Loader2 className="w-8 h-8 text-primary animate-spin motion-reduce:animate-none" />
         </div>
       )}
 
