@@ -160,7 +160,9 @@ export const ImageEditor = ({
             {labels.editorCancel}
           </Button>
           <Button type="button" onClick={handleSave} disabled={isSaving}>
-            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSaving && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin motion-reduce:animate-none" />
+            )}
             {labels.editorSave}
           </Button>
         </DialogFooter>

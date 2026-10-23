@@ -4,7 +4,7 @@ import { Progress } from "@/ui/progress"
 import { useFormStep } from "@/step/useFormStep"
 import { Text } from "@/ui/Text"
 import { Trans, translate } from "react-mini-i18n"
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import { CardDescription, CardTitle } from "../ui/card"
 
 export type FormStepDecoratorPropsInterface = PropsWithChildren & {
@@ -23,6 +23,7 @@ export function FormStepDecorator({
   className,
 }: FormStepDecoratorPropsInterface) {
   const { progress, steps, currentStep, form } = useFormStep()
+  const reduceMotion = useReducedMotion()
 
   if (!currentStep)
     return (
@@ -49,7 +50,7 @@ export function FormStepDecorator({
         </Text>
       )}
       <AnimatePresence mode="wait">
-        <motion.div key={currentStep.group} {...stepAnimation}>
+        <motion.div key={currentStep.group} {...(reduceMotion ? {} : stepAnimation)}>
           {children}
         </motion.div>
       </AnimatePresence>
