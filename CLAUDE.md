@@ -30,7 +30,8 @@ pnpm run build        # build de dist/ (ESM + types)
 pnpm run test          # vitest run
 pnpm run lint           # eslint .
 pnpm run typecheck       # tsc --noEmit
-pnpm run ci               # typecheck, lint, test, build — dans cet ordre exact (CI)
+pnpm run check:dist       # après build : aucune entrée n'importe statiquement emojiData
+pnpm run ci               # typecheck, lint, test, build, check:dist — dans cet ordre (CI)
 
 pnpm run docs:dev          # site de démo (docs/), Vite
 pnpm run docs:build        # build du site de démo

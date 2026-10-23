@@ -21,6 +21,8 @@ jobs:
       - run: pnpm run lint
       - run: pnpm run test --coverage
       - run: pnpm run build
+      # Lazy chunks (emoji dataset) must not be imported statically by an entry
+      - run: pnpm run check:dist
 
       # Check the published package actually holds what it advertises
       - run: pnpm pack --pack-destination /tmp

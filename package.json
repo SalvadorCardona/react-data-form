@@ -58,6 +58,7 @@
   },
   "scripts": {
     "build": "tsdown && cp src/styles.css dist/styles.css",
+    "check:dist": "node scripts/check-dist.mjs",
     "dev": "tsdown --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -66,7 +67,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "ci": "pnpm run typecheck && pnpm run lint && pnpm run test --coverage && pnpm run build",
+    "ci": "pnpm run typecheck && pnpm run lint && pnpm run test --coverage && pnpm run build && pnpm run check:dist",
     "changeset": "changeset",
     "release": "pnpm run build && changeset publish",
     "prepublishOnly": "pnpm run build",
