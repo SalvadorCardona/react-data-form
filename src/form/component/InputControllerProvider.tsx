@@ -12,6 +12,7 @@ import { ValueOptionInterface } from "@/form/utils/valueOption"
 import useDebounceCallback from "@/internal/hook/useDebounceCallback"
 import { ActionList } from "@/internal/action/ActionList"
 import { useEffectCallback } from "@/internal/hook/useEffectCallback"
+import { isFormInputHidden } from "@/form/utils/isFormInputHidden"
 
 const sameItems = <T,>(a: T[] | undefined, b: T[] | undefined) =>
   a === b ||
@@ -114,10 +115,7 @@ export default function InputControllerProvider({
 
   const InputControllerComponent = getInputControllerFromFormInput(formInput)
 
-  const className =
-    formInput.type === "hidden" || (formInput?.hidden && formInput.hidden())
-      ? "hidden"
-      : ""
+  const className = isFormInputHidden(formInput, form) ? "hidden" : ""
 
   const CurrentDecorator = formInput?.components?.decorator
     ? formInput.components.decorator

@@ -1,6 +1,6 @@
 import { ValueOptionInterface } from "@/form/utils/valueOption"
 import { InputControllerComponentInterface } from "@/form/InputControllerInterface"
-import { FormInterface } from "@/form/FormInterface"
+import { FormBuiltInterface, FormInterface } from "@/form/FormInterface"
 import { FC, PropsWithChildren, ReactNode } from "react"
 import { FormContextInterface } from "@/form/provider/FormContext"
 import ViolationInterface from "@/form/Violation"
@@ -10,7 +10,7 @@ export interface BaseDecoratorFormInputInterface extends PropsWithChildren {
   className?: string
 }
 
-export interface FormInputInterface<Value = any> {
+export interface FormInputInterface<Value = any, Data extends object = any> {
   id?: string
   groups?: string[]
   name?: string
@@ -43,7 +43,17 @@ export interface FormInputInterface<Value = any> {
   controller?: InputControllerComponentInterface
   min?: number
   max?: number
-  hidden?: () => boolean
+  /**
+   * Hides the input given the current data of the form, « company » only for a
+   * professional customer for instance. A hidden input is not validated and,
+   * unless `keepHiddenValue`, its value is left out of the submitted data.
+   */
+  hidden?: (data: Data, form: FormBuiltInterface<Data>) => boolean
+  /**
+   * Submits the value of the input even while `hidden` hides it (default
+   * `false`). An input of type "hidden" is always submitted.
+   */
+  keepHiddenValue?: boolean
   generatedValue?: boolean
   form?: FormInterface
   for?: string

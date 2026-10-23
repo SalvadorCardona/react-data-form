@@ -81,4 +81,30 @@ describe("getDataFromForm", () => {
       nullable: null,
     })
   })
+
+  describe("withoutHiddenValues", () => {
+    const form = createForm(
+      {
+        inputs: {
+          type: {},
+          id: { type: "hidden" },
+          company: { hidden: (data: any) => data.type !== "pro" },
+          vat: { hidden: (data: any) => data.type !== "pro", keepHiddenValue: true },
+        },
+      },
+      { type: "private", id: 1, company: "Acme", vat: "FR01" }
+    )
+
+    it("keeps every value by default", () => {
+      expect(getDataFromForm(form)).toMatchObject({ company: "Acme", vat: "FR01" })
+    })
+
+    it("leaves out the inputs hidden by the data, unless keepHiddenValue", () => {
+      expect(getDataFromForm(form, { withoutHiddenValues: true })).toEqual({
+        type: "private",
+        id: 1,
+        vat: "FR01",
+      })
+    })
+  })
 })

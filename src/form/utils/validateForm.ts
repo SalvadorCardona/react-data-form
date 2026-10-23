@@ -3,6 +3,7 @@ import getFormInputsFromForm from "@/form/utils/getFormInputsFromForm"
 import ViolationInterface, { createViolation, isZodError } from "@/form/Violation"
 import { FormInputInterface } from "@/form/FormInputInterface"
 import { translate } from "react-mini-i18n"
+import { isFormInputHidden } from "@/form/utils/isFormInputHidden"
 
 // false and 0 are answers, not missing values
 function isEmptyValue(value: unknown): boolean {
@@ -12,10 +13,6 @@ function isEmptyValue(value: unknown): boolean {
     value === "" ||
     (Array.isArray(value) && value.length === 0)
   )
-}
-
-function isHiddenInput(formInput: FormInputInterface): boolean {
-  return formInput.type === "hidden" || formInput.hidden?.() === true
 }
 
 export function validateForm<
@@ -29,7 +26,8 @@ export function validateForm<
   const newForm = { ...form, inputs }
 
   getFormInputsFromForm(newForm)
-    .filter((e) => e.generatedValue !== true)
+    // Nothing to fix on a hidden input: it is not validated at all
+    .filter((e) => e.generatedValue !== true && !isFormInputHidden(e, form))
     .forEach((formInput) => {
       if (!formInput?.name) {
         return
@@ -41,11 +39,7 @@ export function validateForm<
       }
       inputs[formInput.name] = currentFormInput
 
-      if (
-        currentFormInput.required &&
-        !isHiddenInput(currentFormInput) &&
-        isEmptyValue(currentFormInput.value)
-      ) {
+      if (currentFormInput.required && isEmptyValue(currentFormInput.value)) {
         currentFormInput.violations.push(
           createViolation({
             propertyPath: formInput.name,

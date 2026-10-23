@@ -42,11 +42,28 @@ describe("inputs", () => {
     type Inputs = NonNullable<FormInterface<User>["inputs"]>
 
     expectTypeOf<NonNullable<Inputs["age"]>>().toEqualTypeOf<
-      FormInputInterface<number>
+      FormInputInterface<number, User>
     >()
     expectTypeOf<NonNullable<Inputs["name"]>>().toEqualTypeOf<
-      FormInputInterface<string>
+      FormInputInterface<string, User>
     >()
+  })
+
+  it("hands the data of the form to hidden, typed by Data", () => {
+    const form: FormInterface<User> = {
+      inputs: {
+        age: {
+          hidden: (data, form) => {
+            expectTypeOf(data).toEqualTypeOf<User>()
+            expectTypeOf(form.data).toEqualTypeOf<User>()
+            return data.name === ""
+          },
+        },
+        // A function without argument is still accepted
+        name: { hidden: () => false },
+      },
+    }
+    expectTypeOf(form).toExtend<FormInterface<User>>()
   })
 
   it("reports an unknown field name when Data is given", () => {
