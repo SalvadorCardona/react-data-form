@@ -47,4 +47,60 @@ describe("MediaObjectGalleryInputController", () => {
     )
     expect(port.onError).not.toHaveBeenCalled()
   })
+
+  describe("readonly", () => {
+    it("only renders the thumbnails and never writes through the port", async () => {
+      const port = createInMemoryMediaObjectPort({ onError: vi.fn() })
+      const gallery = await port.gallery.create({ role: "galeries" })
+      await port.upload({
+        base64: "data:image/png;base64,aW1hZ2U=",
+        gallery: gallery.iri,
+      })
+      const upload = vi.spyOn(port, "upload")
+      const remove = vi.spyOn(port, "remove")
+      const create = vi.spyOn(port.gallery, "create")
+
+      const { container } = render(
+        <MediaObjectProvider port={port}>
+          <MediaObjectGalleryInputController
+            formInput={{ value: gallery.iri, readonly: true }}
+            onChange={vi.fn()}
+          />
+        </MediaObjectProvider>
+      )
+
+      await waitFor(() => expect(container.querySelector("img")).toBeInTheDocument())
+      expect(container.querySelectorAll('input[type="file"]')).toHaveLength(0)
+      expect(
+        screen.queryByLabelText(defaultMediaObjectLabels.deleteAction)
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByText(defaultMediaObjectLabels.galleryCreateTitle)
+      ).not.toBeInTheDocument()
+      expect(port.galleries.size).toBe(1)
+      expect(upload).not.toHaveBeenCalled()
+      expect(remove).not.toHaveBeenCalled()
+      expect(create).not.toHaveBeenCalled()
+    })
+
+    it("does not create a gallery when the field has none", () => {
+      const port = createInMemoryMediaObjectPort({ onError: vi.fn() })
+      const create = vi.spyOn(port.gallery, "create")
+      render(
+        <MediaObjectProvider port={port}>
+          <MediaObjectGalleryInputController
+            formInput={{ readonly: true }}
+            onChange={vi.fn()}
+          />
+        </MediaObjectProvider>
+      )
+
+      expect(
+        screen.queryByText(defaultMediaObjectLabels.galleryCreateTitle)
+      ).not.toBeInTheDocument()
+      fireEvent.click(screen.getByText(defaultMediaObjectLabels.galleryEmptyTitle))
+      expect(create).not.toHaveBeenCalled()
+      expect(port.galleries.size).toBe(0)
+    })
+  })
 })

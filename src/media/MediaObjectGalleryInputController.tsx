@@ -140,6 +140,19 @@ const MediaObjectGalleryInputControllerView = ({
     )
   }
 
+  // Read only: the thumbnails, nothing that writes through the port.
+  if (formInput.readonly && !uri) {
+    return (
+      <Item variant={"outline"}>
+        <ItemContent className="p-8">
+          <p className="text-sm text-center text-muted-foreground">
+            {labels.galleryEmptyTitle}
+          </p>
+        </ItemContent>
+      </Item>
+    )
+  }
+
   if (!uri) {
     return (
       <Item
@@ -200,16 +213,20 @@ const MediaObjectGalleryInputControllerView = ({
           (gallery?.items ?? []).map((e) => (
             <ItemController
               key={"item-gallery-" + e}
-              formInput={{ value: e, gallery: uri }}
+              formInput={{ value: e, gallery: uri, readonly: formInput.readonly }}
               onChange={() => refreshGallery()}
             />
           ))}
 
-        <ItemController
-          key={(gallery?.items?.length ?? "") + (gallery?.iri ?? "") + "item-galery"}
-          formInput={{ value: undefined, for: "gallery", gallery: uri }}
-          onChange={() => refreshGallery()}
-        />
+        {!formInput.readonly && (
+          <ItemController
+            key={
+              (gallery?.items?.length ?? "") + (gallery?.iri ?? "") + "item-galery"
+            }
+            formInput={{ value: undefined, for: "gallery", gallery: uri }}
+            onChange={() => refreshGallery()}
+          />
+        )}
 
         {!hasItems && !isLoading && (
           <div className="col-span-full flex flex-col items-center justify-center py-8 text-center">
@@ -217,9 +234,11 @@ const MediaObjectGalleryInputControllerView = ({
             <p className="text-sm text-muted-foreground">
               {labels.galleryEmptyTitle}
             </p>
-            <p className="text-xs text-muted-foreground">
-              {labels.galleryEmptyHint}
-            </p>
+            {!formInput.readonly && (
+              <p className="text-xs text-muted-foreground">
+                {labels.galleryEmptyHint}
+              </p>
+            )}
           </div>
         )}
       </ItemContent>
