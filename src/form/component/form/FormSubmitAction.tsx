@@ -44,7 +44,7 @@ export function DefaultFormSubmitAction() {
           size={"lg"}
           disabled={isLoading}
           aria-busy={isLoading}
-          onClick={() => formContext.onSubmit()}
+          onClick={() => formContext.onSubmit().catch(() => {})}
         >
           {isLoading && <LittleLoader />}
           <span className={"fc"}>
