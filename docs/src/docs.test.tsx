@@ -187,6 +187,31 @@ describe("the documentation site", () => {
     expect(within(example).queryByText(/"company"/)).toBeNull()
   })
 
+  it("tells unsaved changes apart, and resets them", async () => {
+    renderAt("?page=forms")
+    const example = screen
+      .getByText("Edit, then reset or save")
+      .closest("div") as HTMLElement
+    const name = within(example).getByLabelText(/Name/)
+    const reset = within(example).getByRole("button", { name: "Reset" })
+
+    expect(within(example).getByText("Nothing to save")).toBeInTheDocument()
+    expect(reset).toBeDisabled()
+
+    fireEvent.change(name, { target: { value: "Ada King" } })
+    expect(within(example).getByText("Unsaved changes")).toBeInTheDocument()
+
+    fireEvent.click(reset)
+    expect(within(example).getByText("Nothing to save")).toBeInTheDocument()
+    expect(within(example).getByLabelText(/Name/)).toHaveValue("Ada Lovelace")
+
+    fireEvent.change(within(example).getByLabelText(/Name/), {
+      target: { value: "Ada King" },
+    })
+    fireEvent.click(within(example).getByRole("button", { name: "Save" }))
+    expect(await within(example).findByText("Nothing to save")).toBeInTheDocument()
+  })
+
   it("renders the asymmetric-form demo, one block per shape", () => {
     renderAt("?page=multi-forms")
     expect(
