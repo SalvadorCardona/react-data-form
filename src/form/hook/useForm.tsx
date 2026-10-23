@@ -28,7 +28,7 @@ export interface UseFormParams<Data extends object = any> {
 
 export interface FormContextOutput<Data extends object = any> {
   parentFormContext?: FormContextOutput<Data>
-  updateData: (data: Data, partial?: boolean) => void
+  updateData: (data: Partial<Data>, partial?: boolean) => void
   form: FormBuiltInterface<Data>
   onChange: (input: FormInputInterface) => void
   onSubmit: () => Promise<Data | undefined>
@@ -104,8 +104,9 @@ export default function useForm<Data extends object = object>({
 
   const handleSubmitDebounced = useDebounceCallback(handleSubmit, DEBOUNCE_DELAY)
 
-  const updateFormData = (newData: Data, partial = true) => {
-    const updatedForm = updateForm(currentForm, newData, partial)
+  const updateFormData = (newData: Partial<Data>, partial = true) => {
+    const data = (partial ? { ...currentForm.data, ...newData } : newData) as Data
+    const updatedForm = updateForm(currentForm, data, partial)
     setCurrentForm(updatedForm)
     onChange?.(updatedForm.data, updatedForm)
   }
