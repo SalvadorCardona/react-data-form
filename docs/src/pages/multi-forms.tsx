@@ -55,8 +55,9 @@ interface PageDraft {
 }
 
 /**
- * One array field, three shapes. Add a block from the palette, drag it by its
- * handle or type an order in its header: the data on the right follows.
+ * One array field, three shapes. Add a block from the palette, move it with the
+ * arrows in its header, drag its handle (mouse, finger or arrow keys) or type an
+ * order: the data on the right follows.
  */
 function AsymmetricFormExample() {
   const form: FormInterface<PageDraft> = {
@@ -130,6 +131,14 @@ export function MultiFormsPage() {
           its content. It is display state only — the value does not change. Pass{" "}
           <code>closedByDefault: true</code> to mount the whole list folded.
         </p>
+        <p>
+          Every move reindexes the whole array from 0, so two blocks never share an
+          order. The arrows in a header move a block up or down one place. The handle
+          drags with a mouse, follows a finger on a touch screen, and once focused
+          moves its block with the <kbd>↑</kbd> and <kbd>↓</kbd> keys. The number
+          after <code>#</code> places the block at that position when the field loses
+          focus or <kbd>Enter</kbd> is pressed.
+        </p>
       </Section>
 
       <Section
@@ -190,8 +199,10 @@ export function MultiFormsPage() {
             <code>form</code>.
           </li>
           <li>
-            <code>draggable</code> — adds a grip handle to each block header and lets
-            a block be dropped onto another, which reindexes the whole array.
+            <code>draggable</code> — adds a grip handle to each block header: drag it
+            with a mouse or a finger and drop the block onto another, or focus it and
+            use the arrow keys. Moving reindexes the whole array. Without it, the
+            "Move up" / "Move down" buttons and the order input still reorder.
           </li>
           <li>
             <code>closedByDefault</code> — mounts every block folded, headers only.

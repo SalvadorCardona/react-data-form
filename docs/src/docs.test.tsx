@@ -195,6 +195,24 @@ describe("the documentation site", () => {
     expect(data.blocks).toHaveLength(4)
   })
 
+  it("moves a block down from its header, and the data panel reindexes", async () => {
+    const user = userEvent.setup()
+    renderAt("?page=multi-forms")
+
+    await user.click(screen.getAllByRole("button", { name: "Move down" })[0])
+
+    const data = JSON.parse(screen.getByTestId("form-data").textContent ?? "{}")
+    const byOrder = [...data.blocks].sort(
+      (a: { order: number }, b: { order: number }) => a.order - b.order
+    )
+    expect(byOrder.map((b: { type: string }) => b.type)).toEqual([
+      "long-text",
+      "title",
+      "gallery",
+    ])
+    expect(byOrder.map((b: { order: number }) => b.order)).toEqual([0, 1, 2])
+  })
+
   it("renders the validation page and its live example", () => {
     renderAt("?page=validation")
     expect(

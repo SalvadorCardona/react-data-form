@@ -22,6 +22,8 @@ export const translationKeys = [
   "Pick the shape this entry takes.",
   "Drag",
   "Order",
+  "Move up",
+  "Move down",
   "Collapse the block",
   "Expand the block",
   "Remove",

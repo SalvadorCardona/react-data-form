@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import {
+  KeyboardEvent,
+  PointerEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 
 import { InputControllerInterface } from "@/form/InputControllerInterface"
 import { FormInputInterface } from "@/form/FormInputInterface"
@@ -22,6 +29,8 @@ import {
 import { createUniqId } from "jsonld-item"
 
 import {
+  ArrowDown,
+  ArrowUp,
   ChevronDown,
   ChevronRight,
   CirclePlus,
@@ -39,6 +48,9 @@ import {
   getForms,
   getFormType,
 } from "@/form/utils/addForm"
+
+/** The header controls a moved block hands the focus back to. */
+type BlockControl = "handle" | "up" | "down"
 
 export interface MultiFormInputPropsInterface<
   T extends IdAbleInterface[] = IdAbleInterface[],
@@ -107,6 +119,10 @@ export const FormArrayInputController = ({
   // Folded blocks opened by a failed submission: they show their violations
   // on mount.
   const [revealedKeys, setRevealedKeys] = useState<string[]>([])
+  // Reordering controls, per block key, so that focus follows a moved block:
+  // React moves its node, which drops the focus it held.
+  const controlRefs = useRef(new Map<string, HTMLElement | null>())
+  const pendingFocus = useRef<{ key: string; control: BlockControl } | null>(null)
 
   // The list follows a value changed from outside (updateData, async load).
   useEffect(() => {
@@ -215,13 +231,84 @@ export const FormArrayInputController = ({
     changeValues(updateByIndex<object>(values, index, childInput.value))
   }
 
-  const changeOrder = (item: IdAbleInterface) => (order: number) => {
+  // Moves a block within the ordered list and reindexes every identifierKey
+  // from 0: no gap, no duplicate.
+  const moveBlock = (fromIndex: number, toIndex: number, focus?: BlockControl) => {
+    if (fromIndex === toIndex || toIndex < 0 || toIndex >= orderedValues.length) {
+      return
+    }
+
+    const reordered = [...orderedValues]
+    const [movedItem] = reordered.splice(fromIndex, 1)
+    reordered.splice(toIndex, 0, movedItem)
+
+    if (focus) {
+      pendingFocus.current = { key: itemKey(movedItem, toIndex), control: focus }
+    }
+
     changeValues(
-      values.map((value) =>
-        value.id === item.id ? { ...value, [identifierKey]: order } : value
-      )
+      reordered.map((item, index) => ({ ...item, [identifierKey]: index }))
     )
   }
+
+  const moveBy = (index: number, offset: number, focus: BlockControl) => () =>
+    moveBlock(index, index + offset, focus)
+
+  // The order typed in the header places the block among the others: before
+  // the ones holding the same order when it goes up, after them when it goes
+  // down. The list is then reindexed, so two blocks never share an order.
+  const changeOrder = (index: number) => (order: number) => {
+    const current = orderedValues[index][identifierKey] as unknown as
+      number | undefined
+    const movesUp = current == null || order < current
+    const toIndex = orderedValues.filter((item, otherIndex) => {
+      if (otherIndex === index) return false
+      const other = item[identifierKey] as unknown as number | undefined
+      if (other == null) return false
+      return movesUp ? other < order : other <= order
+    }).length
+
+    if (toIndex === index) {
+      // Same place, but the order typed still has to be brought back in line.
+      changeValues(
+        orderedValues.map((item, position) => ({
+          ...item,
+          [identifierKey]: position,
+        }))
+      )
+      return
+    }
+    moveBlock(index, toIndex)
+  }
+
+  const handleHandleKeyDown =
+    (index: number) => (event: KeyboardEvent<HTMLElement>) => {
+      const offset = { ArrowUp: -1, ArrowDown: 1 }[event.key]
+      if (!offset) return
+
+      event.preventDefault()
+      moveBlock(index, index + offset, "handle")
+    }
+
+  useEffect(() => {
+    if (!pendingFocus.current) return
+    const { key, control } = pendingFocus.current
+    pendingFocus.current = null
+
+    // A block moved to an end disables the button just used: focus goes to
+    // the other one rather than to the page.
+    const fallback: Record<BlockControl, BlockControl> = {
+      handle: "handle",
+      up: "down",
+      down: "up",
+    }
+    const element = controlRefs.current.get(`${key}:${control}`)
+    const target =
+      element && !(element as HTMLButtonElement).disabled
+        ? element
+        : controlRefs.current.get(`${key}:${fallback[control]}`)
+    target?.focus()
+  })
 
   // The ordering key is pulled out of the form body: it is edited from the
   // block header through BlockOrderInput.
@@ -257,37 +344,54 @@ export const FormArrayInputController = ({
   const handleDragEnd = () => {
     if (!isDraggable || !startItem || dragIndex === null) return
 
-    // 1. Work on a copy sorted by identifierKey
-    const sorted = [...values].sort((a, b) => {
-      const aValue = (a[identifierKey] as unknown as number | undefined) ?? 0
-      const bValue = (b[identifierKey] as unknown as number | undefined) ?? 0
-      return aValue - bValue
-    })
-
-    // 2. Index of the dragged item
-    const fromIndex = sorted.findIndex((item) => item.id === startItem.id)
+    const fromIndex = orderedValues.findIndex((item) => item.id === startItem.id)
     if (fromIndex === -1) return
 
-    // 3. Target index, from the dragIndex value
-    const toIndex = sorted.findIndex((item) => {
+    const toIndex = orderedValues.findIndex((item) => {
       const value = item[identifierKey] as unknown as number | undefined
       return value === dragIndex
     })
     if (toIndex === -1) return
 
-    // 4. Move it
-    const [movedItem] = sorted.splice(fromIndex, 1)
-    sorted.splice(toIndex, 0, movedItem)
-
-    // 5. Reindex everything
-    const reindexed = sorted.map((item, index) => ({
-      ...item,
-      [identifierKey]: index,
-    }))
-
     setStartItem(undefined)
     setDragIndex(null)
-    changeValues(reindexed)
+    moveBlock(fromIndex, toIndex)
+  }
+
+  // Touch and pen: most mobile browsers never fire the HTML5 drag events, so
+  // the handle follows the pointer and looks for the block under it. The
+  // mouse keeps the native drag and drop.
+  const handlePointerDown = (
+    event: PointerEvent<HTMLElement>,
+    item: IdAbleInterface
+  ) => {
+    if (!isDraggable || event.pointerType === "mouse") return
+
+    // A touch pointer is implicitly captured by the handle: its moves keep
+    // landing here while the finger travels over the other blocks.
+    handleDragStart(item)
+  }
+
+  const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType === "mouse" || !startItem) return
+
+    const block = document
+      .elementFromPoint(event.clientX, event.clientY)
+      ?.closest<HTMLElement>("[data-block-index]")
+    const item = block ? orderedValues[Number(block.dataset.blockIndex)] : undefined
+    if (item) handleDragOver(item)
+  }
+
+  const handlePointerUp = (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType === "mouse") return
+
+    handleDragEnd()
+    cancelDrag()
+  }
+
+  const cancelDrag = () => {
+    setStartItem(undefined)
+    setDragIndex(null)
   }
 
   const orderedValues = useMemo(() => {
@@ -367,6 +471,7 @@ export const FormArrayInputController = ({
               isCurrentDragTarget && "border-primary bg-primary/5",
               "relative flex-col items-stretch"
             )}
+            data-block-index={index}
             onDragOver={() => handleDragOver(item)}
             onDragEnd={handleDragEnd}
           >
@@ -376,23 +481,64 @@ export const FormArrayInputController = ({
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 {isDraggable && (
                   <span
-                    className="cursor-grab text-muted-foreground/60 transition-colors hover:text-foreground active:cursor-grabbing"
+                    ref={(element) => {
+                      controlRefs.current.set(`${key}:handle`, element)
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    className="cursor-grab touch-none rounded-sm text-muted-foreground/60 outline-none transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 active:cursor-grabbing"
                     draggable
                     onDragStart={() => handleDragStart(item)}
+                    onKeyDown={handleHandleKeyDown(index)}
+                    onPointerDown={(event) => handlePointerDown(event, item)}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerCancel={cancelDrag}
                     aria-label={translate("Drag")}
+                    aria-keyshortcuts="ArrowUp ArrowDown"
                   >
                     <GripVertical className="size-4" />
                   </span>
                 )}
                 <BlockOrderInput
                   value={itemOrder}
-                  onChange={changeOrder(item)}
+                  onChange={changeOrder(index)}
                   label={translate("Order")}
                 />
                 {blockLabel}
               </div>
 
               <ItemActions>
+                <Button
+                  ref={(element) => {
+                    controlRefs.current.set(`${key}:up`, element)
+                  }}
+                  variant="ghost"
+                  size="icon-sm"
+                  type="button"
+                  onClick={moveBy(index, -1, "up")}
+                  disabled={index === 0}
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label={translate("Move up")}
+                >
+                  <ArrowUp className="size-4" />
+                </Button>
+
+                <Button
+                  ref={(element) => {
+                    controlRefs.current.set(`${key}:down`, element)
+                  }}
+                  variant="ghost"
+                  size="icon-sm"
+                  type="button"
+                  onClick={moveBy(index, 1, "down")}
+                  disabled={index === orderedValues.length - 1}
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label={translate("Move down")}
+                >
+                  <ArrowDown className="size-4" />
+                </Button>
+
                 <Button
                   variant="ghost"
                   size="icon-sm"
