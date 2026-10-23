@@ -14,6 +14,7 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: /^react-data-form\/group$/, replacement: `${src}/group/index.ts` },
+      { find: /^react-data-form\/hydra$/, replacement: `${src}/hydra/index.ts` },
       { find: /^react-data-form\/i18n$/, replacement: `${src}/i18n/index.ts` },
       { find: /^react-data-form\/media$/, replacement: `${src}/media/index.ts` },
       { find: /^react-data-form\/step$/, replacement: `${src}/step/index.ts` },

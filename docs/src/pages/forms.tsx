@@ -1,6 +1,7 @@
 import { CompleteFormExample } from "../CompleteFormExample"
 import { ConditionalFormExample } from "../ConditionalFormExample"
 import { DirtyFormExample } from "../DirtyFormExample"
+import { HydraFormExample } from "../HydraFormExample"
 import { CodeBlock, LiveExample, PageHeader, Section } from "../DocLayout"
 import { StepFormExample } from "../StepFormExample"
 import { pageHref } from "./index"
@@ -76,6 +77,34 @@ export function FormsPage() {
         <CodeBlock>{dirty}</CodeBlock>
         <LiveExample label="Edit, then reset or save">
           <DirtyFormExample />
+        </LiveExample>
+      </Section>
+
+      <Section
+        title="Generating from API Platform"
+        intro="react-data-form/hydra reads the Hydra documentation of the API and declares the fields."
+      >
+        <p>
+          <code>createFormFromHydraClass(doc, classIri, options)</code> is a pure
+          function: give it the document served on <code>/api/docs.jsonld</code> and
+          the IRI of a class, it returns a <code>FormInterface</code>. Each property
+          becomes a field labelled by its <code>hydra:title</code>, its controller
+          picked from its range: <code>xsd:string</code> a text input,{" "}
+          <code>xsd:integer</code> and <code>xsd:decimal</code> a number,{" "}
+          <code>xsd:dateTime</code> a date picker, <code>xsd:boolean</code> a switch
+          (the older <code>xmls:</code> prefix works too).
+        </p>
+        <p>
+          A relation to another class becomes a searchable select — a multi-select
+          for a collection — calling your <code>onSearch</code> with the relation.{" "}
+          <code>hydra:required</code> sets <code>required</code>; a property that is
+          not <code>hydra:writeable</code> is shown read-only, and one neither
+          readable nor writeable is left out. <code>options.inputs</code> overrides a
+          field, or removes it with <code>false</code>.
+        </p>
+        <CodeBlock>{hydra}</CodeBlock>
+        <LiveExample label="Pick a book, then save">
+          <HydraFormExample />
         </LiveExample>
       </Section>
 
@@ -162,6 +191,20 @@ const dirty = `const formContext = useForm({ form, data: user, warnOnLeave: true
 <button disabled={!formContext.isDirty} onClick={formContext.reset}>
   Reset
 </button>`
+
+const hydra = `import { createFormFromHydraClass } from "react-data-form/hydra"
+
+const docs = await fetch("/api/docs.jsonld").then((response) => response.json())
+
+const form = createFormFromHydraClass(docs, "#Review", {
+  onSearch: (query, relation) => searchIris(relation.range, query),
+  inputs: {
+    body: { label: "Review" },
+    letter: false, // left out
+  },
+})
+
+const formContext = useForm({ form: { ...form, onSubmit: save } })`
 
 const groups = `import { FormInputsGroup } from "react-data-form/group"
 

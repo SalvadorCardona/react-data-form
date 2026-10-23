@@ -41,6 +41,10 @@
       "types": "./dist/group/index.d.ts",
       "import": "./dist/group/index.js"
     },
+    "./hydra": {
+      "types": "./dist/hydra/index.d.ts",
+      "import": "./dist/hydra/index.js"
+    },
     "./i18n": {
       "types": "./dist/i18n/index.d.ts",
       "import": "./dist/i18n/index.js"

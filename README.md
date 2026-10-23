@@ -148,6 +148,7 @@ setTranslation({ ...fr, "My profile": "Mon profil" })
 | ----------------------- | ---------------------------------------------------------------- |
 | `react-data-form`       | Core: `useForm`, `FormElement`, field controllers, configuration |
 | `react-data-form/group` | Splitting fields into collapsible sections                       |
+| `react-data-form/hydra` | Forms generated from an API Platform Hydra documentation         |
 | `react-data-form/i18n`  | `translationKeys` and the French dictionary `fr`                 |
 | `react-data-form/media` | Media fields: upload, gallery, image editor                      |
 | `react-data-form/step`  | Multi-step forms with navigation                                 |
@@ -169,6 +170,39 @@ const form: FormInterface = {
   },
 }
 ```
+
+### Generating a form from API Platform
+
+`react-data-form/hydra` turns a class of the Hydra documentation served on
+`/api/docs.jsonld` into a `FormInterface`. The function is pure: fetching the
+document is up to the application.
+
+```ts
+import { createFormFromHydraClass } from "react-data-form/hydra"
+
+const docs = await fetch("/api/docs.jsonld").then((response) => response.json())
+
+const form = createFormFromHydraClass(docs, "#Review", {
+  onSearch: (query, relation) => searchIris(relation.range, query),
+  inputs: {
+    body: { label: "Review" },
+    letter: false, // left out
+  },
+})
+```
+
+| Hydra                             | Field                                                                                                            |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `xsd:string` (or `xmls:string`)   | `DefaultInputController`                                                                                         |
+| `xsd:integer`, `decimal`, `float` | `NumberInputController`                                                                                          |
+| `xsd:dateTime`, `date`            | `DatePickerInputController`                                                                                      |
+| `xsd:boolean`                     | `SwitchInputController`                                                                                          |
+| range pointing to another class   | `SelectSearchInputController`, `MultiSelectSearchInputController` for a collection, searching through `onSearch` |
+| `hydra:title`                     | `label`                                                                                                          |
+| `hydra:required`                  | `required`                                                                                                       |
+| not `hydra:writeable`             | `readonly`; left out when not `hydra:readable` either                                                            |
+
+`options.inputs` is merged over each generated field; `false` removes one.
 
 ### The declaration is read once
 
