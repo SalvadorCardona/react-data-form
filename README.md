@@ -213,6 +213,12 @@ const formContext = useForm({
 })
 ```
 
+If either step rejects with a body carrying `violations` (API Platform's
+`problem+json`), each violation is shown under its field — or above the submit
+button when no field matches — the loader stops, and `useForm({ onError })`
+receives the error as thrown, for a toast. Another format is read through
+`setFormConfig({ extractViolations: (error) => error?.response?.data })`.
+
 ### Fields delegate rendering to a controller
 
 Every field is rendered by a _controller_: a React component receiving

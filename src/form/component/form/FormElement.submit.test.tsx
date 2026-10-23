@@ -36,4 +36,22 @@ describe("FormElement submission", () => {
     expect(submit).toHaveAttribute("aria-busy", "false")
     expect(screen.getByDisplayValue("Alice")).toBe(input)
   })
+
+  it("shows the violations of a rejected onSubmit under their field", async () => {
+    render(
+      <SubmitForm
+        onSubmit={() =>
+          Promise.reject({
+            violations: [{ propertyPath: "name", message: "Already taken" }],
+          })
+        }
+      />
+    )
+
+    const submit = screen.getByRole("button", { name: "Send" })
+    fireEvent.click(submit)
+
+    expect(await screen.findByText("Already taken")).toBeInTheDocument()
+    await waitFor(() => expect(submit).not.toBeDisabled())
+  })
 })

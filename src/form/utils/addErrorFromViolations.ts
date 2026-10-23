@@ -21,15 +21,16 @@ function findInputKey(
   return undefined
 }
 
-export function addErrorFromViolations(
-  form: FormBuiltInterface,
+export function addErrorFromViolations<Data extends object = any>(
+  form: FormBuiltInterface<Data>,
   apiError: ApiJsonLdError
-): FormBuiltInterface {
-  const newForm = { ...form }
+): FormBuiltInterface<Data> {
+  // Every input is copied: the inputs of the given form are left as they are.
+  const inputs: FormBuiltInterface<Data>["inputs"] = { ...form.inputs }
+  const newForm = { ...form, inputs }
 
-  Object.keys(newForm.inputs).map((key) => {
-    const currentFormInput = newForm.inputs[key]
-    currentFormInput.violations = []
+  Object.keys(inputs).forEach((key) => {
+    inputs[key] = { ...inputs[key], violations: [] }
   })
 
   // A new array on each call: errors never pile up, and the array inherited
@@ -54,10 +55,7 @@ export function addErrorFromViolations(
       return
     }
 
-    const formInput = newForm.inputs[inputKey]
-    if (!formInput?.violations) formInput.violations = []
-
-    formInput.violations.push(violation)
+    inputs[inputKey].violations!.push(violation)
   })
 
   return newForm

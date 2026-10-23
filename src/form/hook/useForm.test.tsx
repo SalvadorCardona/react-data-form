@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
 import { act, renderHook } from "@testing-library/react"
 import useForm from "@/form/hook/useForm"
+import { createForm } from "@/form/utils/createForm"
+import { getFormConfig, setFormConfig } from "@/form/FormConfig"
 
 // Wrapper providing an empty FormContext, so useFormContext does not throw
 const wrapper = ({ children }: { children: React.ReactNode }) => <>{children}</>
@@ -398,6 +400,158 @@ describe("useForm", () => {
       expect(handleSubmit).toHaveBeenCalledWith(
         expect.objectContaining({ name: "Heidi" })
       )
+    })
+  })
+
+  describe("submission errors", () => {
+    const apiError = {
+      violations: [
+        { propertyPath: "email", message: "Already taken" },
+        { propertyPath: "", message: "Fully booked" },
+      ],
+    }
+
+    it("maps the violations of a rejected onSubmit and calls onError", async () => {
+      const onError = vi.fn()
+      const { result } = renderHook(
+        () =>
+          useForm({
+            form: { inputs: { email: {} } },
+            data: { email: "taken@test.fr" },
+            onSubmit: () => Promise.reject(apiError),
+            onError,
+          }),
+        { wrapper }
+      )
+
+      let submitted: unknown = "unset"
+      await act(async () => {
+        submitted = await result.current.onSubmit()
+      })
+
+      expect(submitted).toBeUndefined()
+      expect(result.current.isLoading.value).toBe(false)
+      expect(result.current.form.inputs.email.violations).toEqual([
+        { propertyPath: "email", message: "Already taken" },
+      ])
+      expect(result.current.form.errors).toEqual(["Fully booked"])
+      expect(onError).toHaveBeenCalledOnce()
+      expect(onError.mock.calls[0][0]).toBe(apiError)
+      expect(onError.mock.calls[0][1].errors).toEqual(["Fully booked"])
+    })
+
+    it("maps the violations thrown by form.onSubmit without mutating the state", async () => {
+      const { result } = renderHook(
+        () =>
+          useForm({
+            form: deepFreeze(
+              createForm({
+                inputs: { email: {} },
+                onSubmit: () => {
+                  throw apiError
+                },
+              })
+            ),
+          }),
+        { wrapper }
+      )
+
+      await act(async () => {
+        await result.current.onSubmit()
+      })
+
+      expect(result.current.form.inputs.email.violations?.[0].message).toBe(
+        "Already taken"
+      )
+    })
+
+    it("clears the API errors on the next submission", async () => {
+      const onSubmit = vi
+        .fn()
+        .mockRejectedValueOnce(apiError)
+        .mockResolvedValueOnce(undefined)
+      const { result } = renderHook(
+        () => useForm({ form: { inputs: { email: {} } }, onSubmit }),
+        { wrapper }
+      )
+
+      await act(async () => {
+        await result.current.onSubmit()
+      })
+      expect(result.current.form.errors).toEqual(["Fully booked"])
+
+      await act(async () => {
+        await result.current.onSubmit()
+      })
+      expect(result.current.form.errors).toEqual([])
+      expect(result.current.form.inputs.email.violations).toEqual([])
+    })
+
+    it("reads other formats through extractViolations", async () => {
+      const { extractViolations } = getFormConfig()
+      setFormConfig({
+        extractViolations: (error: any) => error?.response?.data,
+      })
+
+      try {
+        const { result } = renderHook(
+          () =>
+            useForm({
+              form: { inputs: { email: {} } },
+              onSubmit: () => Promise.reject({ response: { data: apiError } }),
+            }),
+          { wrapper }
+        )
+
+        await act(async () => {
+          await result.current.onSubmit()
+        })
+
+        expect(result.current.form.inputs.email.violations?.[0].message).toBe(
+          "Already taken"
+        )
+      } finally {
+        setFormConfig({ extractViolations })
+      }
+    })
+
+    it("stops loading and rethrows an error nobody handles", async () => {
+      const error = new Error("Network down")
+      const { result } = renderHook(
+        () =>
+          useForm({
+            form: { inputs: { email: {} } },
+            onSubmit: () => Promise.reject(error),
+          }),
+        { wrapper }
+      )
+
+      await act(async () => {
+        await expect(result.current.onSubmit()).rejects.toBe(error)
+      })
+
+      expect(result.current.isLoading.value).toBe(false)
+    })
+
+    it("hands an error without violations to onError", async () => {
+      const error = new Error("Network down")
+      const onError = vi.fn()
+      const { result } = renderHook(
+        () =>
+          useForm({
+            form: { inputs: { email: {} } },
+            onSubmit: () => Promise.reject(error),
+            onError,
+          }),
+        { wrapper }
+      )
+
+      await act(async () => {
+        await result.current.onSubmit()
+      })
+
+      expect(onError).toHaveBeenCalledWith(error, expect.anything())
+      expect(result.current.isLoading.value).toBe(false)
     })
   })
 

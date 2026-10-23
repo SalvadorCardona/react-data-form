@@ -54,7 +54,13 @@ function ValidationExample() {
         },
       },
     },
-    onSubmit: (data) => {
+    // Stands in for the API: it rejects the way API Platform answers a 422
+    onSubmit: async (data) => {
+      if (data.email === "taken@example.com") {
+        throw {
+          violations: [{ propertyPath: "email", message: "Already taken" }],
+        }
+      }
       setSubmitted(data)
       return data
     },
@@ -75,7 +81,7 @@ function ValidationExample() {
           <code>
             {submitted
               ? JSON.stringify(submitted, null, 2)
-              : "Nothing yet.\n\nTry five seats, or an\nemail without an @."}
+              : "Nothing yet.\n\nTry five seats, an email\nwithout an @, or\ntaken@example.com."}
           </code>
         </pre>
       </aside>
@@ -136,19 +142,37 @@ export function ValidationPage() {
 
       <Section
         title="Errors from the API"
-        intro="An API Platform response carries its violations in the problem+json body."
+        intro="When the submission rejects with an API Platform problem+json body, its violations land under their fields — no try/catch to write."
       >
+        <CodeBlock>{apiErrors}</CodeBlock>
         <p>
-          <code>addErrorFromViolations</code> maps each one onto the field named by
-          its <code>propertyPath</code>, so a server-side rule is displayed exactly
-          like a local one. A nested path such as <code>address.street</code> or{" "}
+          <code>useForm</code> catches what <code>form.onSubmit</code> or its own{" "}
+          <code>onSubmit</code> throws, maps each violation onto the field named by
+          its <code>propertyPath</code>, stops the loader, then calls{" "}
+          <code>onError(error, form)</code> with the error as thrown — the place for
+          a toast. A nested path such as <code>address.street</code> or{" "}
           <code>items[0].name</code> lands on the parent field (<code>address</code>,{" "}
           <code>items</code>). A violation with an empty path, or a path no field
           matches, becomes a form-level error in <code>form.errors</code>, displayed
-          by <code>FormErrors</code>. Each call replaces the previous errors rather
-          than adding to them.
+          by <code>FormErrors</code>. The next submission clears them. An error with
+          no violations and no <code>onError</code> to receive it is rethrown.
         </p>
-        <CodeBlock>{apiErrors}</CodeBlock>
+        <p>
+          The example above does it: submit <code>taken@example.com</code>.
+        </p>
+      </Section>
+
+      <Section
+        title="Another error format"
+        intro="Tell the library once where your HTTP client or backend puts the violations."
+      >
+        <CodeBlock>{extractViolations}</CodeBlock>
+        <p>
+          The extractor returns an object with a <code>violations</code> array, or{" "}
+          <code>undefined</code> when the error carries none. The default reads the
+          error itself. <code>addErrorFromViolations(form, apiError)</code> stays
+          exported to apply violations by hand.
+        </p>
       </Section>
 
       <Section
@@ -195,12 +219,26 @@ setTranslation({
     "Cette valeur doit être supérieure ou égale à {{min}}",
 })`
 
-const apiErrors = `// { "violations": [{ "propertyPath": "email", "message": "Already taken" }] }
-const withErrors = addErrorFromViolations(form, apiError)
-// → the message appears under the email field
+const apiErrors = `const formContext = useForm({
+  form: {
+    inputs: { email: { label: "Email" } },
+    // The API answers 422:
+    // { "violations": [{ "propertyPath": "email", "message": "Already taken" }] }
+    onSubmit: (data) => api.post("/bookings", data),
+  },
+  onError: (error) => toast.error("The booking was not saved"),
+})
+// → "Already taken" appears under the email field
 
 // { "violations": [{ "propertyPath": "", "message": "Fully booked" }] }
-// → withErrors.errors is ["Fully booked"], shown above the submit button`
+// → form.errors is ["Fully booked"], shown above the submit button`
+
+const extractViolations = `import { setFormConfig } from "react-data-form"
+
+setFormConfig({
+  // axios: the problem+json body is on error.response.data
+  extractViolations: (error) => error?.response?.data,
+})`
 
 const zod = `inputs: {
   email: {
