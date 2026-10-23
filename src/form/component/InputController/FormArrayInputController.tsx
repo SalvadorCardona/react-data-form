@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { InputControllerInterface } from "@/form/InputControllerInterface"
 import { FormInputInterface } from "@/form/FormInputInterface"
@@ -6,6 +6,10 @@ import { FormInputController } from "@/form/component/InputController/FormInputC
 import { AddFormBlockDialog } from "@/form/component/InputController/AddFormBlockDialog"
 import { BlockOrderInput } from "@/form/component/InputController/BlockOrderInput"
 import { FormInterface } from "@/form/FormInterface"
+import useFormContext from "@/form/provider/useFormContext"
+import { createForm } from "@/form/utils/createForm"
+import { validateForm } from "@/form/utils/validateForm"
+import { formHasError } from "@/form/utils/formHasError"
 
 import { translate } from "react-mini-i18n"
 import {
@@ -77,6 +81,7 @@ export const FormArrayInputController = ({
   formInput,
   onChange,
 }: InputControllerInterface<MultiFormInputPropsInterface>) => {
+  const formContext = useFormContext()
   const form = formInput?.form
   const [values, setValues] = useState<IdAbleInterface[]>(formInput?.value ?? [{}])
   const [startItem, setStartItem] = useState<IdAbleInterface | undefined>()
@@ -85,6 +90,9 @@ export const FormArrayInputController = ({
   // Display state only: which blocks are unfolded, per block key. It never
   // reaches onChange — folding a block does not change the form value.
   const [openStates, setOpenStates] = useState<Record<string, boolean>>({})
+  // Folded blocks opened by a failed submission: they show their violations
+  // on mount.
+  const [revealedKeys, setRevealedKeys] = useState<string[]>([])
 
   const identifierKey: keyof IdAbleInterface =
     formInput?.identifierKey ?? ("order" as keyof IdAbleInterface)
@@ -100,11 +108,13 @@ export const FormArrayInputController = ({
 
   const isOpen = (key: string) => openStates[key] ?? openByDefault
 
-  const toggleOpen = (key: string) => () =>
+  const toggleOpen = (key: string) => () => {
+    setRevealedKeys((keys) => keys.filter((revealedKey) => revealedKey !== key))
     setOpenStates((states) => ({
       ...states,
       [key]: !(states[key] ?? openByDefault),
     }))
+  }
 
   // A block just added always opens, otherwise clicking "Add" would do nothing
   // visible when the list is closed by default.
@@ -269,6 +279,44 @@ export const FormArrayInputController = ({
     })
   }, [values, identifierKey])
 
+  const getBlockForm = (item: IdAbleInterface): FormInterface | undefined => {
+    if (Object.hasOwn(item, "type")) {
+      return getForm({ type: item.type }) ?? form
+    }
+    return form
+  }
+
+  // An open block validates itself as a sub-form; a folded one is not mounted,
+  // so it is validated here and opened when invalid.
+  const validateFoldedBlocks = () => {
+    const invalidKeys = orderedValues
+      .map((item, index) => ({ item, key: itemKey(item, index) }))
+      .filter(({ key }) => !isOpen(key))
+      .filter(({ item }) =>
+        formHasError(
+          validateForm(createForm(withoutOrderInput(getBlockForm(item)) ?? {}, item))
+        )
+      )
+      .map(({ key }) => key)
+
+    if (!invalidKeys.length) return true
+
+    setRevealedKeys((keys) => [...keys, ...invalidKeys])
+    setOpenStates((states) => ({
+      ...states,
+      ...Object.fromEntries(invalidKeys.map((key) => [key, true])),
+    }))
+    return false
+  }
+
+  const validateRef = useRef(validateFoldedBlocks)
+  useEffect(() => {
+    validateRef.current = validateFoldedBlocks
+  })
+
+  const { registerSubForm } = formContext
+  useEffect(() => registerSubForm?.(() => validateRef.current()), [registerSubForm])
+
   return (
     <>
       {error && <span className="text-sm text-destructive">{error}</span>}
@@ -276,10 +324,7 @@ export const FormArrayInputController = ({
       {orderedValues.map((item, index) => {
         const itemOrder = item[identifierKey] as unknown as number | undefined
         const isCurrentDragTarget = dragIndex !== null && dragIndex === itemOrder
-        let currentForm = form
-        if (Object.hasOwn(item, "type")) {
-          currentForm = getForm({ type: item.type }) ?? currentForm
-        }
+        const currentForm = getBlockForm(item)
         const blockLabel = currentForm
           ? getFormLabel(currentForm as FormResourceItem)
           : undefined
@@ -352,6 +397,7 @@ export const FormArrayInputController = ({
             {isItemOpen && (
               <ItemContent>
                 <FormInputController
+                  validateOnMount={revealedKeys.includes(key)}
                   onChange={(childInput) => handleItemChange(childInput, index)}
                   formInput={{
                     value: item as Required<object>,

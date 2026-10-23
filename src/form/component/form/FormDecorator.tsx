@@ -25,6 +25,11 @@ export function FormDecorator({ children, className }: FormDecoratorPropsInterfa
     return <Loader />
   }
 
+  // A sub-form lives inside its parent's <form>, which a <form> cannot
+  if (formContext.parentFormContext?.form) {
+    return <fieldset className={className}>{children}</fieldset>
+  }
+
   return (
     <form
       className={className}

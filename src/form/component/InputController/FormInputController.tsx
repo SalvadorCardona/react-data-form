@@ -3,18 +3,22 @@ import { FormInputInterface } from "@/form/FormInputInterface"
 import { FormInterface } from "@/form/FormInterface"
 import useForm from "@/form/hook/useForm"
 import FormElement from "@/form/component/form/FormElement"
-import { PropsWithChildren } from "react"
+import { PropsWithChildren, useEffect, useRef } from "react"
 import useFormContext from "@/form/provider/useFormContext"
 
 interface FormInputControllerPropsInterface
   extends
     InputControllerInterface<FormInputInterface<FormInterface>>,
-    PropsWithChildren {}
+    PropsWithChildren {
+  /** Shows the violations of the sub-form as soon as it mounts. */
+  validateOnMount?: boolean
+}
 
 export const FormInputController = ({
   formInput,
   onChange,
   children,
+  validateOnMount,
 }: FormInputControllerPropsInterface) => {
   const formContext = useFormContext()
   const baseForm: FormInterface = {
@@ -34,6 +38,24 @@ export const FormInputController = ({
       onChange({ ...formInput, value: data })
     },
   })
+
+  // The parent submission runs the latest validation of the sub-form, skipped
+  // for a hidden input, like the parent's own hidden inputs
+  const validateRef = useRef(form.validate)
+  useEffect(() => {
+    validateRef.current = () =>
+      formInput.type === "hidden" || formInput.hidden?.() === true
+        ? true
+        : form.validate()
+  })
+
+  const { registerSubForm } = formContext
+  useEffect(() => registerSubForm?.(() => validateRef.current()), [registerSubForm])
+
+  // On mount only: a block opened by a failed submission shows why
+  useEffect(() => {
+    if (validateOnMount) form.validate()
+  }, [])
 
   return (
     <>
