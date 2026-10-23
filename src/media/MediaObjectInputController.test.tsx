@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { PropsWithChildren } from "react"
+import { PropsWithChildren, ReactNode } from "react"
 import {
   MediaObjectInputController,
   MediaObjectInputControllerInputInterface,
@@ -73,6 +73,27 @@ const renderForm = (
     </MediaObjectProvider>
   )
   return { ...utils, onChange }
+}
+
+function AsyncMediaForm({
+  asyncData,
+  next,
+}: {
+  asyncData: () => Promise<any>
+  next: { pic: string | null }
+}) {
+  const formContext = useForm({
+    form: { inputs: { pic: { controller: MediaObjectInputController } } },
+    asyncData,
+  })
+  return (
+    <>
+      <FormElement {...formContext} />
+      <button type="button" onClick={() => formContext.updateData(next)}>
+        update
+      </button>
+    </>
+  )
 }
 
 /** Seeds the port with an already persisted media and returns its IRI. */
@@ -218,5 +239,95 @@ describe("MediaObjectInputController", () => {
 
     expect(container.querySelector("img")).toBeNull()
     expect(screen.getByRole("img")).toBeTruthy()
+  })
+
+  describe("follows formInput.value", () => {
+    const rerenderController = (
+      rerender: (ui: ReactNode) => void,
+      formInput: MediaObjectInputControllerInputInterface
+    ) =>
+      rerender(
+        <MediaObjectInputController formInput={formInput} onChange={vi.fn()} />
+      )
+
+    it("shows a value given after the mount", async () => {
+      const port = buildPort()
+      const iri = await seedMedia(port)
+      const { container, rerender } = renderController(port, {})
+
+      expect(container.querySelector("img")).toBeNull()
+
+      rerenderController(rerender, { value: iri })
+
+      await waitFor(() => expect(getImageSource(container)).toBe(PNG_DATA_URL))
+    })
+
+    it("hides the picture once the value is removed", async () => {
+      const port = buildPort()
+      const iri = await seedMedia(port)
+      const { container, rerender } = renderController(port, { value: iri })
+
+      await waitFor(() => expect(getImageSource(container)).toBe(PNG_DATA_URL))
+
+      rerenderController(rerender, { value: undefined })
+
+      expect(container.querySelector("img")).toBeNull()
+      expect(
+        screen.queryByLabelText(defaultMediaObjectLabels.deleteAction)
+      ).toBeNull()
+    })
+
+    it("shows the new picture when the value is replaced", async () => {
+      const port = buildPort()
+      const first = await seedMedia(port)
+      const second = await port.upload({ base64: "data:image/png;base64,BBBB" })
+      const { container, rerender } = renderController(port, { value: first })
+
+      await waitFor(() => expect(getImageSource(container)).toBe(PNG_DATA_URL))
+
+      rerenderController(rerender, { value: second })
+
+      await waitFor(() =>
+        expect(getImageSource(container)).toBe("data:image/png;base64,BBBB")
+      )
+    })
+
+    it("drops the preview of an upload once the value is reset", async () => {
+      const port = buildPort()
+      const { container, rerender } = renderController(port, {})
+
+      fireEvent.change(getFileInput(container), {
+        target: { files: [new File(["image"], "photo.png", { type: "image/png" })] },
+      })
+      await waitFor(() => expect(container.querySelector("img")).not.toBeNull())
+      const iri = [...port.medias.keys()][0]
+
+      rerenderController(rerender, { value: iri })
+      rerenderController(rerender, { value: undefined })
+
+      expect(container.querySelector("img")).toBeNull()
+    })
+
+    it("follows the data of useForm({ asyncData }) then updateData", async () => {
+      const port = buildPort()
+      const first = await seedMedia(port)
+      const second = await port.upload({ base64: "data:image/png;base64,BBBB" })
+      const { container } = render(
+        <MediaObjectProvider port={port}>
+          <AsyncMediaForm
+            asyncData={async () => ({ pic: first })}
+            next={{ pic: second }}
+          />
+        </MediaObjectProvider>
+      )
+
+      await waitFor(() => expect(getImageSource(container)).toBe(PNG_DATA_URL))
+
+      fireEvent.click(screen.getByText("update"))
+
+      await waitFor(() =>
+        expect(getImageSource(container)).toBe("data:image/png;base64,BBBB")
+      )
+    })
   })
 })

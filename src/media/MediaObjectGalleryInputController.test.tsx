@@ -103,4 +103,44 @@ describe("MediaObjectGalleryInputController", () => {
       expect(port.galleries.size).toBe(0)
     })
   })
+
+  it("follows a gallery IRI given after the mount, then removed", async () => {
+    const port = createInMemoryMediaObjectPort({ onError: vi.fn() })
+    const gallery = await port.gallery.create({ role: "galeries" })
+    const { rerender } = render(
+      <MediaObjectProvider port={port}>
+        <MediaObjectGalleryInputController formInput={{}} onChange={vi.fn()} />
+      </MediaObjectProvider>
+    )
+
+    expect(
+      screen.getByText(defaultMediaObjectLabels.galleryCreateTitle)
+    ).toBeInTheDocument()
+
+    rerender(
+      <MediaObjectProvider port={port}>
+        <MediaObjectGalleryInputController
+          formInput={{ value: gallery.iri }}
+          onChange={vi.fn()}
+        />
+      </MediaObjectProvider>
+    )
+
+    expect(
+      await screen.findByText(defaultMediaObjectLabels.galleryEmptyTitle)
+    ).toBeInTheDocument()
+
+    rerender(
+      <MediaObjectProvider port={port}>
+        <MediaObjectGalleryInputController
+          formInput={{ value: undefined }}
+          onChange={vi.fn()}
+        />
+      </MediaObjectProvider>
+    )
+
+    expect(
+      screen.getByText(defaultMediaObjectLabels.galleryCreateTitle)
+    ).toBeInTheDocument()
+  })
 })
