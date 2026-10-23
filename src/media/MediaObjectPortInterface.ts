@@ -76,6 +76,14 @@ export interface MediaObjectLabelsInterface {
   galleryEmptyTitle: string
   galleryEmptyHint: string
   retry: string
+  editorTitle: string
+  editorDescription: string
+  editorZoom: string
+  editorRotation: string
+  editorRotateLeft: string
+  editorRotateRight: string
+  editorCancel: string
+  editorSave: string
 }
 
 export const defaultMediaObjectLabels: MediaObjectLabelsInterface = {
@@ -105,6 +113,14 @@ export const defaultMediaObjectLabels: MediaObjectLabelsInterface = {
   galleryEmptyTitle: "No media in this gallery",
   galleryEmptyHint: "Add your first media by clicking the button above",
   retry: "Retry",
+  editorTitle: "Edit the picture",
+  editorDescription: "Crop, zoom or rotate the image, then save.",
+  editorZoom: "Zoom",
+  editorRotation: "Rotation",
+  editorRotateLeft: "Rotate left",
+  editorRotateRight: "Rotate right",
+  editorCancel: "Cancel",
+  editorSave: "Save",
 }
 
 interface MediaObjectContextInterface {
