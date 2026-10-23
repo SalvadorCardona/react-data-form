@@ -30,7 +30,7 @@ export default function FormInputGroupProvider({
       data-invalid={formInput.violations?.length ? true : undefined}
     >
       {formInput.label !== null && (
-        <FieldLabel htmlFor={inputId}>
+        <FieldLabel id={inputId && `${inputId}-label`} htmlFor={inputId}>
           <Trans className={"fc"}>{label}</Trans> {formInput.required ? "*" : ""}
         </FieldLabel>
       )}

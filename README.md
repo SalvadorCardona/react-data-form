@@ -244,11 +244,14 @@ Writing your own controller means writing a component that satisfies
 `InputControllerInterface` — no registration step involved:
 
 ```tsx
-const ColorInputController = ({ formInput, onChange }: InputControllerInterface) => (
+const UppercaseInputController = ({
+  formInput,
+  onChange,
+}: InputControllerInterface) => (
   <input
-    type="color"
-    value={formInput.value ?? "#000000"}
-    onChange={(e) => onChange({ ...formInput, value: e.target.value })}
+    id={formInput.id}
+    value={formInput.value ?? ""}
+    onChange={(e) => onChange({ ...formInput, value: e.target.value.toUpperCase() })}
   />
 )
 ```
@@ -357,7 +360,8 @@ All exported from `react-data-form`, to be passed as a field's `controller`.
 `AutocompleteInputController`.
 
 **Numbers** — `NumberInputController`, `PriceInputController`,
-`DurationInputController`.
+`DurationInputController`, `SliderInputController` (`min`, `max`, `step`;
+`range: true` for a `[start, end]` pair).
 
 **Dates** — `DateInputController`, `DatePickerInputController`,
 `DateRangeInputController`, `TimeInputController`, `SelectTimeInputController`,
@@ -367,7 +371,8 @@ All exported from `react-data-form`, to be passed as a field's `controller`.
 `MultiSelectInputController`, `MultiSelectSearchInputController`,
 `SelectRadioInputController`, `SelectCardInputController`,
 `SelectButtonInputController`, `CheckboxInputController`,
-`SwitchInputController`, `BooleanInputController`, `IconInputController`.
+`SwitchInputController`, `BooleanInputController`, `IconInputController`,
+`ColorInputController` (hexadecimal code; `valueOptions` as a palette).
 
 **Composite** — `ArrayInputController`, `FormArrayInputController`
 (page builder), `FormInputController` (sub-form), `BlockOrderInput`,

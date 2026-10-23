@@ -44,6 +44,10 @@ export const translationKeys = [
   "Nothing found.",
   "{{count}} selected",
   "Unable to load the options.",
+  // SliderInputController and ColorInputController
+  "Minimum",
+  "Maximum",
+  "Hexadecimal code",
   // WysiwygInputController
   "Start writing something great…",
   // Dates

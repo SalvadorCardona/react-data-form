@@ -96,7 +96,8 @@ const message = ([format, ...args]: unknown[]) =>
     .replace(/%s/g, () => String(args.shift()))
     .split("\n")[0]
 
-// The comboboxes and the editor rely on browser APIs jsdom does not implement.
+// The comboboxes, the editor and the slider rely on browser APIs jsdom does
+// not implement.
 beforeAll(() => {
   globalThis.ResizeObserver ??= class {
     observe() {}
@@ -105,6 +106,9 @@ beforeAll(() => {
   }
   Element.prototype.scrollIntoView ??= () => {}
   document.elementFromPoint ??= () => null
+  Element.prototype.setPointerCapture ??= () => {}
+  Element.prototype.releasePointerCapture ??= () => {}
+  Element.prototype.hasPointerCapture ??= () => false
 })
 
 let consoleError: ReturnType<typeof vi.spyOn>
