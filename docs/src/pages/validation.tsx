@@ -122,6 +122,19 @@ export function ValidationPage() {
       </Section>
 
       <Section
+        title="Number bounds"
+        intro="A number outside min or max is kept as typed and gets a violation; it is never clamped behind your back."
+      >
+        <CodeBlock>{bounds}</CodeBlock>
+        <p>
+          An emptied number field stores <code>null</code>, not <code>0</code>. The
+          messages are the translation keys{" "}
+          <code>This value should be greater than or equal to {"{{min}}"}</code> and{" "}
+          <code>This value should be less than or equal to {"{{max}}"}</code>.
+        </p>
+      </Section>
+
+      <Section
         title="Errors from the API"
         intro="An API Platform response carries its violations in the problem+json body."
       >
@@ -171,6 +184,16 @@ const required = `inputs: {
 // Submitting with no country → "This field is required" under the field
 
 setTranslation({ "This field is required": "Ce champ est obligatoire" })`
+
+const bounds = `inputs: {
+  quantity: { label: "Quantity", type: "number", min: 1, max: 10 },
+}
+// Typing 0 then submitting → "This value should be greater than or equal to 1"
+
+setTranslation({
+  "This value should be greater than or equal to {{min}}":
+    "Cette valeur doit être supérieure ou égale à {{min}}",
+})`
 
 const apiErrors = `// { "violations": [{ "propertyPath": "email", "message": "Already taken" }] }
 const withErrors = addErrorFromViolations(form, apiError)

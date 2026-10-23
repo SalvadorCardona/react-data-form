@@ -10,14 +10,9 @@ export const DefaultInputController = ({
   const localChange = (value: string) => {
     let newValue: Primitive = value
     if (formInput.type === "number") {
-      let numberValue = Number(value)
-      if (typeof formInput.min === "number" && numberValue < formInput.min) {
-        numberValue = formInput.min
-      }
-      if (typeof formInput.max === "number" && numberValue > formInput.max) {
-        numberValue = formInput.max
-      }
-      newValue = numberValue
+      // "" or a partial number ("-") is no value; bounds are checked by validateForm
+      const numberValue = value.trim() === "" ? NaN : Number(value)
+      newValue = Number.isNaN(numberValue) ? null : numberValue
     }
     onChange({ ...formInput, ...{ value: newValue } })
   }

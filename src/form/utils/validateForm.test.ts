@@ -163,6 +163,31 @@ describe("validateForm", () => {
     expect(formHasError(result)).toBe(false)
   })
 
+  describe("min and max", () => {
+    it.each([
+      ["below the minimum", 5, "This value should be greater than or equal to 10"],
+      ["above the maximum", 25, "This value should be less than or equal to 20"],
+    ])("adds a violation to a number %s", (_, value, message) => {
+      const form = createForm({ inputs: { n: { min: 10, max: 20 } } }, { n: value })
+
+      const result = validateForm(form)
+
+      expect(result.inputs.n.violations).toHaveLength(1)
+      expect(result.inputs.n.violations![0].message).toBe(message)
+      expect(result.inputs.n.value).toBe(value)
+    })
+
+    it.each([
+      ["within the bounds", 10],
+      ["null", null],
+      ["an array", ["x"]],
+    ])("does not add a violation to a value %s", (_, value) => {
+      const form = createForm({ inputs: { n: { min: 10, max: 20 } } }, { n: value })
+
+      expect(formHasError(validateForm(form))).toBe(false)
+    })
+  })
+
   describe("required", () => {
     it.each([
       ["undefined", undefined],

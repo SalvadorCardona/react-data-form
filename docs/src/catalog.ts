@@ -200,7 +200,7 @@ export const catalog: DemoGroupInterface[] = [
     demos: [
       {
         name: "NumberInputController",
-        summary: "Number, clamped by min and max.",
+        summary: "Number; empty is null, min and max are checked on submit.",
         input: {
           label: "Quantity",
           controller: NumberInputController,
