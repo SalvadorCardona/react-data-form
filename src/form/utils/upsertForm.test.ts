@@ -123,6 +123,18 @@ describe("upsertForm", () => {
     expect(result.originalData).toBe(data)
   })
 
+  it("keeps the previous originalData with keepOriginalData", () => {
+    const data = { id: 5, name: "Eve" } as any
+    const form = upsertForm({ inputs: { name: {} } }, data)
+
+    const result = upsertForm(form, { name: "Ada" } as any, {
+      keepOriginalData: true,
+    })
+
+    expect(result.originalData).toBe(data)
+    expect(result.data).toEqual({ name: "Ada" })
+  })
+
   it("does not mutate the inputs of the previous form outside isUpdate", () => {
     const original = upsertForm({ inputs: { vat: {} } }, { vat: 20 } as any)
 

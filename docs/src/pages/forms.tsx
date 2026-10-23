@@ -1,5 +1,6 @@
 import { CompleteFormExample } from "../CompleteFormExample"
 import { ConditionalFormExample } from "../ConditionalFormExample"
+import { DirtyFormExample } from "../DirtyFormExample"
 import { CodeBlock, LiveExample, PageHeader, Section } from "../DocLayout"
 import { StepFormExample } from "../StepFormExample"
 import { pageHref } from "./index"
@@ -53,6 +54,29 @@ export function FormsPage() {
           navigate, refresh a list.
         </p>
         <CodeBlock>{submitting}</CodeBlock>
+      </Section>
+
+      <Section
+        title="Unsaved changes"
+        intro="isDirty tells whether the values changed, reset() puts them back."
+      >
+        <p>
+          <code>isDirty</code> compares the current values, deeply, with the ones the
+          form was built with — or loaded by <code>asyncData</code>, or last
+          submitted successfully. <code>reset()</code> brings those values back and
+          clears the violations. After a successful submission,{" "}
+          <code>form.originalData</code> takes the saved data, merged over the
+          previous record so that its id is kept.
+        </p>
+        <p>
+          With <code>warnOnLeave: true</code>, the browser asks for a confirmation
+          before the page is closed or reloaded while the form is dirty — a
+          back-office record no longer loses what was typed.
+        </p>
+        <CodeBlock>{dirty}</CodeBlock>
+        <LiveExample label="Edit, then reset or save">
+          <DirtyFormExample />
+        </LiveExample>
       </Section>
 
       <Section
@@ -131,6 +155,13 @@ const submitting = `const formContext = useForm({
   },
   onSubmit: (savedUser) => navigate(\`/users/\${savedUser.id}\`),
 })`
+
+const dirty = `const formContext = useForm({ form, data: user, warnOnLeave: true })
+
+<FormElement {...formContext} />
+<button disabled={!formContext.isDirty} onClick={formContext.reset}>
+  Reset
+</button>`
 
 const groups = `import { FormInputsGroup } from "react-data-form/group"
 

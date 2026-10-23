@@ -6,9 +6,11 @@ import { validateForm } from "@/form/utils/validateForm"
 import { formHasError } from "@/form/utils/formHasError"
 import { updateFormByFormInput } from "@/form/utils/updateFormByFormInput"
 import { updateForm } from "@/form/utils/updateForm"
+import { upsertForm } from "@/form/utils/upsertForm"
 import { getDataFromForm } from "@/form/utils/getDataFromForm"
 import { addErrorFromViolations } from "@/form/utils/addErrorFromViolations"
 import { getFormConfig } from "@/form/FormConfig"
+import { isDeepEqual } from "@/internal/utils/object/isDeepEqual"
 import useDebounceCallback from "@/internal/hook/useDebounceCallback"
 import { BooleanStateInterface, useBoolean } from "@/internal/hook/useBoolean"
 import { useEffectCallback } from "@/internal/hook/useEffectCallback"
@@ -40,6 +42,11 @@ export interface UseFormParams<Data extends object = any> {
    */
   onLoadError?: (error: unknown) => void
   data?: Data
+  /**
+   * Asks the browser to confirm before leaving the page (`beforeunload`)
+   * while the form has unsaved changes, see {@link FormContextOutput.isDirty}.
+   */
+  warnOnLeave?: boolean
 }
 
 /**
@@ -79,6 +86,16 @@ export interface FormContextOutput<Data extends object = any> {
    * submission. Returns the function that unregisters it.
    */
   registerSubForm: (validate: () => boolean) => () => void
+  /**
+   * Whether the values differ — deep comparison — from the ones the form was
+   * built or loaded with, or last submitted successfully.
+   */
+  isDirty: boolean
+  /**
+   * Puts those values back and clears the violations: `isDirty` is false again.
+   * `originalData` is left as it is.
+   */
+  reset: () => void
 }
 
 /**
@@ -94,6 +111,7 @@ export default function useForm<Data extends object = object>({
   onError,
   asyncData,
   onLoadError,
+  warnOnLeave = false,
 }: UseFormParams<Data>): FormContextOutput<Data> {
   // Extraire les constantes
   const DEBOUNCE_DELAY = 1500
@@ -120,6 +138,9 @@ export default function useForm<Data extends object = object>({
   // (a date range sends both of its bounds) each build on the previous one,
   // without mutating the state already rendered.
   const latestForm = useRef(currentForm)
+  // The values of originalData as the form shows them, defaults included:
+  // what isDirty compares against and reset() goes back to.
+  const [pristineData, setPristineData] = useState<Data>(currentForm.data)
 
   const commitForm = (nextForm: FormBuiltInterface<Data>) => {
     latestForm.current = nextForm
@@ -176,6 +197,8 @@ export default function useForm<Data extends object = object>({
     }
 
     const { onSubmit: formOnSubmit } = latestForm.current
+    // Values typed while the submission runs are not the ones saved
+    const savedData = latestForm.current.data
     let submittedData = getDataFromForm(latestForm.current, {
       withoutHiddenValues: true,
     })
@@ -201,6 +224,14 @@ export default function useForm<Data extends object = object>({
       if (!apiError && !onError) throw error
       return
     }
+
+    // The record is now the one saved: its id (an `@id` returned by the API
+    // after a creation) is kept for the next submission.
+    commitForm({
+      ...latestForm.current,
+      originalData: { ...latestForm.current.originalData, ...submittedData },
+    })
+    setPristineData(savedData)
 
     isLoading.setFalse()
     setSubmitResult({ status: "success" })
@@ -240,6 +271,7 @@ export default function useForm<Data extends object = object>({
     dataLoader()
       .then((data) => {
         updateFormData({ ...latestForm.current.data, ...data }, false)
+        setPristineData(latestForm.current.data)
       })
       .catch((error: unknown) => {
         setLoadError(error)
@@ -268,6 +300,45 @@ export default function useForm<Data extends object = object>({
     return updatedForm
   }
 
+  const reset = () => {
+    const resetForm = upsertForm(latestForm.current, pristineData, {
+      partial: false,
+      keepOriginalData: true,
+    })
+    const updatedForm = commitForm({
+      ...resetForm,
+      errors: [],
+      inputs: Object.fromEntries(
+        Object.entries(resetForm.inputs).map(([key, input]) => [
+          key,
+          { ...input, violations: [] },
+        ])
+      ),
+    })
+    submitErrors.current = undefined
+    setSubmitResult(undefined)
+
+    onChange?.(updatedForm.data, updatedForm)
+  }
+
+  const isDirty = useMemo(
+    () => !isDeepEqual(currentForm.data, pristineData),
+    [currentForm.data, pristineData]
+  )
+
+  useEffect(() => {
+    if (!warnOnLeave || !isDirty) return
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      // Still required by some browsers to show the prompt
+      event.returnValue = ""
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  }, [warnOnLeave, isDirty])
+
   const renderedForm = useMemo(
     () =>
       currentForm.loading === isLoading.value
@@ -290,5 +361,7 @@ export default function useForm<Data extends object = object>({
     updateData: updateFormData,
     validate,
     registerSubForm,
+    isDirty,
+    reset,
   }
 }

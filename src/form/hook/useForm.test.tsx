@@ -630,4 +630,182 @@ describe("useForm", () => {
       expect(result.current.form.inputs.age).toBeDefined()
     })
   })
+
+  describe("isDirty", () => {
+    const renderDirtyForm = (params: Partial<Parameters<typeof useForm>[0]> = {}) =>
+      renderHook(
+        () =>
+          useForm({
+            form: {
+              inputs: { name: {}, country: { defaultValue: "FR" } },
+            },
+            data: { id: 7, name: "Alice" },
+            ...params,
+          }),
+        { wrapper }
+      )
+
+    const type = (
+      result: ReturnType<typeof renderDirtyForm>["result"],
+      value: string
+    ) =>
+      act(() => {
+        result.current.onChange({ ...result.current.form.inputs.name, value })
+      })
+
+    it("is false on a new form, default values included", () => {
+      const { result } = renderDirtyForm()
+
+      expect(result.current.isDirty).toBe(false)
+    })
+
+    it("becomes true after a change, and false when the value comes back", () => {
+      const { result } = renderDirtyForm()
+
+      type(result, "Bob")
+      expect(result.current.isDirty).toBe(true)
+
+      type(result, "Alice")
+      expect(result.current.isDirty).toBe(false)
+    })
+
+    it("is false again after reset, which puts the values back", () => {
+      const onChange = vi.fn()
+      const { result } = renderDirtyForm({ onChange })
+
+      type(result, "Bob")
+      act(() => {
+        result.current.reset()
+      })
+
+      expect(result.current.isDirty).toBe(false)
+      expect(result.current.form.inputs.name.value).toBe("Alice")
+      expect(result.current.form.inputs.country.value).toBe("FR")
+      expect(result.current.form.originalData).toEqual({ id: 7, name: "Alice" })
+      expect(onChange).toHaveBeenLastCalledWith(
+        expect.objectContaining({ name: "Alice", country: "FR" }),
+        expect.anything()
+      )
+    })
+
+    it("clears the violations on reset", async () => {
+      const { result } = renderHook(
+        () => useForm({ form: { inputs: { name: { required: true } } } }),
+        { wrapper }
+      )
+
+      await act(async () => {
+        await result.current.onSubmit()
+      })
+      expect(result.current.form.inputs.name.violations).toHaveLength(1)
+
+      act(() => {
+        result.current.reset()
+      })
+
+      expect(result.current.form.inputs.name.violations).toEqual([])
+      expect(result.current.submitResult).toBeUndefined()
+    })
+
+    it("is false after a successful submission, which updates originalData", async () => {
+      const { result } = renderDirtyForm({
+        form: {
+          inputs: { name: {} },
+          onSubmit: async (data) => ({ ...data, "@id": "/users/7" }),
+        },
+      })
+
+      type(result, "Bob")
+      await act(async () => {
+        await result.current.onSubmit()
+      })
+
+      expect(result.current.isDirty).toBe(false)
+      expect(result.current.form.originalData).toEqual({
+        id: 7,
+        name: "Bob",
+        "@id": "/users/7",
+      })
+
+      act(() => {
+        result.current.reset()
+      })
+      expect(result.current.form.inputs.name.value).toBe("Bob")
+    })
+
+    it("stays true after a failed submission", async () => {
+      const { result } = renderDirtyForm({
+        form: { inputs: { name: { required: true } } },
+      })
+
+      type(result, "")
+      await act(async () => {
+        await result.current.onSubmit()
+      })
+
+      expect(result.current.isDirty).toBe(true)
+    })
+
+    it("compares against the data loaded by asyncData", async () => {
+      const { result } = renderDirtyForm({
+        asyncData: vi.fn().mockResolvedValue({ name: "Charlie" }),
+      })
+
+      await act(async () => {})
+
+      expect(result.current.form.inputs.name.value).toBe("Charlie")
+      expect(result.current.isDirty).toBe(false)
+    })
+  })
+
+  describe("warnOnLeave", () => {
+    const leave = () => {
+      const event = new Event("beforeunload", { cancelable: true })
+      window.dispatchEvent(event)
+      return event
+    }
+
+    it("blocks leaving the page only while the form is dirty", () => {
+      const { result, unmount } = renderHook(
+        () =>
+          useForm({
+            form: { inputs: { name: {} } },
+            data: { name: "Alice" },
+            warnOnLeave: true,
+          }),
+        { wrapper }
+      )
+
+      expect(leave().defaultPrevented).toBe(false)
+
+      act(() => {
+        result.current.onChange({ ...result.current.form.inputs.name, value: "Bob" })
+      })
+      expect(leave().defaultPrevented).toBe(true)
+
+      act(() => {
+        result.current.reset()
+      })
+      expect(leave().defaultPrevented).toBe(false)
+
+      act(() => {
+        result.current.onChange({ ...result.current.form.inputs.name, value: "Bob" })
+      })
+      unmount()
+      expect(leave().defaultPrevented).toBe(false)
+    })
+
+    it("does nothing without the option", () => {
+      const { result } = renderHook(
+        () => useForm({ form: { inputs: { name: {} } }, data: { name: "Alice" } }),
+        { wrapper }
+      )
+
+      act(() => {
+        result.current.onChange({ ...result.current.form.inputs.name, value: "Bob" })
+      })
+
+      expect(leave().defaultPrevented).toBe(false)
+    })
+  })
 })

@@ -20,9 +20,14 @@ export function upsertForm<
   options: {
     isUpdate?: boolean
     partial?: boolean
+    /**
+     * Leaves `originalData` as it is on the given form, instead of replacing
+     * it with `data`: the values change, the record they come from does not.
+     */
+    keepOriginalData?: boolean
   } = {}
 ): FormBuiltInterface<Data> {
-  const { isUpdate = false, partial = true } = options
+  const { isUpdate = false, partial = true, keepOriginalData = false } = options
 
   const dataId = getIdFromObject(data)
 
@@ -52,7 +57,9 @@ export function upsertForm<
     newForm.action = dataId ? ActionList.update : ActionList.create
   }
 
-  newForm.originalData = data
+  newForm.originalData = keepOriginalData
+    ? (form as FormBuiltInterface<Data>).originalData
+    : data
 
   if (newForm.allowGeneratedValue) {
     Object.keys(data ?? {}).map((key) => {
