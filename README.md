@@ -178,6 +178,29 @@ changes nothing on screen. To switch declaration:
   <ProfileForm key={formSignature} form={nextForm} />
   ```
 
+### Submitting: `form.onSubmit` then `useForm({ onSubmit })`
+
+Two callbacks take part in a submission, in this order, once the fields are
+valid:
+
+1. `form.onSubmit`, on the declaration, sends the data — usually to the API. It
+   may be synchronous or return a promise: the form stays loading, and the
+   submit button disabled, until it settles. What it returns (or resolves to)
+   becomes the submitted data; returning nothing keeps the entered data.
+2. `useForm({ onSubmit })`, on the hook, is told what was submitted: it
+   receives the data from step 1, never a promise. Use it to react in the
+   component — close a dialog, navigate, refresh a list.
+
+```tsx
+const formContext = useForm({
+  form: {
+    inputs: { email: { type: "email", label: "Email" } },
+    onSubmit: (data) => api.patch("/me", data), // awaited
+  },
+  onSubmit: (savedUser) => navigate(`/users/${savedUser.id}`),
+})
+```
+
 ### Fields delegate rendering to a controller
 
 Every field is rendered by a _controller_: a React component receiving

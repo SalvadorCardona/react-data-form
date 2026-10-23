@@ -19,6 +19,24 @@ export function FormsPage() {
       </Section>
 
       <Section
+        title="Submitting"
+        intro="Two callbacks, in this order: form.onSubmit sends, useForm({ onSubmit }) is told."
+      >
+        <p>
+          <code>form.onSubmit</code>, on the declaration, sends the data — usually to
+          the API. It may be synchronous or return a promise: the form stays loading,
+          and the submit button disabled, until it settles. What it returns becomes
+          the submitted data; returning nothing keeps the entered data.
+        </p>
+        <p>
+          <code>useForm({"{ onSubmit }"})</code>, on the hook, then receives that
+          data — never a promise — to react in the component: close a dialog,
+          navigate, refresh a list.
+        </p>
+        <CodeBlock>{submitting}</CodeBlock>
+      </Section>
+
+      <Section
         title="Grouping fields"
         intro="react-data-form/group lays fields out in collapsible sections."
       >
@@ -54,13 +72,13 @@ export function FormsPage() {
         <CodeBlock>{custom}</CodeBlock>
       </Section>
 
-      <Section title="Next" intro="Every field type this library ships, running live.">
+      <Section
+        title="Next"
+        intro="Every field type this library ships, running live."
+      >
         <p>
           Continue to{" "}
-          <a
-            className="underline underline-offset-4"
-            href={pageHref("controllers")}
-          >
+          <a className="underline underline-offset-4" href={pageHref("controllers")}>
             Field controllers
           </a>
           .
@@ -69,6 +87,14 @@ export function FormsPage() {
     </>
   )
 }
+
+const submitting = `const formContext = useForm({
+  form: {
+    inputs: { email: { type: "email", label: "Email" } },
+    onSubmit: (data) => api.patch("/me", data), // awaited
+  },
+  onSubmit: (savedUser) => navigate(\`/users/\${savedUser.id}\`),
+})`
 
 const groups = `import { FormInputsGroup } from "react-data-form/group"
 

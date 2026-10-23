@@ -240,6 +240,69 @@ describe("useForm", () => {
 
       expect(submittedData).toMatchObject({ name: "Frank" })
     })
+
+    it("waits for an asynchronous form.onSubmit before going on", async () => {
+      let resolveApi: (data: any) => void = () => {}
+      const handleSubmit = vi.fn()
+
+      const { result } = renderHook(
+        () =>
+          useForm({
+            form: {
+              inputs: { name: {} },
+              onSubmit: () =>
+                new Promise((resolve) => {
+                  resolveApi = resolve
+                }),
+            },
+            data: { name: "Grace" },
+            onSubmit: handleSubmit,
+          }),
+        { wrapper }
+      )
+
+      let submitting: Promise<any> = Promise.resolve()
+
+      await act(async () => {
+        submitting = result.current.onSubmit()
+      })
+
+      expect(result.current.isLoading.value).toBe(true)
+      expect(handleSubmit).not.toHaveBeenCalled()
+
+      let submittedData: any
+
+      await act(async () => {
+        resolveApi({ name: "Grace", id: 1 })
+        submittedData = await submitting
+      })
+
+      expect(result.current.isLoading.value).toBe(false)
+      expect(handleSubmit).toHaveBeenCalledWith({ name: "Grace", id: 1 })
+      expect(submittedData).toEqual({ name: "Grace", id: 1 })
+    })
+
+    it("keeps the form data when form.onSubmit returns nothing", async () => {
+      const handleSubmit = vi.fn()
+
+      const { result } = renderHook(
+        () =>
+          useForm({
+            form: { inputs: { name: {} }, onSubmit: async () => {} },
+            data: { name: "Heidi" },
+            onSubmit: handleSubmit,
+          }),
+        { wrapper }
+      )
+
+      await act(async () => {
+        await result.current.onSubmit()
+      })
+
+      expect(handleSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ name: "Heidi" })
+      )
+    })
   })
 
   describe("updateData", () => {

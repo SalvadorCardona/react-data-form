@@ -89,7 +89,8 @@ export default function useForm<Data extends object = object>({
     let submittedData = currentForm.data
 
     if (currentForm.onSubmit) {
-      submittedData = currentForm.onSubmit(submittedData)
+      // form.onSubmit may be sync or async, and may return nothing
+      submittedData = (await currentForm.onSubmit(submittedData)) ?? submittedData
     }
 
     await onSubmit?.(submittedData)
