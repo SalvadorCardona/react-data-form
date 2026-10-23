@@ -6,8 +6,8 @@ export function deepMerge<T extends object>(...objects: T[]): T {
       const prevValue = (prev as any)[key]
       const currValue = (obj as any)[key]
 
-      if (Array.isArray(prevValue) && Array.isArray(currValue)) {
-        ;(prev as any)[key] = prevValue.concat(currValue) // Merge arrays
+      if (Array.isArray(currValue)) {
+        ;(prev as any)[key] = [...currValue] // Replace arrays, never concatenate
       } else if (isObject(prevValue) && isObject(currValue)) {
         ;(prev as any)[key] = deepMerge(prevValue, currValue) // Merge objects recursively
       } else {
