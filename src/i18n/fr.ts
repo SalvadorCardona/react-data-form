@@ -45,6 +45,7 @@ export const fr: Record<TranslationKey, string> = {
   "Nothing found.": "Aucun résultat.",
   "{{count}} selected": "{{count}} sélectionné(s)",
   "Unable to load the options.": "Impossible de charger les options.",
+  "Start writing something great…": "Commencez à écrire…",
   "Pick a date": "Choisir une date",
   "Start date": "Date de début",
   "End date": "Date de fin",

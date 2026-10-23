@@ -1,8 +1,7 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { type Editor, EditorContent, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
-import Link from "@tiptap/extension-link"
 import Image from "@tiptap/extension-image"
 import {
   Bold,
@@ -231,20 +230,24 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 
 export default function WysiwygEditor(props: {
   value?: string
+  placeholder?: string
   onChange: (e: string) => void
 }) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      Placeholder.configure({
-        placeholder: "Start writing something great…",
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class:
-            "text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer",
+      // StarterKit already bundles Link since TipTap 3: configured here,
+      // adding Link again would register it twice.
+      StarterKit.configure({
+        link: {
+          openOnClick: false,
+          HTMLAttributes: {
+            class:
+              "text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer",
+          },
         },
+      }),
+      Placeholder.configure({
+        placeholder: props.placeholder ?? "",
       }),
       Image.configure({
         HTMLAttributes: {
@@ -264,6 +267,16 @@ export default function WysiwygEditor(props: {
       transformPastedHTML: (html) => sanitizeHtml(html),
     },
   })
+
+  // `content` is only read on mount: follow a value changed from outside,
+  // but not the one the editor has just emitted while typing.
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return
+    const content = sanitizeHtml(props.value ?? "")
+    if (content !== editor.getHTML()) {
+      editor.commands.setContent(content, { emitUpdate: false })
+    }
+  }, [editor, props.value])
 
   return (
     <div className="mx-auto w-full">

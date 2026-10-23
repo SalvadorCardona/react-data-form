@@ -44,6 +44,8 @@ export const translationKeys = [
   "Nothing found.",
   "{{count}} selected",
   "Unable to load the options.",
+  // WysiwygInputController
+  "Start writing something great…",
   // Dates
   "Pick a date",
   "Start date",
