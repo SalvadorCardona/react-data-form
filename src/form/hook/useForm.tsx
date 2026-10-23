@@ -41,6 +41,14 @@ export interface UseFormParams<Data extends object = any> {
   data?: Data
 }
 
+/**
+ * Outcome of the last submission: its validation failed ("error") or the data
+ * was sent ("success").
+ */
+export interface FormSubmitResultInterface {
+  status: "success" | "error"
+}
+
 export interface FormContextOutput<Data extends object = any> {
   parentFormContext?: FormContextOutput<Data>
   updateData: (data: Partial<Data>, partial?: boolean) => void
@@ -52,6 +60,11 @@ export interface FormContextOutput<Data extends object = any> {
    * The reason `asyncData` (or `form.getData`) rejected, if it did.
    */
   loadError?: unknown
+  /**
+   * Outcome of the last submission, a new object on each one. Cleared when a
+   * new submission starts; a success is also cleared when a value changes.
+   */
+  submitResult?: FormSubmitResultInterface
   updateForm: (form: FormBuiltInterface) => FormBuiltInterface
   onSuccess: Index<Data>
   isLoading: BooleanStateInterface
@@ -96,6 +109,7 @@ export default function useForm<Data extends object = object>({
   const submitErrors = useRef<string[]>(undefined)
   const [isReady, setIsReady] = useState<boolean>(false)
   const [loadError, setLoadError] = useState<unknown>()
+  const [submitResult, setSubmitResult] = useState<FormSubmitResultInterface>()
   const [currentForm, setCurrentForm] = useState<FormBuiltInterface<Data>>(
     form.isBuilt
       ? (form as FormBuiltInterface<Data>)
@@ -118,6 +132,9 @@ export default function useForm<Data extends object = object>({
     const updatedForm = commitForm(
       updateFormByFormInput<Data>(latestForm.current, formInput)
     )
+
+    // "Saved" no longer describes the values once one of them changes
+    setSubmitResult((result) => (result?.status === "success" ? undefined : result))
 
     onChange?.(updatedForm.data, updatedForm)
     if (updatedForm?.saveOnChange) {
@@ -145,9 +162,11 @@ export default function useForm<Data extends object = object>({
 
   const handleSubmit = async () => {
     isLoading.setTrue()
+    setSubmitResult(undefined)
 
     if (!validate()) {
       isLoading.setFalse()
+      setSubmitResult({ status: "error" })
       return
     }
 
@@ -181,6 +200,7 @@ export default function useForm<Data extends object = object>({
     }
 
     isLoading.setFalse()
+    setSubmitResult({ status: "success" })
 
     onSuccess.publish(submittedData)
 
@@ -260,6 +280,7 @@ export default function useForm<Data extends object = object>({
     updateForm: updateFormHandler,
     ready: isReady,
     loadError,
+    submitResult,
     onChange: handleChange,
     onSubmit: handleSubmit,
     form: renderedForm,

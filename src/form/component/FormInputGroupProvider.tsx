@@ -23,7 +23,12 @@ export default function FormInputGroupProvider({
   const inputId =
     formInput.id ?? (formInput.name ? `field-${formInput.name}` : undefined)
   return (
-    <Field className={"mb-2 mt-4"} data-field={fieldName || undefined}>
+    <Field
+      className={"mb-2 mt-4"}
+      data-field={fieldName || undefined}
+      // Marks the field for the focus moved to the first invalid one on submit
+      data-invalid={formInput.violations?.length ? true : undefined}
+    >
       {formInput.label !== null && (
         <FieldLabel htmlFor={inputId}>
           <Trans className={"fc"}>{label}</Trans> {formInput.required ? "*" : ""}

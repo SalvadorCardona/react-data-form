@@ -62,6 +62,11 @@ export interface FormInterface<Data extends object = any> {
   saveOnChange?: boolean
   errors?: string[]
   allowGeneratedValue?: boolean
+  /**
+   * Shows `label.success` after a successful submission (default `true`). Turn
+   * it off when the application confirms the save itself, with a toast for instance.
+   */
+  showSuccess?: boolean
   version?: number
   label?: {
     title?: string

@@ -31,6 +31,7 @@ let config: FormConfigInterface = {
     version: 1,
     errors: [],
     allowGeneratedValue: true,
+    showSuccess: true,
     label: {
       success: "Saved",
       error: "The form is invalid",
