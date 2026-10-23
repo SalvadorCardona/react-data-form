@@ -45,7 +45,7 @@ return <FormElement {...formContext} />
 pnpm add react-data-form react-mini-i18n resource-registry
 ```
 
-`react` and `react-dom` (18.3+ or 19),
+`react` and `react-dom` (19),
 [`react-mini-i18n`](https://github.com/hermez-agency/react-mini-i18n) and
 [`resource-registry`](https://github.com/hermez-agency/resource-registry) are
 
