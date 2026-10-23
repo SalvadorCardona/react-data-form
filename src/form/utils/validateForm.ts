@@ -1,6 +1,6 @@
 import { FormBuiltInterface, FormInterfaceValueType } from "@/form/FormInterface"
 import getFormInputsFromForm from "@/form/utils/getFormInputsFromForm"
-import { createViolation, isZodError } from "@/form/Violation"
+import ViolationInterface, { createViolation, isZodError } from "@/form/Violation"
 import { FormInputInterface } from "@/form/FormInputInterface"
 import { translate } from "react-mini-i18n"
 
@@ -84,7 +84,7 @@ export function validateForm<
 
       if (currentFormInput?.validator) {
         try {
-          currentFormInput.validator(currentFormInput.value)
+          currentFormInput.validator(currentFormInput.value, newForm.data)
         } catch (error) {
           if (error instanceof Error) {
             if (isZodError(error)) {
@@ -98,8 +98,14 @@ export function validateForm<
                 )
               )
             } else {
+              // An error may name the property it is about (a range blames its
+              // end date, for instance).
+              const { propertyPath } = error as Error & ViolationInterface
               currentFormInput.violations.push(
-                createViolation({ message: error.message })
+                createViolation({
+                  ...(propertyPath ? { propertyPath } : {}),
+                  message: error.message,
+                })
               )
             }
           } else {

@@ -36,13 +36,37 @@ export interface DateRangeFormInputInterface extends FormInputInterface {
 }
 
 export function createDateRangeFormInput(props: DateRangeFormInputInterface = {}) {
+  const startKey = props.startKey ?? "startDate"
+  const endKey = props.endKey ?? "endDate"
+
   return {
     controller: DateRangeInputController,
-    startKey: "startDate",
-    endKey: "endDate",
     withTime: true,
     ...props,
+    startKey,
+    endKey,
+    // The range lives in startKey/endKey, not in the value of this input: an
+    // end before the start is a local rule, checked on submission like the
+    // others, so the invalid range never reaches the API.
+    validator: (value: any, data?: Record<string, unknown>) => {
+      props.validator?.(value, data)
+      if (isEndBeforeStart(data?.[startKey], data?.[endKey])) {
+        throw Object.assign(new Error(translate(END_BEFORE_START)), {
+          propertyPath: endKey,
+        })
+      }
+      return value
+    },
   } as DateRangeFormInputInterface
+}
+
+const END_BEFORE_START = "The end date must be after the start date"
+
+function isEndBeforeStart(start: unknown, end: unknown): boolean {
+  if (!start || !end) return false
+  const startTime = new Date(start as string).getTime()
+  const endTime = new Date(end as string).getTime()
+  return endTime <= startTime
 }
 
 interface DateTimeSelection {
@@ -235,7 +259,7 @@ export const DateRangeInputController = ({
   const endCombined = combineDateTime(endSelection)
   const validationError =
     startCombined && endCombined && endCombined <= startCombined
-      ? translate("The end date must be after the start date")
+      ? translate(END_BEFORE_START)
       : null
 
   return (
