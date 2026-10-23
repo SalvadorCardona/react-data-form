@@ -39,7 +39,8 @@ export function FormDecorator({ children, className }: FormDecoratorPropsInterfa
       onSubmit={(event) => {
         event.preventDefault()
         if (!saveOnChange) {
-          formContext.onSubmit()
+          // The rejection is left to the onSubmit caller: nothing to do here
+          formContext.onSubmit().catch(() => {})
         }
       }}
     >

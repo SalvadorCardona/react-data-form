@@ -401,6 +401,59 @@ describe("useForm", () => {
         expect.objectContaining({ name: "Heidi" })
       )
     })
+
+    it("stops loading and rethrows when onSubmit rejects", async () => {
+      const error = new Error("500")
+      const handleSuccess = vi.fn()
+
+      const { result } = renderHook(
+        () =>
+          useForm({
+            form: { inputs: { name: {} } },
+            data: { name: "Ivan" },
+            onSubmit: async () => {
+              throw error
+            },
+          }),
+        { wrapper }
+      )
+
+      result.current.onSuccess.subscribe(handleSuccess)
+
+      let caught: unknown
+
+      await act(async () => {
+        await result.current.onSubmit().catch((e) => (caught = e))
+      })
+
+      expect(caught).toBe(error)
+      expect(result.current.isLoading.value).toBe(false)
+      expect(handleSuccess).not.toHaveBeenCalled()
+    })
+
+    it("stops loading and rethrows when form.onSubmit rejects", async () => {
+      const error = new Error("network")
+
+      const { result } = renderHook(
+        () =>
+          useForm({
+            form: {
+              inputs: { name: {} },
+              onSubmit: async () => {
+                throw error
+              },
+            },
+            data: { name: "Judy" },
+          }),
+        { wrapper }
+      )
+
+      await act(async () => {
+        await expect(result.current.onSubmit()).rejects.toBe(error)
+      })
+
+      expect(result.current.isLoading.value).toBe(false)
+    })
   })
 
   describe("submission errors", () => {
