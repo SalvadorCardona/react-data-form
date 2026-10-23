@@ -242,15 +242,20 @@ const MediaObjectInputControllerView = ({
   useEffect(() => {
     if (!valueIri) return
     let cancelled = false
-    port.describe(valueIri).then((media) => {
-      if (cancelled) return
-      setPreviewKind(resolvePreviewKind(acceptedTypes, media.mimeType ?? ""))
-      if (media.label) setFileName(media.label)
-    })
+    port.describe(valueIri).then(
+      (media) => {
+        if (cancelled) return
+        setPreviewKind(resolvePreviewKind(acceptedTypes, media.mimeType ?? ""))
+        if (media.label) setFileName(media.label)
+      },
+      (error) => {
+        if (!cancelled) port.onError?.(labels.describeFailed, error)
+      }
+    )
     return () => {
       cancelled = true
     }
-  }, [valueIri, acceptedTypes, port])
+  }, [valueIri, acceptedTypes, port, labels])
 
   const resetInput = () => {
     setPendingPreview(null)

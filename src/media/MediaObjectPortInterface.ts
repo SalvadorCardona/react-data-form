@@ -59,6 +59,7 @@ export interface MediaObjectLabelsInterface {
   uploadFailed: string
   editFailed: string
   deleteFailed: string
+  describeFailed: string
   edit: string
   editAction: string
   deleteAction: string
@@ -70,6 +71,7 @@ export interface MediaObjectLabelsInterface {
   loading: string
   galleryCreating: string
   galleryCreateTitle: string
+  /** @deprecated No longer displayed: the creation tile does not take a drop. */
   galleryCreateHint: string
   galleryCreateFailed: string
   galleryLoadFailed: string
@@ -96,6 +98,7 @@ export const defaultMediaObjectLabels: MediaObjectLabelsInterface = {
   uploadFailed: "Saving the file failed. Please try again.",
   editFailed: "Editing the image failed. Please try again.",
   deleteFailed: "Deleting the file failed. Please try again.",
+  describeFailed: "Could not load the file details.",
   edit: "Edit",
   editAction: "Edit the picture",
   deleteAction: "Delete the picture",
