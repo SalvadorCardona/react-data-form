@@ -19,3 +19,5 @@ Libellés en dur désormais traduisibles (nouvelles clés) :
 - Éditeur WYSIWYG : `Bold (⌘B)`, `Italic (⌘I)`, `Inline code (⌘E)`, `Paragraph`, `Insert link (⌘K)`, `Add a link`, `Enter the link URL`, `URL`, `Add the link`, `Undo (⌘Z)`, `Redo (⌘⇧Z)`, `Start writing something great…`.
 
 Sans dictionnaire, ces libellés s'affichent désormais en anglais.
+
+Toutes ces nouvelles clés sont ajoutées à `translationKeys` et traduites dans le dictionnaire `fr` de `react-data-form/i18n`.

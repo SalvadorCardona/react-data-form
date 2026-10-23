@@ -4,8 +4,9 @@ import { describe, expect, it } from "vitest"
 
 const root = join(process.cwd(), "src")
 
-// The media module labels are handled on their own (MediaObjectPort labels).
-const skipped = [join(root, "media")]
+// The media module labels are handled on their own (MediaObjectPort labels),
+// and the French dictionary is French by design.
+const skipped = [join(root, "media"), join(root, "i18n", "fr.ts")]
 
 // Accented letters, or words no English label carries.
 const french =
@@ -18,7 +19,7 @@ function sourceFiles(dir: string): string[] {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) return sourceFiles(path)
     if (!/\.tsx?$/.test(entry.name) || /\.test\.tsx?$/.test(entry.name)) return []
-    return [path]
+    return skipped.includes(path) ? [] : [path]
   })
 }
 
