@@ -1,6 +1,7 @@
 import { PropsWithChildren } from "react"
 import useFormContext from "@/form/provider/useFormContext"
 import Loader from "@/ui/Loader"
+import FormErrors from "@/form/component/form/FormErrors"
 
 export type FormDecoratorPropsInterface = PropsWithChildren & {
   className?: string
@@ -15,6 +16,11 @@ export function FormDecorator({ children, className }: FormDecoratorPropsInterfa
 
   if (!ready) {
     return <Loader />
+  }
+
+  // The data could not be loaded: show why, not an empty form to submit
+  if (formContext.loadError !== undefined) {
+    return <FormErrors />
   }
 
   if (Decorator) {
