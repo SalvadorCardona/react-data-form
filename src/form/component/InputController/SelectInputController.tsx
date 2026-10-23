@@ -26,6 +26,7 @@ export interface SelectItemPropsInterface {
   option: ValueOptionInterface
   isSelected?: boolean
   onToggle?: (option: unknown) => void
+  formInput?: SelectFormInputInterface
 }
 
 export interface SelectDecoratorPropsInterface {
@@ -123,9 +124,10 @@ export const SelectInputController: FC<
           return (
             <CurrentComponent
               option={option}
-              key={JSON.stringify(option) + formInput.value}
+              key={JSON.stringify(option)}
               isSelected={isSelected(option.value as string)}
               onToggle={handleToggle}
+              formInput={formInput}
             />
           )
         })}
