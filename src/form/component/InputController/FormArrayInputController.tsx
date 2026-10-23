@@ -74,6 +74,19 @@ export function createFormArrayInputController<
   return {
     identifierKey: "order",
     ...options,
+    // `min` is a validation rule, checked on submission: blocks can always be
+    // added up to it. `max` is enforced by the "Add" button.
+    validator: (value: T) => {
+      options.validator?.(value)
+      if (options.min && (value?.length ?? 0) < options.min) {
+        throw new Error(
+          translate("This collection should contain {{min}} elements or more.", {
+            min: options.min,
+          })
+        )
+      }
+      return value
+    },
     controller: FormArrayInputController,
   } as MultiFormInputPropsInterface<T>
 }
@@ -84,7 +97,7 @@ export const FormArrayInputController = ({
 }: InputControllerInterface<MultiFormInputPropsInterface>) => {
   const formContext = useFormContext()
   const form = formInput?.form
-  const [values, setValues] = useState<IdAbleInterface[]>(formInput?.value ?? [{}])
+  const [values, setValues] = useState<IdAbleInterface[]>(formInput?.value ?? [])
   const [startItem, setStartItem] = useState<IdAbleInterface | undefined>()
   const [error, setError] = useState<string>("")
   const [dragIndex, setDragIndex] = useState<number | null>(null)
@@ -94,6 +107,11 @@ export const FormArrayInputController = ({
   // Folded blocks opened by a failed submission: they show their violations
   // on mount.
   const [revealedKeys, setRevealedKeys] = useState<string[]>([])
+
+  // The list follows a value changed from outside (updateData, async load).
+  useEffect(() => {
+    setValues(formInput?.value ?? [])
+  }, [formInput?.value])
 
   const identifierKey: keyof IdAbleInterface =
     formInput?.identifierKey ?? ("order" as keyof IdAbleInterface)
@@ -146,7 +164,7 @@ export const FormArrayInputController = ({
       return
     }
 
-    // A block without identifier (the initial blank one, for instance) is the
+    // A block without identifier (loaded without id, for instance) is the
     // very object held in `values`: it is removed by reference.
     changeValues(removeValue(values, value))
   }
@@ -160,8 +178,12 @@ export const FormArrayInputController = ({
   }
 
   const canAdd = () => {
-    if (formInput?.min && formInput.min > values.length) {
-      setError(translate("max.length.array", { size: formInput.min }))
+    if (formInput?.max != null && values.length >= formInput.max) {
+      setError(
+        translate("This collection should contain {{max}} elements or less.", {
+          max: formInput.max,
+        })
+      )
       return false
     }
 
