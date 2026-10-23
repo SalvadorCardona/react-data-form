@@ -86,7 +86,7 @@ export function upsertForm<
 
       if (
         typeof currentFormInput.value === "undefined" &&
-        currentFormInput.defaultValue &&
+        currentFormInput.defaultValue !== undefined &&
         newForm.version === 1
       ) {
         if (typeof currentFormInput.defaultValue === "function") {
