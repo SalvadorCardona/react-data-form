@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { afterEach, describe, expect, it, vi } from "vitest"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { PropsWithChildren, ReactNode } from "react"
 import {
   MediaObjectInputController,
@@ -96,11 +96,46 @@ function AsyncMediaForm({
   )
 }
 
+/**
+ * FileReader whose reading fails: like the browser, `onerror` then
+ * `onloadend` are fired, with a null result.
+ */
+class FailingFileReader {
+  result: string | null = null
+  error: Error | null = null
+  onerror: ((event: unknown) => void) | null = null
+  onload: ((event: unknown) => void) | null = null
+  onloadend: ((event: unknown) => void) | null = null
+  readAsDataURL() {
+    setTimeout(() => {
+      this.error = new Error("read failed")
+      this.onerror?.(this.error)
+      this.onloadend?.({})
+    })
+  }
+}
+
+/** Promise resolved from the outside, to order the server responses. */
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((r) => (resolve = r))
+  return { promise, resolve }
+}
+
+const selectFile = (container: HTMLElement, name: string) =>
+  fireEvent.change(getFileInput(container), {
+    target: { files: [new File([name], name, { type: "image/png" })] },
+  })
+
 /** Seeds the port with an already persisted media and returns its IRI. */
 const seedMedia = async (port: MediaObjectPortInterface) =>
   port.upload({ base64: PNG_DATA_URL })
 
 describe("MediaObjectInputController", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it("uploads the selected file through the port and keeps its IRI", async () => {
     const port = buildPort()
     const { container, onChange } = renderController(port)
@@ -176,6 +211,54 @@ describe("MediaObjectInputController", () => {
       expect.any(Error)
     )
     expect(onChange).not.toHaveBeenCalled()
+  })
+
+  it("sends nothing when the file cannot be read", async () => {
+    vi.stubGlobal("FileReader", FailingFileReader)
+    const port = buildPort()
+    const upload = vi.fn(port.upload)
+    const { container, onChange } = renderController({ ...port, upload })
+
+    selectFile(container, "photo.png")
+
+    await waitFor(() =>
+      expect(port.onError).toHaveBeenCalledWith(
+        defaultMediaObjectLabels.readFailed,
+        expect.any(Error)
+      )
+    )
+    await act(() => new Promise((r) => setTimeout(r, 10)))
+    expect(upload).not.toHaveBeenCalled()
+    expect(onChange).not.toHaveBeenCalled()
+  })
+
+  it("sends one file at a time", async () => {
+    const port = buildPort()
+    const responses = { "A.png": deferred<string>(), "B.png": deferred<string>() }
+    const upload = vi.fn(() => {
+      const name = upload.mock.calls.length === 1 ? "A.png" : "B.png"
+      return responses[name].promise
+    })
+    const { container, onChange } = renderController({ ...port, upload })
+
+    selectFile(container, "A.png")
+    await waitFor(() => expect(upload).toHaveBeenCalledTimes(1))
+
+    // The zone is busy: neither the input nor a new selection starts a send.
+    expect(getFileInput(container)).toBeDisabled()
+    expect(container.querySelector('[aria-busy="true"]')).not.toBeNull()
+    selectFile(container, "B.png")
+    await act(() => new Promise((r) => setTimeout(r, 10)))
+    expect(upload).toHaveBeenCalledTimes(1)
+
+    // Even answered in reverse order, the last value is the one of A.
+    await act(async () => {
+      responses["B.png"].resolve("/m/B")
+      responses["A.png"].resolve("/m/A")
+    })
+    await waitFor(() => expect(onChange).toHaveBeenCalled())
+    expect(onChange.mock.calls.map(([input]) => input.value)).toEqual(["/m/A"])
+    expect(getFileInput(container)).not.toBeDisabled()
   })
 
   it("removes the media through the port", async () => {

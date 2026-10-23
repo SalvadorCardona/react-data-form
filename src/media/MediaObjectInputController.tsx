@@ -261,6 +261,9 @@ const MediaObjectInputControllerView = ({
   }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // One send at a time: a second file chosen while the first one is being
+    // read or sent would race it, and the last answer would win.
+    if (isUploading) return
     const file = event.target.files?.[0]
     if (!file) return
 
@@ -285,15 +288,23 @@ const MediaObjectInputControllerView = ({
 
     setFileName(file.name)
     setPreviewKind(matched.preview)
+    setIsUploading(true)
     const reader = new FileReader()
-    reader.onerror = (error) => {
+    const readFailed = (error?: unknown) => {
       setPendingPreview(previousPreview)
       setFileName(previousFileName)
+      setIsUploading(false)
       port.onError?.(labels.readFailed, error)
     }
-    reader.onloadend = async () => {
+    reader.onerror = readFailed
+    // `onload`, not `onloadend`: the latter also fires after a failed read,
+    // which would send a null file.
+    reader.onload = async () => {
+      if (reader.error || !reader.result) {
+        readFailed(reader.error)
+        return
+      }
       setPendingPreview(reader.result as string)
-      setIsUploading(true)
       try {
         change(
           await port.upload({
@@ -369,6 +380,7 @@ const MediaObjectInputControllerView = ({
   }
 
   const triggerFileInput = () => {
+    if (isUploading) return
     fileInputRef.current?.click()
   }
 
@@ -413,12 +425,14 @@ const MediaObjectInputControllerView = ({
         className={cn(
           // Responsive: width follows the surrounding grid / container
           "w-full max-w-[300px] mx-auto relative aspect-square overflow-hidden border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors",
+          isUploading && "cursor-wait",
           isDragging
             ? "border-primary bg-primary/10"
             : "border-input hover:border-primary",
           preview ? "p-0" : "p-6",
           formInput.className
         )}
+        aria-busy={isUploading}
         onClick={triggerFileInput}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -430,6 +444,7 @@ const MediaObjectInputControllerView = ({
           accept={acceptAttribute}
           onChange={handleFileChange}
           ref={fileInputRef}
+          disabled={isUploading}
           className="sr-only" // Hide the input visually but keep it accessible
         />
 
