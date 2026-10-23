@@ -9,8 +9,11 @@ export default defineConfig({
     "step/index": "src/step/index.ts",
   },
   format: ["esm"],
-  dts: true,
-  sourcemap: true,
+  // No sourcemaps in the published package: they doubled the size of dist/
+  // and pointed to src/, which is not published. The dts plugin would turn
+  // them back on because tsconfig.json sets `declarationMap`.
+  dts: { sourcemap: false },
+  sourcemap: false,
   clean: true,
   target: "es2022",
   // react/react-dom come from the host application; everything else
