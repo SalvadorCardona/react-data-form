@@ -49,6 +49,39 @@ export function validateForm<
         return
       }
 
+      const value = currentFormInput.value
+      if (typeof value === "number") {
+        const { min, max } = currentFormInput
+        if (typeof min === "number" && value < min) {
+          currentFormInput.violations.push(
+            createViolation({
+              propertyPath: formInput.name,
+              code: "min",
+              message: translate(
+                "This value should be greater than or equal to {{min}}",
+                {
+                  min,
+                }
+              ),
+            })
+          )
+        }
+        if (typeof max === "number" && value > max) {
+          currentFormInput.violations.push(
+            createViolation({
+              propertyPath: formInput.name,
+              code: "max",
+              message: translate(
+                "This value should be less than or equal to {{max}}",
+                {
+                  max,
+                }
+              ),
+            })
+          )
+        }
+      }
+
       if (currentFormInput?.validator) {
         try {
           currentFormInput.validator(currentFormInput.value)
