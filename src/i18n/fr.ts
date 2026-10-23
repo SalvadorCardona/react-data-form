@@ -39,6 +39,8 @@ export const fr: Record<TranslationKey, string> = {
   "Clear search": "Effacer la recherche",
   "Select...": "Sélectionner…",
   "Nothing found.": "Aucun résultat.",
+  "{{count}} selected": "{{count}} sélectionné(s)",
+  "Unable to load the options.": "Impossible de charger les options.",
   "Pick a date": "Choisir une date",
   "Start date": "Date de début",
   "End date": "Date de fin",
