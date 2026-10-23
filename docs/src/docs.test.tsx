@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest"
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { act } from "react"
 import { createRoot, type Root } from "react-dom/client"
@@ -165,6 +165,31 @@ describe("the documentation site", () => {
       // The site loads none: what it shows is what an application gets by default.
       expect(getTranslations()).toEqual({})
       expect(visibleStrings(gallery).filter(looksLikeKey)).toEqual([])
+    })
+
+    it("names every button of the gallery, icon-only ones included", async () => {
+      // The rich text editor is loaded lazily: its toolbar comes in last. Role
+      // queries are too slow on a page this size, hence the selectors.
+      const named = (name: string) =>
+        gallery.querySelectorAll(`button[aria-label="${name}"]`)
+      await waitFor(() => expect(named("Undo")).not.toHaveLength(0), {
+        timeout: 15_000,
+      })
+
+      expect(named("Clear the date")).not.toHaveLength(0)
+      expect(named("Clear the selection")).not.toHaveLength(0)
+
+      // Text, `aria-label`, `aria-labelledby` or a `<label for>` name a button.
+      const unnamed = [
+        ...gallery.querySelectorAll("button, [role='button']"),
+      ].filter(
+        (button) =>
+          !button.textContent?.trim() &&
+          !button.getAttribute("aria-label")?.trim() &&
+          !button.getAttribute("aria-labelledby") &&
+          !(button.id && gallery.querySelector(`label[for="${button.id}"]`))
+      )
+      expect(unnamed.map((button) => button.outerHTML)).toEqual([])
     })
 
     it("switches the controller gallery to the dark theme and back", () => {

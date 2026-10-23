@@ -57,6 +57,7 @@ export const DatePickerInputController = ({
             disabled={!formInput.value}
             className={"justify-items-end p-2 border-l-0 rounded-l-none"}
             onClick={reset}
+            aria-label={translate("Clear the date")}
           >
             <CircleX className={"w-5 h-5 cursor-pointer rounded-l-0"} />
           </Button>

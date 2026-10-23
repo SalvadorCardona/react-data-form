@@ -44,6 +44,8 @@ export const translationKeys = [
   "Nothing found.",
   "{{count}} selected",
   "Unable to load the options.",
+  "Clear the selection",
+  "Remove {{label}}",
   // SliderInputController and ColorInputController
   "Minimum",
   "Maximum",
@@ -52,6 +54,7 @@ export const translationKeys = [
   "Start writing something great…",
   // Dates
   "Pick a date",
+  "Clear the date",
   "Start date",
   "End date",
   "Selected range",
@@ -59,6 +62,11 @@ export const translationKeys = [
   "The end date must be after the start date",
   // Images
   "Image unavailable",
+  "Remove the image",
+  // Rich text editor
+  "Insert link",
+  "Undo",
+  "Redo",
   // react-data-form/step
   "Previous",
   "Next",

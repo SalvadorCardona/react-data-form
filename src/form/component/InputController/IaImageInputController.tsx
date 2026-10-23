@@ -6,6 +6,7 @@ import { FileText, ScanLine, Upload, X } from "lucide-react"
 import { Button } from "@/ui/button"
 import { Image } from "@/ui/Image"
 import { cn } from "@/ui/cn"
+import { translate } from "react-mini-i18n"
 
 export type IaImageInputControllerInterface = FormInputInterface<
   string | null | undefined
@@ -105,6 +106,7 @@ export const IaImageInputController = ({
             size="icon"
             className="absolute top-2 right-2 z-10 opacity-80 hover:opacity-100 w-6 h-6"
             onClick={handleClear}
+            aria-label={translate("Remove the image")}
           >
             <X className="h-3 w-3" />
           </Button>
