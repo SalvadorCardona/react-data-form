@@ -218,7 +218,9 @@ const MediaObjectInputControllerView = ({
   }
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [preview, setPreview] = useState(formInput.value)
+  // Data URL of a file being sent (or just edited): the only preview kept as
+  // local state. Everything else derives from `formInput.value`.
+  const [pendingPreview, setPendingPreview] = useState<string | null>(null)
   const [previewKind, setPreviewKind] = useState<"image" | "document">("image")
   const [fileName, setFileName] = useState<string>("")
   const [isEditorOpen, setIsEditorOpen] = useState(false)
@@ -229,6 +231,13 @@ const MediaObjectInputControllerView = ({
   const formats = acceptedTypes.map((t) => t.label).join(labels.formatSeparator)
   const canEdit = Boolean(formInput.isEditable) && previewKind === "image"
   const valueIri = getLdIri(formInput.value ?? undefined)
+  const [previousValueIri, setPreviousValueIri] = useState(valueIri)
+  // A new value (async loading, reset, upload saved) wins over the local preview.
+  if (valueIri !== previousValueIri) {
+    setPreviousValueIri(valueIri)
+    setPendingPreview(null)
+  }
+  const preview = pendingPreview ?? formInput.value
 
   useEffect(() => {
     if (!valueIri) return
@@ -244,7 +253,7 @@ const MediaObjectInputControllerView = ({
   }, [valueIri, acceptedTypes, port])
 
   const resetInput = () => {
-    setPreview(null)
+    setPendingPreview(null)
     setFileName("")
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
@@ -271,19 +280,19 @@ const MediaObjectInputControllerView = ({
     // The current state is kept so it can be restored if the upload fails:
     // without it the preview would stay on screen while nothing was saved,
     // letting the user believe the picture went through.
-    const previousPreview = preview
+    const previousPreview = pendingPreview
     const previousFileName = fileName
 
     setFileName(file.name)
     setPreviewKind(matched.preview)
     const reader = new FileReader()
     reader.onerror = (error) => {
-      setPreview(previousPreview)
+      setPendingPreview(previousPreview)
       setFileName(previousFileName)
       port.onError?.(labels.readFailed, error)
     }
     reader.onloadend = async () => {
-      setPreview(reader.result as string)
+      setPendingPreview(reader.result as string)
       setIsUploading(true)
       try {
         change(
@@ -297,7 +306,7 @@ const MediaObjectInputControllerView = ({
         // The upload failed on the server side (validation, conversion,
         // storage…). The previous preview is restored and the user warned,
         // rather than leaving the interface showing a false success.
-        setPreview(previousPreview)
+        setPendingPreview(previousPreview)
         setFileName(previousFileName)
         if (fileInputRef.current) {
           fileInputRef.current.value = ""
@@ -316,8 +325,8 @@ const MediaObjectInputControllerView = ({
    * persisted media, it falls back to a plain upload.
    */
   const handleEditedImage = async (base64: string) => {
-    const previousPreview = preview
-    setPreview(base64)
+    const previousPreview = pendingPreview
+    setPendingPreview(base64)
     setIsUploading(true)
     try {
       change(
@@ -330,7 +339,7 @@ const MediaObjectInputControllerView = ({
             })
       )
     } catch (error) {
-      setPreview(previousPreview)
+      setPendingPreview(previousPreview)
       port.onError?.(labels.editFailed, error)
     } finally {
       setIsUploading(false)
@@ -372,7 +381,7 @@ const MediaObjectInputControllerView = ({
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation() // Keeps the file input from opening
     if (isUploading) return
-    setPreview(null)
+    setPendingPreview(null)
     setFileName("")
     change(null)
     if (valueIri) {

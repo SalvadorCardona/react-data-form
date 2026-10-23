@@ -60,8 +60,18 @@ const MediaObjectGalleryInputControllerView = ({
 }: MediaObjectGalleryInputControllerViewProps) => {
   const port = useMediaObjectPort()
   const labels = useMediaObjectLabels()
-  const [uri, setUri] = useState(getLdIri(formInput.value ?? undefined))
-  const [gallery, setGallery] = useState<MediaObjectGalleryInterface>()
+  const valueIri = getLdIri(formInput.value ?? undefined)
+  // IRI of the gallery just created, until the value catches up with it.
+  const [createdUri, setCreatedUri] = useState<string>()
+  const [previousValueIri, setPreviousValueIri] = useState(valueIri)
+  if (valueIri !== previousValueIri) {
+    setPreviousValueIri(valueIri)
+    setCreatedUri(undefined)
+  }
+  const uri = createdUri ?? valueIri
+  const [loadedGallery, setGallery] = useState<MediaObjectGalleryInterface>()
+  // A gallery loaded for a previous IRI is not shown for the current one.
+  const gallery = loadedGallery?.iri === uri ? loadedGallery : undefined
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -70,7 +80,7 @@ const MediaObjectGalleryInputControllerView = ({
     setError(null)
     try {
       const created = await port.gallery.create({ role: galleryRole })
-      setUri(created.iri)
+      setCreatedUri(created.iri)
       setGallery(created)
       onChange({ ...formInput, ...{ value: created.iri } })
     } catch (err) {
@@ -101,9 +111,13 @@ const MediaObjectGalleryInputControllerView = ({
   // Loads the gallery already attached to the field: only its IRI matters here.
   useEffect(() => {
     if (uri && !gallery) {
+      let cancelled = false
       port.gallery.read(uri).then((read) => {
-        setGallery(read)
+        if (!cancelled) setGallery(read)
       })
+      return () => {
+        cancelled = true
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uri])
