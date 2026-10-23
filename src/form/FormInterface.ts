@@ -38,7 +38,12 @@ export interface FormInterface<Data extends object = any> {
     keyof Data | string,
     FormInputInterface<Data[keyof Data] | unknown>
   >
-  onSubmit?: (data: Data) => Data
+  /**
+   * Sends the data, usually to the API. May be sync or async: the form stays
+   * loading until it settles. What it returns (or resolves to) replaces the
+   * submitted data; returning nothing keeps the entered data.
+   */
+  onSubmit?: (data: Data) => Data | Promise<Data | void> | void
   className?: string
   saveOnChange?: boolean
   errors?: string[]
