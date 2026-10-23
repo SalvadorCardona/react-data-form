@@ -6,6 +6,7 @@ import { cn } from "@/ui/cn"
 import { Loader2, X } from "lucide-react"
 import { ValueOptionInterface } from "@/form/utils/valueOption"
 import { getEmojiValueOptions } from "@/form/component/InputController/getEmojiValueOptions"
+import { translate } from "react-mini-i18n"
 
 /**
  * Icon picker based on native emojis: opens an emoji grid and
@@ -56,7 +57,7 @@ export function IconInputController({
             <Button type="button" variant="outline" className="gap-2">
               <span className="text-lg leading-none">{value ?? "🙂"}</span>
               <span className="text-sm">
-                {value ? "Change emoji" : "Pick an emoji"}
+                {value ? translate("Change emoji") : translate("Pick an emoji")}
               </span>
             </Button>
           }
@@ -97,7 +98,7 @@ export function IconInputController({
           type="button"
           variant="ghost"
           size="icon"
-          aria-label="Remove emoji"
+          aria-label={translate("Remove emoji")}
           onClick={() => select(undefined)}
         >
           <X className="h-4 w-4" />

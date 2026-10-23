@@ -93,7 +93,9 @@ export const IaImageInputController = ({
           {preview.startsWith("data:application/pdf") ? (
             <div className="flex flex-col items-center justify-center gap-2 w-full h-full">
               <FileText className="w-14 h-14 text-primary" />
-              <span className="text-xs text-muted-foreground">Document PDF</span>
+              <span className="text-xs text-muted-foreground">
+                {translate("PDF document")}
+              </span>
             </div>
           ) : (
             <Image
@@ -118,10 +120,10 @@ export const IaImageInputController = ({
           </div>
           <div className="space-y-1">
             <p className="text-sm font-medium">
-              {formInput.placeholder ?? "Click or drop an image"}
+              {translate(formInput.placeholder ?? "Click or drop an image")}
             </p>
             <p className="text-xs text-muted-foreground">
-              L'IA analysera cette image pour remplir le formulaire
+              {translate("The AI will analyze this image to fill in the form")}
             </p>
           </div>
           <div className="flex items-center gap-1 text-xs text-primary/70">

@@ -6,6 +6,7 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { cn } from "@/ui/cn"
 import { Button } from "@/ui/button"
 import { XIcon } from "lucide-react"
+import { translate } from "react-mini-i18n"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
@@ -68,7 +69,7 @@ function DialogContent({
             }
           >
             <XIcon />
-            <span className="sr-only">Fermer</span>
+            <span className="sr-only">{translate("Close")}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Popup>
