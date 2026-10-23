@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event"
 import { useState } from "react"
 import { SelectInputController } from "@/form/component/InputController/SelectInputController"
 import { FormInputInterface } from "@/form/FormInputInterface"
+import { configurePorts, getPorts } from "@/ports"
 
 const tvaOptions = [
   { label: "20 %", value: 20.0 },
@@ -124,5 +125,88 @@ describe("SelectInputController", () => {
 
     expect(screen.getByTestId("current-value").textContent).toBe('""')
     expect(triggerText()).toBe("Tous les statuts")
+  })
+})
+
+describe("SelectInputController — clearing and missing values", () => {
+  it("offers an empty option that clears a non-required field to null", async () => {
+    const user = userEvent.setup()
+    render(<Harness initial={20} />)
+
+    await user.click(screen.getByRole("combobox"))
+    await user.click(await screen.findByRole("option", { name: "None" }))
+    await act(async () => {})
+
+    expect(screen.getByTestId("current-value").textContent).toBe("null")
+    expect(triggerText()).toBe("20 %")
+  })
+
+  it("offers no empty option on a required field", async () => {
+    const user = userEvent.setup()
+    render(<Harness initial={20} overrides={{ required: true }} />)
+
+    await user.click(screen.getByRole("combobox"))
+    await screen.findByRole("option", { name: "20 %" })
+
+    expect(screen.queryByRole("option", { name: "None" })).toBeNull()
+  })
+
+  it("shows a value missing from the options as the current value", async () => {
+    const user = userEvent.setup()
+    render(<Harness initial={19.6} />)
+
+    expect(triggerText()).toBe("19.6(Current value)")
+
+    await user.click(screen.getByRole("combobox"))
+    expect(
+      await screen.findByRole("option", { name: "19.6(Current value)" })
+    ).toBeTruthy()
+
+    await user.click(screen.getByRole("option", { name: "10 %" }))
+    await act(async () => {})
+
+    expect(screen.getByTestId("current-value").textContent).toBe("10")
+    expect(triggerText()).toBe("10 %")
+
+    // The stored value stays listed, so the user can go back to it.
+    await user.click(screen.getByRole("combobox"))
+    await user.click(
+      await screen.findByRole("option", { name: "19.6(Current value)" })
+    )
+    await act(async () => {})
+
+    expect(screen.getByTestId("current-value").textContent).toBe("19.6")
+  })
+
+  it("clears a value missing from the options with the empty option", async () => {
+    const user = userEvent.setup()
+    render(<Harness initial={19.6} />)
+
+    await user.click(screen.getByRole("combobox"))
+    await user.click(await screen.findByRole("option", { name: "None" }))
+    await act(async () => {})
+
+    expect(screen.getByTestId("current-value").textContent).toBe("null")
+    expect(triggerText()).toBe("20 %")
+  })
+
+  it("renders a missing IRI through the iriLabel port", () => {
+    const { iriLabel } = getPorts().components
+    configurePorts({
+      components: { iriLabel: ({ iri }) => <span>Label of {iri}</span> },
+    })
+
+    try {
+      render(
+        <SelectInputController
+          formInput={buildFormInput({ value: "/api/vat_rates/7" })}
+          onChange={() => {}}
+        />
+      )
+
+      expect(triggerText()).toBe("Label of /api/vat_rates/7(Current value)")
+    } finally {
+      configurePorts({ components: { iriLabel } })
+    }
   })
 })

@@ -39,6 +39,8 @@ export const translationKeys = [
   "Search...",
   "Clear search",
   "Select...",
+  "None",
+  "Current value",
   "Nothing found.",
   "{{count}} selected",
   "Unable to load the options.",
