@@ -1,6 +1,8 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { act } from "react"
+import { createRoot, type Root } from "react-dom/client"
 import * as library from "react-data-form"
 import * as media from "react-data-form/media"
 import { fr, translationKeys } from "react-data-form/i18n"
@@ -65,55 +67,91 @@ describe("the documentation site", () => {
     ).toBeInTheDocument()
   })
 
-  it("renders the controller gallery, with live fields", () => {
-    renderAt("?page=controllers")
-    expect(
-      screen.getByRole("heading", { name: "Field controllers", level: 1 })
-    ).toBeInTheDocument()
-    // Each demo renders a real form, so its labels are in the document.
-    expect(screen.getAllByText("SelectInputController").length).toBeGreaterThan(0)
+  describe("the controller gallery", () => {
+    // The gallery renders every controller, which is by far the slowest page:
+    // it is rendered once for all the tests below rather than once per test.
+    // It is mounted outside Testing Library so that its cleanup after each test
+    // leaves it in place. A couple of seconds usually, but far more on a loaded
+    // machine: the hook gets a generous timeout of its own.
+    let gallery: HTMLElement
+    let root: Root
+
+    beforeAll(() => {
+      vi.stubGlobal("location", {
+        ...window.location,
+        search: "?page=controllers",
+        pathname: "/",
+      })
+      gallery = document.body.appendChild(document.createElement("div"))
+      root = createRoot(gallery)
+      act(() => root.render(<App />))
+    }, 120_000)
+
+    afterAll(() => {
+      act(() => root.unmount())
+      gallery.remove()
+    })
+
+    it("renders the controller gallery, with live fields", () => {
+      expect(
+        within(gallery).getByRole("heading", { name: "Field controllers", level: 1 })
+      ).toBeInTheDocument()
+      // Each demo renders a real form, so its labels are in the document.
+      expect(
+        within(gallery).getAllByText("SelectInputController").length
+      ).toBeGreaterThan(0)
+    })
+
+    it("shows every controller the library exports in the gallery", () => {
+      expect(exportedControllers).toContain("PasswordInputController")
+      expect(exportedControllers).toContain("MediaObjectInputController")
+
+      const shown = [...gallery.querySelectorAll("article[id]")].map(
+        (article) => article.id
+      )
+      expect(exportedControllers.filter((name) => !shown.includes(name))).toEqual([])
+    })
+
+    it("shows each controller with how to declare it and in its states", () => {
+      const password = document.getElementById("PasswordInputController")!
+
+      expect(
+        within(password).getByText("controller: PasswordInputController")
+      ).toBeInTheDocument()
+      expect(within(password).getByText(/inputs: \{/)).toBeInTheDocument()
+      for (const state of ["Empty", "Filled", "Error"]) {
+        expect(within(password).getByText(state)).toBeInTheDocument()
+      }
+      expect(
+        within(password).getByText("This value is not valid.")
+      ).toBeInTheDocument()
+
+      // A controller that honours `readonly` is shown that way too.
+      const email = document.getElementById("EmailInputController")!
+      expect(within(email).getByText("Read-only")).toBeInTheDocument()
+    })
+
+    it("shows no translation key on screen, with no dictionary loaded", () => {
+      // The site loads none: what it shows is what an application gets by default.
+      expect(getTranslations()).toEqual({})
+      expect(visibleStrings(gallery).filter(looksLikeKey)).toEqual([])
+    })
+
+    it("switches the controller gallery to the dark theme and back", () => {
+      // The library's dark palette hangs off a class on the root element.
+      act(() => fireEvent.click(within(gallery).getByText("Dark theme")))
+      expect(document.documentElement).toHaveClass("dark")
+      expect(document.getElementById("PasswordInputController")).toBeInTheDocument()
+
+      // The page offers the way back, and takes it.
+      act(() => fireEvent.click(within(gallery).getByText("Light theme")))
+      expect(document.documentElement).not.toHaveClass("dark")
+    })
   })
 
-  it("shows every controller the library exports in the gallery", () => {
-    const { container } = renderAt("?page=controllers")
-
-    expect(exportedControllers).toContain("PasswordInputController")
-    expect(exportedControllers).toContain("MediaObjectInputController")
-
-    const shown = [...container.querySelectorAll("article[id]")].map(
-      (article) => article.id
-    )
-    expect(exportedControllers.filter((name) => !shown.includes(name))).toEqual([])
-  })
-
-  it("shows each controller with how to declare it and in its states", () => {
-    renderAt("?page=controllers")
-    const password = document.getElementById("PasswordInputController")!
-
-    expect(
-      within(password).getByText("controller: PasswordInputController")
-    ).toBeInTheDocument()
-    expect(within(password).getByText(/inputs: \{/)).toBeInTheDocument()
-    for (const state of ["Empty", "Filled", "Error"]) {
-      expect(within(password).getByText(state)).toBeInTheDocument()
-    }
-    expect(
-      within(password).getByText("This value is not valid.")
-    ).toBeInTheDocument()
-
-    // A controller that honours `readonly` is shown that way too.
-    const email = document.getElementById("EmailInputController")!
-    expect(within(email).getByText("Read-only")).toBeInTheDocument()
-  })
-
-  it("shows no translation key on screen, with no dictionary loaded", async () => {
-    // The site loads none: what it shows is what an application gets by default.
+  it("shows no translation key in the block palette, with no dictionary loaded", async () => {
     expect(getTranslations()).toEqual({})
     const user = userEvent.setup()
-
-    const gallery = renderAt("?page=controllers")
-    expect(visibleStrings(gallery.container).filter(looksLikeKey)).toEqual([])
-    gallery.unmount()
 
     renderAt("?page=multi-forms")
     await user.click(screen.getByRole("button", { name: "Add a block" }))
@@ -123,21 +161,6 @@ describe("the documentation site", () => {
       within(palette).getByText("Pick the shape this entry takes.")
     ).toBeVisible()
     expect(visibleStrings(palette).filter(looksLikeKey)).toEqual([])
-  })
-
-  it("renders the controller gallery in the dark theme as well", () => {
-    // The library's dark palette hangs off a class on the root element.
-    document.documentElement.classList.add("dark")
-    renderAt("?page=controllers")
-
-    expect(
-      screen.getByRole("heading", { name: "Field controllers", level: 1 })
-    ).toBeInTheDocument()
-    expect(document.getElementById("PasswordInputController")).toBeInTheDocument()
-
-    // The page offers the way back, and takes it.
-    fireEvent.click(screen.getByText("Light theme"))
-    expect(document.documentElement).not.toHaveClass("dark")
   })
 
   it("renders the form-building page", () => {
