@@ -59,6 +59,35 @@ describe("createForm", () => {
     expect(form.inputs.hello.value).toBe("fromFn")
   })
 
+  it("applies falsy defaultValue (0, false, empty string)", () => {
+    const form = createForm({
+      inputs: {
+        n: { defaultValue: 0 },
+        b: { defaultValue: false },
+        s: { defaultValue: "" },
+      },
+    })
+    expect(form.inputs.n.value).toBe(0)
+    expect(form.inputs.b.value).toBe(false)
+    expect(form.inputs.s.value).toBe("")
+    expect(form.data).toStrictEqual({ n: 0, b: false, s: "" })
+  })
+
+  it("applies a defaultValue function returning a falsy value", () => {
+    const form = createForm({
+      inputs: {
+        n: { defaultValue: () => 0 },
+      },
+    })
+    expect(form.inputs.n.value).toBe(0)
+    expect(form.data).toStrictEqual({ n: 0 })
+  })
+
+  it("does not override a value present in the data with defaultValue", () => {
+    const form = createForm({ inputs: { b: { defaultValue: true } } }, { b: false })
+    expect(form.inputs.b.value).toBe(false)
+  })
+
   it("returns an object matching FormBuiltInterface", () => {
     const form = createForm({ inputs: {} })
     expect(form).toHaveProperty("inputs")
