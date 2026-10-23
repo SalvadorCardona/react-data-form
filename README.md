@@ -412,6 +412,30 @@ on the provider. For a test, a story or a demo,
 `createInMemoryMediaObjectPort()` implements the whole port in memory, with no
 server behind it.
 
+### When a media is deleted on the server
+
+`deleteOn` decides what happens to a media that leaves the field — the cross, a
+new file chosen over it, or the image editor:
+
+| `deleteOn`          | Cross                                     | New file                          | Image editor                          |
+| ------------------- | ----------------------------------------- | --------------------------------- | ------------------------------------- |
+| `"never"` (default) | detaches the media                        | uploads a new media               | uploads the edited image as a new one |
+| `"immediate"`       | asks for confirmation, then `port.remove` | uploads, then removes the old one | `port.replace`, the IRI does not move |
+
+With `"never"`, nothing stored is touched before the form is saved: leaving or
+cancelling the form leaves the entity pointing at an intact media. The media
+nobody points at any more are for the API to clean up. `"immediate"` suits a
+field whose media are not tied to a form submit.
+
+```tsx
+avatar: createMediaObjectInput({ deleteOn: "immediate" })
+```
+
+The items of `MediaObjectGalleryInputController` always use `"immediate"`: a
+media belongs to its gallery on the server, so letting go of it only in the
+form would leave it there. The confirmation texts are the `deleteConfirmTitle`,
+`deleteConfirmDescription`, `deleteConfirm` and `deleteCancel` labels.
+
 ## Development
 
 ```bash

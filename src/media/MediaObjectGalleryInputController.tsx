@@ -276,6 +276,9 @@ const MediaObjectGalleryInputControllerView = ({
                 gallery: uri,
                 readonly: formInput.readonly,
                 acceptedTypes,
+                // A media belongs to the gallery on the server: letting go of
+                // it only in the form would leave it there.
+                deleteOn: "immediate",
               }}
               onChange={(changed) => onItemChange(e, changed.value)}
             />

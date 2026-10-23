@@ -443,7 +443,8 @@ export const catalog: DemoGroupInterface[] = [
       },
       {
         name: "MediaObjectInputController",
-        summary: "An image uploaded through the port; the value is its IRI.",
+        summary:
+          'An image uploaded through the port; the value is its IRI. The cross only detaches it — deleteOn: "immediate" deletes it on the server, after a confirmation.',
         input: { label: "Avatar", controller: MediaObjectInputController },
         filled: "/media_objects/sample",
         from: "react-data-form/media",
@@ -467,7 +468,8 @@ export const catalog: DemoGroupInterface[] = [
       },
       {
         name: "MediaObjectGalleryInputController",
-        summary: "A gallery of images; the value is the gallery's IRI.",
+        summary:
+          "A gallery of images; the value is the gallery's IRI. Deleting a media removes it from the server, after a confirmation.",
         input: { label: "Photos", controller: MediaObjectGalleryInputController },
         filled: "/media_objects/galleries/sample",
         from: "react-data-form/media",

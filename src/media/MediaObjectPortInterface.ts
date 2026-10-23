@@ -65,6 +65,11 @@ export interface MediaObjectLabelsInterface {
   edit: string
   editAction: string
   deleteAction: string
+  /** Confirmation asked before a media is deleted with `deleteOn: "immediate"`. */
+  deleteConfirmTitle: string
+  deleteConfirmDescription: string
+  deleteConfirm: string
+  deleteCancel: string
   dropzoneTitle: string
   dropzoneHint: (formats: string, maxSizeInMb: number) => string
   documentFallbackName: string
@@ -105,6 +110,11 @@ export const defaultMediaObjectLabels: MediaObjectLabelsInterface = {
   edit: "Edit",
   editAction: "Edit the picture",
   deleteAction: "Delete the picture",
+  deleteConfirmTitle: "Delete this file?",
+  deleteConfirmDescription:
+    "The file is deleted from the server right away. This cannot be undone.",
+  deleteConfirm: "Delete",
+  deleteCancel: "Cancel",
   dropzoneTitle: "Click or drop a file here",
   dropzoneHint: (formats, maxSizeInMb) => `${formats} (max. ${maxSizeInMb}MB)`,
   documentFallbackName: "Document",

@@ -7,6 +7,14 @@ import { Input } from "@/ui/input"
 import { Button } from "@/ui/button"
 import { Image } from "@/ui/Image"
 import { cn } from "@/ui/cn"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/ui/dialog"
 import { ImageEditor } from "@/media/ImageEditor"
 import {
   MediaObjectPortInterface,
@@ -31,7 +39,21 @@ export interface MediaObjectInputControllerInputInterface extends FormInputInter
   isEditable?: boolean
   /** Aspect ratio of the editor crop frame. Defaults to 1 (square). */
   editorAspect?: number
+  /**
+   * When a media leaving the field is deleted on the server.
+   *
+   * - `"never"` (default): the field only lets go of it. Deleting, replacing
+   *   or editing the file never touches the media already stored: the change
+   *   only lands when the form is saved, and cleaning the media nobody points
+   *   at any more is up to the API.
+   * - `"immediate"`: the cross deletes the media through `port.remove` after a
+   *   confirmation, a new file deletes the one it replaces, and the image
+   *   editor overwrites the file in place through `port.replace`.
+   */
+  deleteOn?: MediaObjectDeleteOn
 }
+
+export type MediaObjectDeleteOn = "immediate" | "never"
 
 export interface MediaObjectAcceptedFileType {
   /** RFC 6838 media type, e.g. "image/png", "application/pdf". */
@@ -241,6 +263,8 @@ const MediaObjectInputControllerView = ({
   const acceptAttribute = buildAcceptAttribute(acceptedTypes)
   const formats = acceptedTypes.map((t) => t.label).join(labels.formatSeparator)
   const canEdit = Boolean(formInput.isEditable) && previewKind === "image"
+  const deleteOn = formInput.deleteOn ?? "never"
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
   const valueIri = getLdIri(formInput.value ?? undefined)
   const [previousValueIri, setPreviousValueIri] = useState(valueIri)
   // A new value (async loading, reset, upload saved) wins over the local preview.
@@ -277,6 +301,11 @@ const MediaObjectInputControllerView = ({
       fileInputRef.current.value = ""
     }
   }
+
+  // A failed removal does not bring the media back into the field: the user
+  // asked for it to go, they are only warned.
+  const removeMedia = (iri: string) =>
+    port.remove(iri).catch((error) => port.onError?.(labels.deleteFailed, error))
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     // One send at a time: a second file chosen while the first one is being
@@ -324,13 +353,15 @@ const MediaObjectInputControllerView = ({
       }
       setPendingPreview(reader.result as string)
       try {
-        change(
-          await port.upload({
-            base64: reader.result as string,
-            role: formInput?.for ?? "from_user",
-            gallery: formInput.gallery,
-          })
-        )
+        const uploaded = await port.upload({
+          base64: reader.result as string,
+          role: formInput?.for ?? "from_user",
+          gallery: formInput.gallery,
+        })
+        // Removed before the field moves on: a gallery reading itself right
+        // after would otherwise still list the replaced media.
+        if (deleteOn === "immediate" && valueIri) await removeMedia(valueIri)
+        change(uploaded)
       } catch (error) {
         // The upload failed on the server side (validation, conversion,
         // storage…). The previous preview is restored and the user warned,
@@ -349,9 +380,10 @@ const MediaObjectInputControllerView = ({
   }
 
   /**
-   * Applies the edited image (cropped / rotated). An existing media is replaced
-   * through the port — its IRI does not move, only the file changes. Without a
-   * persisted media, it falls back to a plain upload.
+   * Applies the edited image (cropped / rotated). With `deleteOn: "immediate"`,
+   * an existing media is replaced through the port — its IRI does not move,
+   * only the file changes. Otherwise the edited image becomes a new media, and
+   * the stored one stays untouched until the form is saved.
    */
   const handleEditedImage = async (base64: string) => {
     const previousPreview = pendingPreview
@@ -359,7 +391,7 @@ const MediaObjectInputControllerView = ({
     setIsUploading(true)
     try {
       change(
-        valueIri
+        deleteOn === "immediate" && valueIri
           ? await port.replace({ iri: valueIri, base64 })
           : await port.upload({
               base64,
@@ -409,21 +441,30 @@ const MediaObjectInputControllerView = ({
     setIsEditorOpen(true)
   }
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation() // Keeps the file input from opening
-    if (isUploading) return
+  const detach = () => {
     setPendingPreview(null)
     setFileName("")
     change(null)
-    if (valueIri) {
-      port
-        .remove(valueIri)
-        .catch((error) => port.onError?.(labels.deleteFailed, error))
-    }
-
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
+  }
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation() // Keeps the file input from opening
+    if (isUploading) return
+    // Deleting on the server cannot be undone: it is confirmed first.
+    if (deleteOn === "immediate" && valueIri) {
+      setIsDeleteConfirmOpen(true)
+      return
+    }
+    detach()
+  }
+
+  const confirmDelete = () => {
+    setIsDeleteConfirmOpen(false)
+    detach()
+    if (valueIri) removeMedia(valueIri)
   }
 
   if (formInput.readonly) {
@@ -549,6 +590,27 @@ const MediaObjectInputControllerView = ({
           aspect={formInput.editorAspect ?? 1}
         />
       )}
+
+      <Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{labels.deleteConfirmTitle}</DialogTitle>
+            <DialogDescription>{labels.deleteConfirmDescription}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsDeleteConfirmOpen(false)}
+            >
+              {labels.deleteCancel}
+            </Button>
+            <Button type="button" variant="destructive" onClick={confirmDelete}>
+              {labels.deleteConfirm}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
