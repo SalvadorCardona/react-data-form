@@ -144,6 +144,9 @@ export const DateRangeInputController = ({
   const startKey = formInput.startKey ?? "startDate"
   const endKey = formInput.endKey ?? "endDate"
   const withTime = formInput.withTime ?? true
+  // Long localised formats: the locale words the link between date and time
+  // ("at" in English, "à" in French) instead of a hard-coded literal.
+  const summaryFormat = withTime ? "PPPp" : "PPP"
 
   const formInputStart = getFormInputInForm(formContext.form, startKey)
   const formInputEnd = getFormInputInForm(formContext.form, endKey)
@@ -446,19 +449,19 @@ export const DateRangeInputController = ({
           <div className="mt-6 rounded-lg border bg-muted/20 px-4 py-3">
             <p className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">
-                {translate("Selected range")}:
+                {/* The colon is translated too: French sets it off with a
+                    non-breaking space ("Période sélectionnée :"). */}
+                {translate("{{label}}:", {
+                  label: translate("Selected range"),
+                })}
               </span>{" "}
-              {format(
-                startCombined!,
-                withTime ? "d MMMM yyyy 'at' HH:mm" : "d MMMM yyyy",
-                { locale: getPorts().dateLocale }
-              )}
+              {format(startCombined!, summaryFormat, {
+                locale: getPorts().dateLocale,
+              })}
               {" → "}
-              {format(
-                endCombined!,
-                withTime ? "d MMMM yyyy 'at' HH:mm" : "d MMMM yyyy",
-                { locale: getPorts().dateLocale }
-              )}
+              {format(endCombined!, summaryFormat, {
+                locale: getPorts().dateLocale,
+              })}
             </p>
           </div>
         )}
