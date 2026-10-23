@@ -3,6 +3,7 @@ import {
   AutocompleteInputController,
   BooleanInputController,
   CheckboxInputController,
+  ColorInputController,
   DateInputController,
   DatePickerInputController,
   DateRangeInputController,
@@ -27,6 +28,7 @@ import {
   SelectRadioInputController,
   SelectSearchInputController,
   SelectTimeInputController,
+  SliderInputController,
   SwitchInputController,
   TextAreaInputController,
   TimeInputController,
@@ -227,6 +229,20 @@ export const catalog: DemoGroupInterface[] = [
         },
         filled: 5400,
       },
+      {
+        name: "SliderInputController",
+        summary:
+          "A slider between min and max, moving by step, with the value shown beside it. range: true gives two thumbs and a [start, end] value.",
+        input: {
+          label: "Volume",
+          controller: SliderInputController,
+          min: 0,
+          max: 100,
+          step: 5,
+          value: 40,
+        },
+        filled: 75,
+      },
     ],
   },
   {
@@ -386,6 +402,23 @@ export const catalog: DemoGroupInterface[] = [
         summary: "Emoji picker; the grid loads only when opened.",
         input: { label: "Icon", controller: IconInputController },
         filled: "🦊",
+      },
+      {
+        name: "ColorInputController",
+        summary:
+          "Color picker and hexadecimal code; valueOptions adds a palette of suggested colors.",
+        input: {
+          label: "Color",
+          controller: ColorInputController,
+          valueOptions: [
+            { label: "Slate", value: "#64748b" },
+            { label: "Red", value: "#ef4444" },
+            { label: "Amber", value: "#f59e0b" },
+            { label: "Emerald", value: "#10b981" },
+            { label: "Blue", value: "#3b82f6" },
+          ],
+        },
+        filled: "#3b82f6",
       },
     ],
   },
