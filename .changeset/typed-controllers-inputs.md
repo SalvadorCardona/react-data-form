@@ -1,0 +1,5 @@
+---
+"react-data-form": minor
+---
+
+Typage : un contrôleur typé sur sa propre interface de champ (`FC<InputControllerInterface<MonInput>>`) s'affecte à `controller` sans `as any` (`InputControllerComponentInterface` devient `FC<InputControllerInterface<any>>`). `inputs` est désormais clé par les champs de `Data` (nouveau type `FormInputsInterface<Data>`) : chaque champ est typé par sa valeur (`FormInputInterface<Data[K]>`), un chemin pointé (`"address.city"`) atteint un champ imbriqué, et un nom inconnu est signalé quand `Data` est donné (`FormInterface<User>`, `createStepForm<User>`) — sans `Data`, tout nom reste accepté. `createStepForm<Data>` et les types d'étapes (`FormStep`, `FormStepOption`, `FormWithSteps`, `FormWithStepsBuild`) deviennent génériques : `onNextStep` reçoit un `form.data` typé ; `Data` n'est jamais déduit du `data` partiel. Un `validator` peut ne rien renvoyer (seule l'exception compte), le `onChange` de `useForm` reçoit le formulaire construit (`FormBuiltInterface<Data>`), et `useFormContext()` appelé hors d'un `FormProvider` lève une erreur explicite au lieu de planter plus loin.

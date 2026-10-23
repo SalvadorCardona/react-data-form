@@ -8,7 +8,9 @@ export interface InputControllerInterface<
   onChange: (formInput: F) => void
 }
 
-export type InputControllerComponentInterface = FC<InputControllerInterface>
+// `any` lets a controller typed on its own input interface
+// (`FC<InputControllerInterface<MyFormInput>>`) be used without a cast.
+export type InputControllerComponentInterface = FC<InputControllerInterface<any>>
 
 // export const DatePickerInputController = ({
 //  formInput,

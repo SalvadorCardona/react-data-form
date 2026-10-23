@@ -30,5 +30,7 @@ export default defineConfig({
     testTimeout: 30_000,
     // The documentation site lives in the repo and is tested with it.
     include: ["src/**/*.test.{ts,tsx}", "docs/**/*.test.{ts,tsx}"],
+    // Type tests (`*.test-d.ts`): checked by tsc, not run.
+    typecheck: { enabled: true, include: ["src/**/*.test-d.ts"] },
   },
 })

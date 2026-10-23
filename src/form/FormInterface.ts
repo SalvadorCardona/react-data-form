@@ -29,6 +29,18 @@ export interface GroupOption {
   ungroupedPosition?: "start" | "end"
 }
 
+/**
+ * Inputs of a form, keyed by the fields of `Data` (a dotted path reaches a
+ * nested field): an unknown name is reported when `Data` is given, any name is
+ * accepted otherwise.
+ */
+export type FormInputsInterface<Data extends object = any> =
+  string extends keyof Data
+    ? Record<string, FormInputInterface>
+    : { [K in keyof Data]?: FormInputInterface<Data[K]> } & {
+        [K in `${keyof Data & string}.${string}`]?: FormInputInterface
+      }
+
 export interface FormInterface<Data extends object = any> {
   id?: string
   action?: ActionList
@@ -39,10 +51,7 @@ export interface FormInterface<Data extends object = any> {
   loading?: boolean
   isBuilt?: boolean
   validator?: (data: Data) => Data | never
-  inputs?: Record<
-    keyof Data | string,
-    FormInputInterface<Data[keyof Data] | unknown>
-  >
+  inputs?: FormInputsInterface<Data>
   /**
    * Sends the data, usually to the API. May be sync or async: the form stays
    * loading until it settles. What it returns (or resolves to) replaces the
@@ -76,6 +85,9 @@ export interface FormInterface<Data extends object = any> {
   groupOption?: GroupOption
 }
 
-export type FormBuiltInterface<Data extends object = any> = Required<
-  FormInterface<Data>
->
+export type FormBuiltInterface<Data extends object = any> = Omit<
+  Required<FormInterface<Data>>,
+  "inputs"
+> & {
+  inputs: Record<string, FormInputInterface>
+}
