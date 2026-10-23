@@ -1,5 +1,6 @@
 import { InputControllerInterface } from "@/form/InputControllerInterface"
 import { lazy, Suspense } from "react"
+import { translate } from "react-mini-i18n"
 import Loader from "@/ui/Loader"
 import { WysiwygReader } from "@/ui/WysiwygReader"
 
@@ -19,7 +20,13 @@ export const WysiwygInputController = ({
 
   return (
     <Suspense fallback={<Loader />}>
-      <WisiwigEditor value={formInput?.value ?? ""} onChange={change} />
+      <WisiwigEditor
+        value={formInput?.value ?? ""}
+        placeholder={
+          formInput.placeholder ?? translate("Start writing something great…")
+        }
+        onChange={change}
+      />
     </Suspense>
   )
 }
