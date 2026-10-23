@@ -440,7 +440,8 @@ form would leave it there. The confirmation texts are the `deleteConfirmTitle`,
 
 ```bash
 pnpm install
-pnpm test          # 174 tests (Vitest + Testing Library)
+pnpm test          # Vitest + Testing Library
+pnpm test --coverage # same, with the coverage and its floor
 pnpm typecheck
 pnpm lint
 pnpm build         # tsdown → dist/ (ESM + types)

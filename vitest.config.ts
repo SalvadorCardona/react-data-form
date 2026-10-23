@@ -32,5 +32,15 @@ export default defineConfig({
     include: ["src/**/*.test.{ts,tsx}", "docs/**/*.test.{ts,tsx}"],
     // Type tests (`*.test-d.ts`): checked by tsc, not run.
     typecheck: { enabled: true, include: ["src/**/*.test-d.ts"] },
+    // Measured on the library only, with `--coverage`: the site is a consumer.
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/**/*.test.{ts,tsx}", "docs/**"],
+      reporter: ["text"],
+      // The floor reached so far, rounded down: raise it as tests are added,
+      // never lower it to let a change through.
+      thresholds: { statements: 83, branches: 76, functions: 81, lines: 85 },
+    },
   },
 })
