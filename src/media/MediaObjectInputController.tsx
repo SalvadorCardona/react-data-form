@@ -228,7 +228,7 @@ const MediaObjectInputControllerView = ({
   const acceptAttribute = buildAcceptAttribute(acceptedTypes)
   const formats = acceptedTypes.map((t) => t.label).join(labels.formatSeparator)
   const canEdit = Boolean(formInput.isEditable) && previewKind === "image"
-  const valueIri = getLdIri(formInput.value)
+  const valueIri = getLdIri(formInput.value ?? undefined)
 
   useEffect(() => {
     if (!valueIri) return
