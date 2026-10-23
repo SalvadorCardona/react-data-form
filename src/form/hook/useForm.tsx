@@ -36,6 +36,16 @@ export interface FormContextOutput<Data extends object = any> {
   updateForm: (form: FormBuiltInterface) => FormBuiltInterface
   onSuccess: Index<Data>
   isLoading: BooleanStateInterface
+  /**
+   * Validates the current values, shows the violations — sub-forms included —
+   * and tells whether the form is valid.
+   */
+  validate: () => boolean
+  /**
+   * Registers the validation of a sub-form, run with the form's own on every
+   * submission. Returns the function that unregisters it.
+   */
+  registerSubForm: (validate: () => boolean) => () => void
 }
 
 /**
@@ -56,6 +66,7 @@ export default function useForm<Data extends object = object>({
   const [onSuccess] = useState(createPubSub())
   const isFetching = useRef(false)
   const parentFormContext = useFormContext()
+  const subForms = useRef(new Set<() => boolean>())
   const [isReady, setIsReady] = useState<boolean>(false)
   const [currentForm, setCurrentForm] = useState<FormBuiltInterface<Data>>(
     form.isBuilt
@@ -75,13 +86,29 @@ export default function useForm<Data extends object = object>({
     }
   }
 
-  const handleSubmit = async () => {
-    isLoading.setTrue()
-
+  const validate = () => {
     const validatedForm = validateForm(currentForm)
     setCurrentForm(validatedForm)
 
-    if (formHasError(validatedForm)) {
+    // Every sub-form runs, so that each one shows its own violations
+    const subFormsValid = [...subForms.current]
+      .map((validateSubForm) => validateSubForm())
+      .every(Boolean)
+
+    return !formHasError(validatedForm) && subFormsValid
+  }
+
+  const registerSubForm = (validateSubForm: () => boolean) => {
+    subForms.current.add(validateSubForm)
+    return () => {
+      subForms.current.delete(validateSubForm)
+    }
+  }
+
+  const handleSubmit = async () => {
+    isLoading.setTrue()
+
+    if (!validate()) {
       isLoading.setFalse()
       return
     }
@@ -158,5 +185,7 @@ export default function useForm<Data extends object = object>({
     onSubmit: handleSubmit,
     form: currentForm,
     updateData: updateFormData,
+    validate,
+    registerSubForm,
   }
 }
