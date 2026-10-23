@@ -50,7 +50,7 @@ export const getCroppedImg = async (
   const image = await createImage(imageSrc)
   const canvas = document.createElement("canvas")
   const ctx = canvas.getContext("2d")
-  if (!ctx) throw new Error("Contexte 2D indisponible")
+  if (!ctx) throw new Error("2D canvas context unavailable")
 
   const rotRad = getRadianAngle(rotation)
   const { width: bBoxWidth, height: bBoxHeight } = rotateSize(
@@ -69,7 +69,7 @@ export const getCroppedImg = async (
 
   const cropCanvas = document.createElement("canvas")
   const cropCtx = cropCanvas.getContext("2d")
-  if (!cropCtx) throw new Error("Contexte 2D indisponible")
+  if (!cropCtx) throw new Error("2D canvas context unavailable")
 
   cropCanvas.width = pixelCrop.width
   cropCanvas.height = pixelCrop.height
