@@ -2,6 +2,7 @@ import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 import { fileURLToPath } from "node:url"
+import { sitemap } from "./src/pages"
 
 const src = fileURLToPath(new URL("../src", import.meta.url))
 
@@ -10,7 +11,17 @@ const src = fileURLToPath(new URL("../src", import.meta.url))
 export default defineConfig({
   root: fileURLToPath(new URL(".", import.meta.url)),
   base: process.env.DOCS_BASE ?? "/",
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    // Written off the page list, so that a new page is listed without a thought.
+    {
+      name: "sitemap",
+      generateBundle() {
+        this.emitFile({ type: "asset", fileName: "sitemap.xml", source: sitemap() })
+      },
+    },
+  ],
   resolve: {
     alias: [
       { find: /^react-data-form\/group$/, replacement: `${src}/group/index.ts` },
