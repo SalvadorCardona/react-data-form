@@ -1,5 +1,6 @@
 import { useMemo } from "react"
 import { Button } from "@/ui/button"
+import { LittleLoader } from "@/ui/Loader"
 import useFormContext from "@/form/provider/useFormContext"
 import { getFormConfig } from "@/form/FormConfig"
 import { ActionList } from "@/internal/action/ActionList"
@@ -27,6 +28,7 @@ export function DefaultFormSubmitAction() {
   const formContext = useFormContext()
   const form = formContext.form
   const label = form.label?.submit
+  const isLoading = !!form.loading
 
   if (formContext.form.action === ActionList.read || form?.saveOnChange) {
     return <></>
@@ -39,9 +41,11 @@ export function DefaultFormSubmitAction() {
           type="button"
           className={"w-full"}
           size={"lg"}
-          disabled={formContext.form.loading}
+          disabled={isLoading}
+          aria-busy={isLoading}
           onClick={() => formContext.onSubmit()}
         >
+          {isLoading && <LittleLoader />}
           <span className={"fc"}>
             <Trans>{label ?? form.action}</Trans>
           </span>

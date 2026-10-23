@@ -9,7 +9,7 @@ export type FormDecoratorPropsInterface = PropsWithChildren & {
 export function FormDecorator({ children, className }: FormDecoratorPropsInterface) {
   const formContext = useFormContext()
   const ready = formContext.ready ?? true
-  const { form, isLoading } = formContext
+  const { form } = formContext
   const Decorator = form.components?.formDecorator
   const saveOnChange = !!form.saveOnChange
 
@@ -19,10 +19,6 @@ export function FormDecorator({ children, className }: FormDecoratorPropsInterfa
 
   if (Decorator) {
     return <Decorator className={className}>{children}</Decorator>
-  }
-
-  if (!saveOnChange && isLoading.value) {
-    return <Loader />
   }
 
   // A sub-form lives inside its parent's <form>, which a <form> cannot
