@@ -59,9 +59,11 @@ export function FormsPage() {
         </p>
         <StepFormExample />
         <p>
-          The navigation labels — <code>Previous</code>, <code>Finish</code>, the
-          step counter — go through the translation dictionary, so they follow your
-          application's language.
+          The navigation labels — <code>Previous</code>, <code>Next</code>,{" "}
+          <code>Finish</code>, the step counter (
+          <code>{"Step {{current}} of {{total}}"}</code>), <code>Invalid Form</code>{" "}
+          — go through the translation dictionary, so they follow your application's
+          language.
         </p>
       </Section>
 

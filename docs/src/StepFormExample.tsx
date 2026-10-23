@@ -5,7 +5,7 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
  * A two-step form whose first step checks something "on the server" before
- * moving on. Press Continue: the form stays on screen with its values, and the
+ * moving on. Press Next: the form stays on screen with its values, and the
  * button shows a loader until the check is over.
  */
 export function StepFormExample() {

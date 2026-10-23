@@ -44,7 +44,7 @@ export function FormStepNavigation() {
               <currentStep.component.submitButton />
             ) : (
               <>
-                Continuer
+                <Trans>Next</Trans>
                 <ChevronRight className="w-4 h-4" />
               </>
             )}
