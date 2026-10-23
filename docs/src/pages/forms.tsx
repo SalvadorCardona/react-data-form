@@ -45,6 +45,12 @@ export function FormsPage() {
           groups and their order:
         </p>
         <CodeBlock>{groups}</CodeBlock>
+        <p>
+          A field with no <code>groups</code>, or whose groups are not listed in{" "}
+          <code>itemGroups</code>, is not dropped: it is rendered in an untitled
+          section after the groups. Set <code>ungroupedPosition: "start"</code> on{" "}
+          <code>groupOption</code> to put that section before them.
+        </p>
       </Section>
 
       <Section
@@ -108,8 +114,9 @@ const form: FormInterface = {
     ],
   },
   inputs: {
-    firstName: { label: "First name", group: "identity" },
-    email: { label: "Email", group: "contact" },
+    firstName: { label: "First name", groups: ["identity"] },
+    email: { label: "Email", groups: ["contact"] },
+    notes: { label: "Notes" }, // no group: rendered after the groups
   },
   components: { formInputs: FormInputsGroup },
 }`

@@ -22,6 +22,11 @@ export interface ItemGroupOption {
 
 export interface GroupOption {
   itemGroups: ItemGroupOption[]
+  /**
+   * Where fields without a group listed in itemGroups are rendered, in an
+   * untitled section: before ("start") or after ("end", default) the groups.
+   */
+  ungroupedPosition?: "start" | "end"
 }
 
 export interface FormInterface<Data extends object = any> {
