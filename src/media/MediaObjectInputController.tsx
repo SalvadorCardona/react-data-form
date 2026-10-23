@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState } from "react"
+import React, { FC, useEffect, useId, useRef, useState } from "react"
 import { getLdIri } from "jsonld-item"
 import { Download, FileText, Loader2, Pencil, Upload, X } from "lucide-react"
 import { InputControllerInterface } from "@/form/InputControllerInterface"
@@ -225,6 +225,11 @@ const MediaObjectInputControllerView = ({
   const [fileName, setFileName] = useState<string>("")
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // The field label points at `formInput.id`; a media without one (gallery
+  // items) still gets an id of its own, unique on the page.
+  const generatedId = useId()
+  const inputId = formInput.id ?? generatedId
+  const hintId = `${inputId}-hint`
   const defaultLimit = formInput?.max ?? 10
   const MAX_FILE_SIZE = defaultLimit * 1024 * 1024
   const acceptAttribute = buildAcceptAttribute(acceptedTypes)
@@ -384,8 +389,9 @@ const MediaObjectInputControllerView = ({
     }
   }
 
-  const triggerFileInput = () => {
-    if (isUploading) return
+  const triggerFileInput = (e: React.MouseEvent) => {
+    // The click of the input itself bubbles back up to the zone.
+    if (isUploading || e.target === fileInputRef.current) return
     fileInputRef.current?.click()
   }
 
@@ -444,14 +450,24 @@ const MediaObjectInputControllerView = ({
         onDrop={handleDrop}
       >
         <Input
-          id="image-upload"
+          id={inputId}
           type="file"
           accept={acceptAttribute}
           onChange={handleFileChange}
           ref={fileInputRef}
           disabled={isUploading}
+          // Without an id from the form, no label points at the input.
+          aria-label={formInput.id ? undefined : labels.dropzoneTitle}
+          aria-describedby={preview ? undefined : hintId}
+          // The empty zone is a button of its own: one tab stop, not two. With a
+          // preview, the input stays reachable to replace the file.
+          tabIndex={preview ? undefined : -1}
           className="sr-only" // Hide the input visually but keep it accessible
         />
+
+        <span role="status" className="sr-only">
+          {isUploading ? labels.uploading : ""}
+        </span>
 
         {isUploading && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60">
@@ -495,17 +511,24 @@ const MediaObjectInputControllerView = ({
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center gap-2 text-center">
-            <div className="p-3 rounded-full bg-primary/10">
+          // Its click (mouse, Enter or Space) bubbles up to the zone.
+          <button
+            type="button"
+            disabled={isUploading}
+            className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-md text-center outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-wait"
+          >
+            <span className="p-3 rounded-full bg-primary/10">
               <Upload className="w-6 h-6 text-primary" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium">{labels.dropzoneTitle}</p>
-              <p className="text-xs text-muted-foreground">
+            </span>
+            <span className="space-y-1">
+              <span className="block text-sm font-medium">
+                {labels.dropzoneTitle}
+              </span>
+              <span id={hintId} className="block text-xs text-muted-foreground">
                 {labels.dropzoneHint(formats, defaultLimit)}
-              </p>
-            </div>
-          </div>
+              </span>
+            </span>
+          </button>
         )}
       </div>
 

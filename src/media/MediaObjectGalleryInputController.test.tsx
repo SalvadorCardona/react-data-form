@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { MediaObjectGalleryInputController } from "@/media/MediaObjectGalleryInputController"
 import {
   MediaObjectProvider,
@@ -294,5 +295,25 @@ describe("MediaObjectGalleryInputController port lifecycle", () => {
     )
 
     expect(screen.queryByText(/drag and drop/)).not.toBeInTheDocument()
+  })
+
+  it("creates the gallery from the keyboard", async () => {
+    const user = userEvent.setup()
+    const port = createInMemoryMediaObjectPort({ onError: vi.fn() })
+    render(
+      <MediaObjectProvider port={port}>
+        <MediaObjectGalleryInputController formInput={{}} onChange={vi.fn()} />
+      </MediaObjectProvider>
+    )
+
+    await user.tab()
+    expect(
+      screen.getByRole("button", {
+        name: new RegExp(defaultMediaObjectLabels.galleryCreateTitle),
+      })
+    ).toHaveFocus()
+    await user.keyboard("{Enter}")
+
+    await waitFor(() => expect(port.galleries.size).toBe(1))
   })
 })

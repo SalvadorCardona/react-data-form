@@ -60,6 +60,8 @@ export interface MediaObjectLabelsInterface {
   editFailed: string
   deleteFailed: string
   describeFailed: string
+  /** Announced to screen readers while a file is being sent. */
+  uploading: string
   edit: string
   editAction: string
   deleteAction: string
@@ -99,6 +101,7 @@ export const defaultMediaObjectLabels: MediaObjectLabelsInterface = {
   editFailed: "Editing the image failed. Please try again.",
   deleteFailed: "Deleting the file failed. Please try again.",
   describeFailed: "Could not load the file details.",
+  uploading: "Uploading...",
   edit: "Edit",
   editAction: "Edit the picture",
   deleteAction: "Delete the picture",

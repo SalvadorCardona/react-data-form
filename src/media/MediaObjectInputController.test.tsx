@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { PropsWithChildren, ReactNode } from "react"
 import {
   MediaObjectInputController,
@@ -134,6 +135,77 @@ const seedMedia = async (port: MediaObjectPortInterface) =>
 describe("MediaObjectInputController", () => {
   afterEach(() => {
     vi.unstubAllGlobals()
+  })
+
+  describe("accessibility", () => {
+    it("opens the file picker from the keyboard", async () => {
+      const user = userEvent.setup()
+      const { container } = renderController(buildPort())
+      const click = vi.spyOn(getFileInput(container), "click")
+
+      await user.tab()
+      const zone = screen.getByRole("button", {
+        name: new RegExp(defaultMediaObjectLabels.dropzoneTitle),
+      })
+      expect(zone).toHaveFocus()
+      await user.keyboard("{Enter}")
+      expect(click).toHaveBeenCalledTimes(1)
+      await user.keyboard(" ")
+      expect(click).toHaveBeenCalledTimes(2)
+    })
+
+    it("ties the field label to its own input, with unique ids", () => {
+      function TwoMediaForm() {
+        const formContext = useForm({
+          form: {
+            inputs: {
+              avatar: { controller: MediaObjectInputController, label: "Avatar" },
+              cover: { controller: MediaObjectInputController, label: "Cover" },
+            },
+          },
+          data: { avatar: null, cover: null },
+        })
+        return <FormElement {...formContext} />
+      }
+      const { container } = render(
+        <MediaObjectProvider port={buildPort()}>
+          <TwoMediaForm />
+        </MediaObjectProvider>
+      )
+
+      const avatar = screen.getByLabelText(/Avatar/)
+      const cover = screen.getByLabelText(/Cover/)
+      expect(avatar).toHaveAttribute("type", "file")
+      expect(cover).toHaveAttribute("type", "file")
+      expect(avatar.id).not.toBe(cover.id)
+      expect(container.querySelector("#image-upload")).toBeNull()
+      expect(avatar).toHaveAccessibleDescription("PNG or JPG (max. 10MB)")
+    })
+
+    it("names the input when no label points at it", () => {
+      const { container } = renderController(buildPort())
+
+      expect(getFileInput(container)).toHaveAccessibleName(
+        defaultMediaObjectLabels.dropzoneTitle
+      )
+    })
+
+    it("announces the upload while it runs", async () => {
+      const upload = deferred<string>()
+      const port = buildPort({ upload: () => upload.promise })
+      const { container } = renderController(port)
+
+      selectFile(container, "photo.png")
+
+      await waitFor(() =>
+        expect(screen.getByRole("status")).toHaveTextContent(
+          defaultMediaObjectLabels.uploading
+        )
+      )
+      expect(container.querySelector("[aria-busy='true']")).not.toBeNull()
+      await act(async () => upload.resolve("/media_objects/1"))
+      await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent(""))
+    })
   })
 
   it("uploads the selected file through the port and keeps its IRI", async () => {
