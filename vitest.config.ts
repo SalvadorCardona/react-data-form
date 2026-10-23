@@ -36,7 +36,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/**/*.test.{ts,tsx}", "docs/**"],
+      exclude: ["src/**/*.test.{ts,tsx}", "src/**/*.test-d.ts", "docs/**"],
       reporter: ["text"],
       // The floor reached so far, rounded down: raise it as tests are added,
       // never lower it to let a change through.
