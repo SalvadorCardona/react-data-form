@@ -4,7 +4,13 @@ import FormElement from "@/form/component/form/FormElement"
 import useForm from "@/form/hook/useForm"
 import { createStepForm, FormWithStepsBuild } from "@/step/FormStep"
 
-function StepForm({ onNextStep }: { onNextStep?: () => Promise<void> }) {
+function StepForm({
+  onNextStep,
+  orders = [1, 2],
+}: {
+  onNextStep?: () => Promise<void>
+  orders?: [number, number]
+}) {
   const form = createStepForm({
     inputs: {
       firstName: { label: "First name", groups: ["identity"] },
@@ -15,13 +21,13 @@ function StepForm({ onNextStep }: { onNextStep?: () => Promise<void> }) {
         {
           group: "identity",
           title: "Identity",
-          order: 1,
+          order: orders[0],
           onNextStep: async ({ form }) => {
             await onNextStep?.()
             return form as FormWithStepsBuild
           },
         },
-        { group: "contact", title: "Contact", order: 2 },
+        { group: "contact", title: "Contact", order: orders[1] },
       ],
     },
   })
@@ -36,7 +42,7 @@ describe("step form navigation", () => {
     render(<StepForm onNextStep={() => pending} />)
 
     const input = screen.getByDisplayValue("Alice")
-    const next = screen.getByRole("button", { name: /Continuer/ })
+    const next = screen.getByRole("button", { name: /Next/ })
     fireEvent.click(next)
 
     await waitFor(() => expect(next).toBeDisabled())
@@ -51,9 +57,19 @@ describe("step form navigation", () => {
 
   it("moves to the next step without unmounting the form when validation is synchronous", async () => {
     render(<StepForm />)
-    fireEvent.click(screen.getByRole("button", { name: /Continuer/ }))
+    fireEvent.click(screen.getByRole("button", { name: /Next/ }))
 
     await waitFor(() => expect(screen.getByText("Contact")).toBeInTheDocument())
     expect(screen.queryByText("Step 1 of 2")).not.toBeInTheDocument()
+  })
+
+  it("numbers the steps by position, not by order", async () => {
+    render(<StepForm orders={[10, 20]} />)
+    expect(screen.getByText("Step 1 of 2")).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: /Next/ }))
+
+    await waitFor(() => expect(screen.getByText("Step 2 of 2")).toBeInTheDocument())
+    expect(screen.queryByText(/Step 10|Step 20/)).not.toBeInTheDocument()
   })
 })

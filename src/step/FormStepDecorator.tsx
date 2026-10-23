@@ -3,7 +3,7 @@ import { Badge } from "@/ui/badge"
 import { Progress } from "@/ui/progress"
 import { useFormStep } from "@/step/useFormStep"
 import { Text } from "@/ui/Text"
-import { translate } from "react-mini-i18n"
+import { Trans, translate } from "react-mini-i18n"
 import { AnimatePresence, motion } from "framer-motion"
 import { CardDescription, CardTitle } from "../ui/card"
 
@@ -24,7 +24,12 @@ export function FormStepDecorator({
 }: FormStepDecoratorPropsInterface) {
   const { progress, steps, currentStep, form } = useFormStep()
 
-  if (!currentStep) return <Badge>Invalid Form</Badge>
+  if (!currentStep)
+    return (
+      <Badge>
+        <Trans>Invalid Form</Trans>
+      </Badge>
+    )
 
   return (
     <div className={className}>
@@ -38,7 +43,7 @@ export function FormStepDecorator({
       {!form.groupOption.hideStepNumber && (
         <Text variant="muted" className="block text-center m-2">
           {translate("Step {{current}} of {{total}}", {
-            current: currentStep.order,
+            current: steps.findIndex((step) => step.group === currentStep.group) + 1,
             total: steps.length,
           })}
         </Text>
