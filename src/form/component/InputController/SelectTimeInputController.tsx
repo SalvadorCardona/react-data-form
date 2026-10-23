@@ -24,7 +24,10 @@ const timeValueOptions: ValueOptionInterface[] = [
 ]
 
 export const SelectTimeInputController = (props: InputControllerInterface) => {
-  props.formInput.valueOptions = timeValueOptions
-
-  return <SelectInputController {...props} />
+  return (
+    <SelectInputController
+      {...props}
+      formInput={{ ...props.formInput, valueOptions: timeValueOptions }}
+    />
+  )
 }
