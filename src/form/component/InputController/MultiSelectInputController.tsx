@@ -59,13 +59,15 @@ export const MultiSelectInputController: FC<
   const limit = formInput.max
   const currentValue = (formInput.value as (string | number)[]) ?? []
 
-  const isSelected = (id: string) => currentValue.includes(id)
+  const isSelected = (id: string | number) => currentValue.includes(id)
 
   const change = (value: (string | number)[]) => {
     onChange({ ...formInput, value })
   }
 
-  const handleToggle = (newValue: string) => {
+  // `unknown`: an option may render a select item, whose `onToggle` is untyped.
+  const handleToggle = (toggled: unknown) => {
+    const newValue = toggled as string | number
     if (isSelected(newValue)) {
       change(removeValue(currentValue, newValue))
       return
@@ -110,7 +112,6 @@ export const MultiSelectInputController: FC<
             option={option}
             isSelected={isSelectedCurrent}
             isDisabled={isDisabled}
-            // @ts-expect-error true of my code
             onToggle={handleToggle}
           />
         )

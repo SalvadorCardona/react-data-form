@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { use, useEffect, useMemo, useRef, useState } from "react"
 import { FormBuiltInterface, FormInterface } from "@/form/FormInterface"
 import { FormInputInterface } from "@/form/FormInputInterface"
 import { createForm } from "@/form/utils/createForm"
@@ -9,7 +9,7 @@ import { updateForm } from "@/form/utils/updateForm"
 import useDebounceCallback from "@/internal/hook/useDebounceCallback"
 import { BooleanStateInterface, useBoolean } from "@/internal/hook/useBoolean"
 import { useEffectCallback } from "@/internal/hook/useEffectCallback"
-import useFormContext from "@/form/provider/useFormContext"
+import { FormContext } from "@/form/provider/FormContext"
 import { createPubSub, Index } from "coooking-pubsub"
 import { translate } from "react-mini-i18n"
 
@@ -21,7 +21,7 @@ export interface UseFormParams<Data extends object = any> {
    * (entered values are kept), or remount the component with a new `key`.
    */
   form: FormInterface<Data> | FormBuiltInterface<Data>
-  onChange?: (data: Data, form: FormInterface<Data>) => void
+  onChange?: (data: Data, form: FormBuiltInterface<Data>) => void
   onSubmit?: (data: Data) => void
   // TODO : merge async Data and data
   asyncData?: () => Promise<Data>
@@ -77,7 +77,11 @@ export default function useForm<Data extends object = object>({
   const isLoading = useBoolean(false)
   const [onSuccess] = useState(createPubSub())
   const isFetching = useRef(false)
-  const parentFormContext = useFormContext()
+  // A root form has no parent: the context is then empty.
+  const parentContext = use(FormContext)
+  const parentFormContext = parentContext.form
+    ? (parentContext as FormContextOutput<Data>)
+    : undefined
   const subForms = useRef(new Set<() => boolean>())
   const [isReady, setIsReady] = useState<boolean>(false)
   const [loadError, setLoadError] = useState<unknown>()

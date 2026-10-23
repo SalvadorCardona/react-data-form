@@ -9,28 +9,32 @@ import { FormStepDecorator } from "@/step/FormStepDecorator"
 import { FormStepNavigation } from "@/step/FormStepNavigation"
 import { getSortedItemGroup } from "@/group/getSortedItemGroup"
 
-interface NextStepParams {
-  step: FormStep
-  form: FormWithStepsBuild
+interface NextStepParams<Data extends object = any> {
+  step: FormStep<Data>
+  form: FormWithStepsBuild<Data>
 }
 
-export interface FormStep extends ItemGroupOption {
-  onNextStep?: (params: NextStepParams) => Promise<FormWithStepsBuild>
+export interface FormStep<Data extends object = any> extends ItemGroupOption {
+  onNextStep?: (params: NextStepParams<Data>) => Promise<FormWithStepsBuild<Data>>
 }
 
-export interface FormStepOption extends GroupOption {
-  itemGroups: FormStep[]
-  currentStep?: FormStep
+export interface FormStepOption<Data extends object = any> extends GroupOption {
+  itemGroups: FormStep<Data>[]
+  currentStep?: FormStep<Data>
   hideStepNumber?: boolean
-  onNextStep?: (params: NextStepParams) => Promise<FormWithStepsBuild>
+  onNextStep?: (params: NextStepParams<Data>) => Promise<FormWithStepsBuild<Data>>
 }
 
-export interface FormWithSteps extends FormInterface {
-  groupOption?: FormStepOption
+export interface FormWithSteps<
+  Data extends object = any,
+> extends FormInterface<Data> {
+  groupOption?: FormStepOption<Data>
 }
 
-export interface FormWithStepsBuild extends FormBuiltInterface {
-  groupOption: FormStepOption
+export interface FormWithStepsBuild<
+  Data extends object = any,
+> extends FormBuiltInterface<Data> {
+  groupOption: FormStepOption<Data>
 }
 
 export function getFirstStep(option: FormStepOption): FormStep | undefined {
@@ -72,13 +76,17 @@ export function getProgress(form: FormWithStepsBuild): number {
   return Math.round(((idx + 1) / sorted.length) * 100)
 }
 
-export function createStepForm(form: FormWithSteps): FormWithStepsBuild {
+// `NoInfer`: `Data` is only what the caller gives, never guessed from a partial
+// `data` or from the declared inputs.
+export function createStepForm<Data extends object = any>(
+  form: FormWithSteps<NoInfer<Data>>
+): FormWithStepsBuild<Data> {
   if (!form.groupOption?.itemGroups?.length) {
     throw new Error("FormStep: groupOption.itemGroups must be defined and non-empty")
   }
 
   const formBuilt = createForm(form)
-  const formStep = { ...formBuilt } as FormWithStepsBuild
+  const formStep = { ...formBuilt } as FormWithStepsBuild<Data>
 
   const firstStep = getFirstStep(formStep.groupOption)!
   applyStep(formStep, firstStep)

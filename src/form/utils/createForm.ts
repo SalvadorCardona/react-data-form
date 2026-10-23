@@ -8,7 +8,7 @@ import { upsertForm } from "@/form/utils/upsertForm"
 export function createForm<
   Data extends FormInterfaceValueType = FormInterfaceValueType,
 >(
-  form: Partial<FormInterface<Data>>,
+  form: Partial<FormInterface<Data>> | FormBuiltInterface<Data>,
   data: Data = {} as Data
 ): FormBuiltInterface<Data> {
   return upsertForm(form, data)
@@ -17,7 +17,7 @@ export function createForm<
 export function createFormAsync<
   Data extends FormInterfaceValueType = FormInterfaceValueType,
 >(
-  form: Partial<FormInterface<Data>>,
+  form: Partial<FormInterface<Data>> | FormBuiltInterface<Data>,
   data: Data | Promise<Data>
 ): FormBuiltInterface<Data> | Promise<FormBuiltInterface<Data>> {
   const maybePromise = data as any

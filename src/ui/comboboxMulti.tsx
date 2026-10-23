@@ -1,6 +1,6 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/ui/popover"
 import { Button } from "@/ui/button"
-import { useEffect, useRef, useState } from "react"
+import { use, useEffect, useRef, useState } from "react"
 
 import {
   getValueOptionByGroup,
@@ -22,7 +22,7 @@ import { ChevronDown, CircleX } from "lucide-react"
 import { LittleLoader } from "@/ui/Loader"
 import { Trans } from "react-mini-i18n"
 import { cn } from "@/ui/cn"
-import useFormContext from "@/form/provider/useFormContext"
+import { FormContext, FormContextInterface } from "@/form/provider/FormContext"
 import { isApiIri } from "jsonld-item"
 import { getPorts } from "@/ports"
 import { FormInputInterface } from "@/form/FormInputInterface"
@@ -63,7 +63,8 @@ export function ComboboxMulti({
   canRemove: ParentcanRemove,
   hasGroups,
 }: ComboBoxMultiPropsInterface) {
-  const formContext = useFormContext()
+  // The combobox may be rendered outside a form: the context is then empty.
+  const formContext = use(FormContext)
   const [isPending, setIsPending] = useState(false)
   const [searchFailed, setSearchFailed] = useState(false)
   const [open, setOpen] = useState(false)
@@ -203,7 +204,7 @@ export function ComboboxMulti({
     }
 
     setIsPending(true)
-    onSearch(value, formContext)
+    onSearch(value, formContext as FormContextInterface)
       .then((valuesOptions) => {
         setValuesOptions(valuesOptions)
         setSearchFailed(false)
