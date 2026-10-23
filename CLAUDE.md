@@ -10,7 +10,8 @@ n'importe quelle API.
 
 ## Stack
 
-- React 19 (peer dependency, 18.3+ accepté) + TypeScript 6, strict.
+- React 19 (peer dependency `^19.0.0` : le cœur utilise `use()`, le contexte
+  comme provider et `ref` en prop, absents de React 18) + TypeScript 6, strict.
 - Build : [tsdown](https://tsdown.dev) → ESM + types dans `dist/`.
 - Tests : Vitest + Testing Library, environnement jsdom.
 - Lint : ESLint (config flat) + Prettier (pas de `;`, `printWidth` 85).
