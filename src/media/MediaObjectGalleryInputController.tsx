@@ -216,7 +216,10 @@ const MediaObjectGalleryInputControllerView = ({
   if (!uri) {
     return (
       <Item
-        onClick={isLoading ? undefined : createGallery}
+        render={<button type="button" disabled={isLoading} />}
+        id={formInput.id}
+        onClick={createGallery}
+        aria-busy={isLoading}
         variant={"outline"}
         className={cn(
           "cursor-pointer hover:bg-accent/50 transition-colors",
