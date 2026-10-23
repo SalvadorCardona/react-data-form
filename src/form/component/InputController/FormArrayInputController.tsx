@@ -15,6 +15,7 @@ import { translate } from "react-mini-i18n"
 import {
   addValue,
   removeByColumn,
+  removeValue,
   updateByIndex,
 } from "@/internal/utils/array/array"
 
@@ -141,8 +142,13 @@ export const FormArrayInputController = ({
     }
 
     if (Object.hasOwn(value, "@id")) {
-      changeValues(removeByColumn(values, "id", value["@id"]))
+      changeValues(removeByColumn(values, "@id", value["@id"]))
+      return
     }
+
+    // A block without identifier (the initial blank one, for instance) is the
+    // very object held in `values`: it is removed by reference.
+    changeValues(removeValue(values, value))
   }
 
   const nextOrder = () => {
