@@ -116,4 +116,29 @@ describe("ComboboxMulti", () => {
     expect(screen.getByText("Bob")).toBeDefined()
     expect(screen.queryByRole("textbox")).toBeNull()
   })
+
+  it("names its icon buttons: the reset and each removable badge", async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+
+    render(
+      <MultiSelectSearchInputController
+        formInput={buildFormInput({
+          value: ["a", "b"],
+          valueOptions: [
+            { label: "Alice", value: "a" },
+            { label: "Bob", value: "b" },
+          ],
+        })}
+        onChange={onChange}
+      />
+    )
+
+    expect(screen.getByRole("button", { name: "Clear the selection" })).toBeDefined()
+    await user.click(screen.getByRole("button", { name: "Remove Alice" }))
+
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ value: ["b"] })
+    )
+  })
 })

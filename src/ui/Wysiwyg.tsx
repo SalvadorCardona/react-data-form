@@ -27,6 +27,7 @@ import {
 import { BubbleMenu } from "@tiptap/react/menus"
 import { Toggle } from "./toggle"
 import { sanitizeHtml } from "@/ui/sanitizeHtml"
+import { translate } from "react-mini-i18n"
 
 const MenuBar = ({ editor }: { editor: Editor | null }) => {
   const [linkUrl, setLinkUrl] = useState<string>("")
@@ -136,6 +137,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
                         variant="ghost"
                         size="sm"
                         className="h-9 w-9 p-0 hover:bg-accent"
+                        aria-label={translate("Insert link")}
                       >
                         <LinkIcon className="h-4 w-4" />
                       </Button>
@@ -192,6 +194,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
                   onClick={() => editor.chain().focus().undo().run()}
                   disabled={!editor.can().undo()}
                   className="h-9 w-9 p-0 hover:bg-accent disabled:opacity-30"
+                  aria-label={translate("Undo")}
                 >
                   <Undo className="h-4 w-4" />
                 </Button>
@@ -213,6 +216,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
                   onClick={() => editor.chain().focus().redo().run()}
                   disabled={!editor.can().redo()}
                   className="h-9 w-9 p-0 hover:bg-accent disabled:opacity-30"
+                  aria-label={translate("Redo")}
                 >
                   <Redo className="h-4 w-4" />
                 </Button>

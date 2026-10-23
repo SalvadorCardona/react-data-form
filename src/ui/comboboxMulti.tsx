@@ -295,6 +295,7 @@ export function ComboboxMulti({
               disabled={defaultValues.length === 0}
               className={"justify-items-end p-2 border-l-0 rounded-l-none"}
               onClick={reset}
+              aria-label={translate("Clear the selection")}
             >
               <CircleX className={"w-5 h-5 cursor-pointer rounded-l-0"} />
             </Button>
@@ -337,14 +338,21 @@ export function ComboboxMulti({
       {hasBadge && (
         <div className={"flex flex-wrap gap-2 mt-1"}>
           {defaultValues.map((value) => {
+            const label = getLabelByValue(value)
             return (
               <Button
                 key={value as string}
                 size={"sm"}
                 variant={"secondary"}
                 onClick={() => toggle(value)}
+                // An IRI label is a component: the badge's own text names it.
+                aria-label={
+                  typeof label === "string"
+                    ? translate("Remove {{label}}", { label })
+                    : undefined
+                }
               >
-                {getLabelByValue(value)}
+                {label}
                 <CircleX />
               </Button>
             )
