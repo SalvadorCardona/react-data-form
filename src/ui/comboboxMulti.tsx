@@ -1,6 +1,6 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/ui/popover"
 import { Button } from "@/ui/button"
-import { memo, useEffect, useMemo, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import {
   getValueOptionByGroup,
@@ -26,7 +26,7 @@ import useFormContext from "@/form/provider/useFormContext"
 import { isApiIri } from "jsonld-item"
 import { getPorts } from "@/ports"
 import { FormInputInterface } from "@/form/FormInputInterface"
-import { Input } from "@/ui/input"
+import { Badge } from "@/ui/badge"
 
 function hasValue<T>(array: T[], value: T) {
   return array.includes(value)
@@ -64,6 +64,7 @@ export function ComboboxMulti({
 }: ComboBoxMultiPropsInterface) {
   const formContext = useFormContext()
   const [isPending, setIsPending] = useState(false)
+  const [searchFailed, setSearchFailed] = useState(false)
   const [open, setOpen] = useState(false)
   const [defaultValues, setDefaultValues] = useState<string[]>(
     ParentDefaultValues ?? []
@@ -184,7 +185,7 @@ export function ComboboxMulti({
     }
 
     if (defaultValues.length) {
-      return `${defaultValues.length} selected`
+      return translate("{{count}} selected", { count: defaultValues.length })
     }
 
     return (
@@ -195,16 +196,35 @@ export function ComboboxMulti({
   }
 
   const currentOnSearch = (value: string) => {
-    // setSearch(value)
-    onSearch?.(value, formContext).then((valuesOptions) => {
-      setValuesOptions(valuesOptions)
+    if (!onSearch) {
       setIsPending(false)
-    })
+      return
+    }
+
+    setIsPending(true)
+    onSearch(value, formContext)
+      .then((valuesOptions) => {
+        setValuesOptions(valuesOptions)
+        setSearchFailed(false)
+      })
+      .catch(() => {
+        // Left empty so that the next opening searches again.
+        setValuesOptions(null)
+        setSearchFailed(true)
+      })
+      .finally(() => setIsPending(false))
   }
 
   const [debouncedQuery, setDebouncedQuery] = useState(search)
+  const isFirstSearch = useRef(true)
 
   useEffect(() => {
+    // The initial search is run on opening, not on mount.
+    if (isFirstSearch.current) {
+      isFirstSearch.current = false
+      return
+    }
+
     setIsPending(true)
 
     const handler = setTimeout(() => {
@@ -216,29 +236,28 @@ export function ComboboxMulti({
     }
   }, [search])
 
+  const isFirstDebouncedQuery = useRef(true)
+
   useEffect(() => {
-    if (debouncedQuery) {
-      currentOnSearch(debouncedQuery)
+    if (isFirstDebouncedQuery.current) {
+      isFirstDebouncedQuery.current = false
+      return
     }
+
+    currentOnSearch(debouncedQuery)
   }, [debouncedQuery])
 
-  const ShowValue = memo(getDefaultValue)
-
-  const listValueOptions = useMemo(() => getListValueOptions(), [valuesOptions])
+  const listValueOptions = getListValueOptions()
 
   if (readonly) {
     return (
-      <>
+      <div className={"flex flex-wrap gap-2"}>
         {defaultValues.map((value) => (
-          <Input
-            key={value}
-            readOnly={true}
-            value={
-              getValueOptionFromValue(value, valuesOptions ?? [])?.label as string
-            }
-          />
+          <Badge key={value} variant={"secondary"}>
+            {getLabelByValue(value)}
+          </Badge>
         ))}
-      </>
+      </div>
     )
   }
 
@@ -260,9 +279,7 @@ export function ComboboxMulti({
               />
             }
           >
-            <div className={"fc"}>
-              <ShowValue />
-            </div>
+            <div className={"fc"}>{getDefaultValue()}</div>
 
             <ChevronDown className=" h-4 w-4 shrink-0 opacity-50" />
           </PopoverTrigger>
@@ -283,12 +300,17 @@ export function ComboboxMulti({
               <>
                 <CommandInput
                   className={"w-full"}
-                  placeholder="Search..."
+                  placeholder={translate("Search...")}
                   onValueChange={(e) => setSearch(e)}
                 />
                 <CommandEmpty className={"flex justify-center pt-3"}>
                   {isPending && search && <LittleLoader />}
-                  {!isPending && !listValueOptions.length && (
+                  {!isPending && searchFailed && (
+                    <Text variant="muted">
+                      <Trans>Unable to load the options.</Trans>
+                    </Text>
+                  )}
+                  {!isPending && !searchFailed && !listValueOptions.length && (
                     <Text variant="muted">
                       <Trans>Nothing found.</Trans>
                     </Text>
