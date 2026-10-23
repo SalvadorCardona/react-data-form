@@ -27,6 +27,7 @@ import { isApiIri } from "jsonld-item"
 import { getPorts } from "@/ports"
 import { FormInputInterface } from "@/form/FormInputInterface"
 import { Badge } from "@/ui/badge"
+import { useEffectCallback } from "@/internal/hook/useEffectCallback"
 
 function hasValue<T>(array: T[], value: T) {
   return array.includes(value)
@@ -238,14 +239,18 @@ export function ComboboxMulti({
 
   const isFirstDebouncedQuery = useRef(true)
 
-  useEffect(() => {
+  const searchDebouncedQuery = useEffectCallback(() => {
     if (isFirstDebouncedQuery.current) {
       isFirstDebouncedQuery.current = false
       return
     }
 
     currentOnSearch(debouncedQuery)
-  }, [debouncedQuery])
+  })
+
+  useEffect(() => {
+    searchDebouncedQuery()
+  }, [searchDebouncedQuery, debouncedQuery])
 
   const listValueOptions = getListValueOptions()
 

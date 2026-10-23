@@ -27,7 +27,7 @@ export function FormInputsGroup() {
     inputs.map((formInput) => {
       return (
         <InputControllerProvider
-          key={(formInput?.id as string) + formInput?.name + form.version}
+          key={(formInput?.id as string) + formInput?.name}
           formInput={formInput}
         />
       )

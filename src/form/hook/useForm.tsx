@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { FormBuiltInterface, FormInterface } from "@/form/FormInterface"
 import { FormInputInterface } from "@/form/FormInputInterface"
 import { createForm } from "@/form/utils/createForm"
@@ -8,6 +8,7 @@ import { updateFormByFormInput } from "@/form/utils/updateFormByFormInput"
 import { updateForm } from "@/form/utils/updateForm"
 import useDebounceCallback from "@/internal/hook/useDebounceCallback"
 import { BooleanStateInterface, useBoolean } from "@/internal/hook/useBoolean"
+import { useEffectCallback } from "@/internal/hook/useEffectCallback"
 import useFormContext from "@/form/provider/useFormContext"
 import { createPubSub, Index } from "coooking-pubsub"
 import { translate } from "react-mini-i18n"
@@ -85,22 +86,32 @@ export default function useForm<Data extends object = object>({
       ? (form as FormBuiltInterface<Data>)
       : createForm(form, data ?? ({} as Data))
   )
+  // The latest state, ahead of the render: several changes in the same tick
+  // (a date range sends both of its bounds) each build on the previous one,
+  // without mutating the state already rendered.
+  const latestForm = useRef(currentForm)
+
+  const commitForm = (nextForm: FormBuiltInterface<Data>) => {
+    latestForm.current = nextForm
+    setCurrentForm(nextForm)
+    return nextForm
+  }
 
   const handleChange = (formInput: FormInputInterface) => {
     if (formInput.readonly) return
 
-    const updatedForm = updateFormByFormInput<Data>(currentForm, formInput)
-    setCurrentForm({ ...currentForm, ...updatedForm })
+    const updatedForm = commitForm(
+      updateFormByFormInput<Data>(latestForm.current, formInput)
+    )
 
-    onChange?.(currentForm.data, updatedForm)
+    onChange?.(updatedForm.data, updatedForm)
     if (updatedForm?.saveOnChange) {
       handleSubmitDebounced()
     }
   }
 
   const validate = () => {
-    const validatedForm = validateForm(currentForm)
-    setCurrentForm(validatedForm)
+    const validatedForm = commitForm(validateForm(latestForm.current))
 
     // Every sub-form runs, so that each one shows its own violations
     const subFormsValid = [...subForms.current]
@@ -125,11 +136,12 @@ export default function useForm<Data extends object = object>({
       return
     }
 
-    let submittedData = currentForm.data
+    const { data: validatedData, onSubmit: formOnSubmit } = latestForm.current
+    let submittedData = validatedData
 
-    if (currentForm.onSubmit) {
+    if (formOnSubmit) {
       // form.onSubmit may be sync or async, and may return nothing
-      submittedData = (await currentForm.onSubmit(submittedData)) ?? submittedData
+      submittedData = (await formOnSubmit(submittedData)) ?? submittedData
     }
 
     await onSubmit?.(submittedData)
@@ -144,14 +156,15 @@ export default function useForm<Data extends object = object>({
   const handleSubmitDebounced = useDebounceCallback(handleSubmit, DEBOUNCE_DELAY)
 
   const updateFormData = (newData: Partial<Data>, partial = true) => {
-    const data = (partial ? { ...currentForm.data, ...newData } : newData) as Data
-    const updatedForm = updateForm(currentForm, data, partial)
-    setCurrentForm(updatedForm)
+    const data = (
+      partial ? { ...latestForm.current.data, ...newData } : newData
+    ) as Data
+    const updatedForm = commitForm(updateForm(latestForm.current, data, partial))
     onChange?.(updatedForm.data, updatedForm)
   }
 
   // Effets
-  useEffect(() => {
+  const loadData = useEffectCallback(() => {
     if (isReady) return
 
     const dataLoader = asyncData ?? form.getData
@@ -169,34 +182,42 @@ export default function useForm<Data extends object = object>({
 
     dataLoader()
       .then((data) => {
-        updateFormData({ ...currentForm.data, ...data }, false)
+        updateFormData({ ...latestForm.current.data, ...data }, false)
       })
       .catch((error: unknown) => {
         setLoadError(error)
-        setCurrentForm((form) => ({
-          ...form,
+        commitForm({
+          ...latestForm.current,
           errors: [translate("Unable to load the data")],
-        }))
+        })
         onLoadError?.(error)
       })
       .finally(() => {
         isFetching.current = false
         setIsReady(true)
       })
-  }, [currentForm.id])
+  })
+
+  useEffect(() => {
+    loadData()
+  }, [loadData, currentForm.id])
 
   const updateFormHandler = (newForm: FormInterface): FormBuiltInterface => {
-    const data = { ...currentForm.data, ...newForm.data }
-    const updatedForm = updateForm(newForm as FormBuiltInterface, data)
-
-    setCurrentForm(updatedForm)
+    const data = { ...latestForm.current.data, ...newForm.data }
+    const updatedForm = commitForm(updateForm(newForm as FormBuiltInterface, data))
 
     onChange?.(updatedForm.data, updatedForm)
 
     return updatedForm
   }
 
-  currentForm.loading = isLoading.value
+  const renderedForm = useMemo(
+    () =>
+      currentForm.loading === isLoading.value
+        ? currentForm
+        : { ...currentForm, loading: isLoading.value },
+    [currentForm, isLoading.value]
+  )
 
   return {
     isLoading,
@@ -207,7 +228,7 @@ export default function useForm<Data extends object = object>({
     loadError,
     onChange: handleChange,
     onSubmit: handleSubmit,
-    form: currentForm,
+    form: renderedForm,
     updateData: updateFormData,
     validate,
     registerSubForm,

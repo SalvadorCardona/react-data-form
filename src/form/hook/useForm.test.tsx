@@ -5,6 +5,15 @@ import useForm from "@/form/hook/useForm"
 // Wrapper providing an empty FormContext, so useFormContext does not throw
 const wrapper = ({ children }: { children: React.ReactNode }) => <>{children}</>
 
+// Freezes the form state, inputs included: writing to it then throws
+const deepFreeze = <T,>(value: T): T => {
+  if (value && typeof value === "object" && !Object.isFrozen(value)) {
+    Object.freeze(value)
+    Object.values(value).forEach(deepFreeze)
+  }
+  return value
+}
+
 describe("useForm", () => {
   describe("initialisation", () => {
     it("creates a form from the given inputs", () => {
@@ -177,6 +186,54 @@ describe("useForm", () => {
       })
 
       expect(result.current.form.inputs.name.value).toBe(originalValue)
+    })
+
+    it("keeps both values of two changes in the same act, without mutating the state", () => {
+      const handleChange = vi.fn()
+      const { result } = renderHook(
+        () =>
+          useForm({
+            form: { inputs: { start: {}, end: {} } },
+            data: { start: "2026-01-01", end: "2026-01-02" },
+            onChange: handleChange,
+          }),
+        { wrapper }
+      )
+
+      const form = deepFreeze(result.current.form)
+
+      act(() => {
+        result.current.onChange({ ...form.inputs.start, value: "2026-02-01" })
+        result.current.onChange({ ...form.inputs.end, value: "2026-02-28" })
+      })
+
+      expect(result.current.form.data).toEqual({
+        start: "2026-02-01",
+        end: "2026-02-28",
+      })
+      expect(handleChange).toHaveBeenLastCalledWith(
+        { start: "2026-02-01", end: "2026-02-28" },
+        expect.anything()
+      )
+      expect(form.data).toEqual({ start: "2026-01-01", end: "2026-01-02" })
+    })
+  })
+
+  describe("validate", () => {
+    it("shows the violations on a new state, without mutating the previous one", () => {
+      const { result } = renderHook(
+        () => useForm({ form: { inputs: { name: { required: true } } } }),
+        { wrapper }
+      )
+
+      const form = deepFreeze(result.current.form)
+
+      act(() => {
+        expect(result.current.validate()).toBe(false)
+      })
+
+      expect(result.current.form.inputs.name.violations).toHaveLength(1)
+      expect(form.inputs.name.violations).toBeUndefined()
     })
   })
 
