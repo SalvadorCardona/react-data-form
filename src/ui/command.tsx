@@ -2,6 +2,7 @@ import * as React from "react"
 import { ReactNode } from "react"
 import { Command as CommandPrimitive } from "cmdk"
 import { SearchIcon } from "lucide-react"
+import { translate } from "react-mini-i18n"
 
 import { cn } from "@/ui/cn"
 import {
@@ -29,8 +30,8 @@ function Command({
 }
 
 function CommandDialog({
-  title = "Palette de commandes",
-  description = "Search for an action to run…",
+  title = translate("Command palette"),
+  description = translate("Search for an action to run…"),
   children,
   className,
   showCloseButton = true,

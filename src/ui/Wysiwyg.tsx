@@ -88,20 +88,20 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
       <div className="flex items-center gap-0.5">
         <ToolbarButton
           icon={Bold}
-          label="Gras (⌘B)"
+          label={translate("Bold (⌘B)")}
           isActive={editor.isActive("bold")}
           onClick={() => editor.chain().focus().toggleBold().run()}
         />
         <ToolbarButton
           icon={Italic}
-          label="Italique (⌘I)"
+          label={translate("Italic (⌘I)")}
           isActive={editor.isActive("italic")}
           onClick={() => editor.chain().focus().toggleItalic().run()}
         />
 
         <ToolbarButton
           icon={Code}
-          label="Code inline (⌘E)"
+          label={translate("Inline code (⌘E)")}
           isActive={editor.isActive("code")}
           onClick={() => editor.chain().focus().toggleCode().run()}
         />
@@ -113,7 +113,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
       <div className="flex items-center gap-0.5">
         <ToolbarButton
           icon={Type}
-          label="Paragraphe"
+          label={translate("Paragraph")}
           isActive={editor.isActive("paragraph")}
           onClick={() => editor.chain().focus().setParagraph().run()}
         />
@@ -146,20 +146,20 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
                 }
               />
               <TooltipContent side="bottom" className="text-xs">
-                <p>Insert link (⌘K)</p>
+                <p>{translate("Insert link (⌘K)")}</p>
               </TooltipContent>
               <PopoverContent className="w-80" align="start">
                 <div className="grid gap-4">
                   <div className="space-y-2">
                     <h4 className="font-medium text-sm leading-none">
-                      Ajouter un lien
+                      {translate("Add a link")}
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      Entrez l'URL du lien
+                      {translate("Enter the link URL")}
                     </p>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="link">URL</Label>
+                    <Label htmlFor="link">{translate("URL")}</Label>
                     <Input
                       id="link"
                       value={linkUrl}
@@ -173,7 +173,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
                     />
                   </div>
                   <Button size="sm" onClick={addLink} className="w-full">
-                    Ajouter le lien
+                    {translate("Add the link")}
                   </Button>
                 </div>
               </PopoverContent>
@@ -201,7 +201,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
               }
             />
             <TooltipContent side="bottom" className="text-xs">
-              <p>Annuler (⌘Z)</p>
+              <p>{translate("Undo (⌘Z)")}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -223,7 +223,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
               }
             />
             <TooltipContent side="bottom" className="text-xs">
-              <p>Redo (⌘⇧Z)</p>
+              <p>{translate("Redo (⌘⇧Z)")}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

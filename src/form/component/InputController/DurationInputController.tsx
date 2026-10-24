@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useState } from "react"
 import { InputControllerProps } from "@/form/InputControllerInterface"
 import { Input } from "@/ui/input"
+import { translate } from "react-mini-i18n"
 
 const SECONDS_PER_HOUR = 3600
 const SECONDS_PER_MINUTE = 60
@@ -88,7 +89,7 @@ export const DurationInputController = ({
           onChange={handleHours}
           placeholder="0"
           className="pr-8"
-          aria-label="Hours"
+          aria-label={translate("Hours")}
         />
         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
           h
@@ -102,7 +103,7 @@ export const DurationInputController = ({
           onChange={handleMinutes}
           placeholder="0"
           className="pr-10"
-          aria-label="Minutes"
+          aria-label={translate("Minutes")}
         />
         <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
           min

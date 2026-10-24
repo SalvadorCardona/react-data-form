@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/ui/select"
-import { Trans } from "react-mini-i18n"
+import { Trans, translate } from "react-mini-i18n"
 import { Badge } from "@/ui/badge"
 import { isApiIri } from "jsonld-item"
 import { getPorts } from "@/ports"
@@ -85,7 +85,7 @@ function DefaultDecoratorComponent({
   return (
     <Select onValueChange={onToggle} value={(option?.value ?? null) as string}>
       <SelectTrigger className={"w-full"}>
-        <SelectValue placeholder={placeholder}>
+        <SelectValue placeholder={translate(placeholder)}>
           <Trans className={"fc"}>
             {option?.label ?? formInput?.placeholder ?? "Select..."}
           </Trans>
