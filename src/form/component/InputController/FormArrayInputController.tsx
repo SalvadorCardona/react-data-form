@@ -227,8 +227,36 @@ export const FormArrayInputController = ({
     changeValues(addValue(values, item))
   }
 
-  const handleItemChange = (childInput: FormInputInterface, index: number) => {
-    changeValues(updateByIndex<object>(values, index, childInput.value))
+  // The list is displayed sorted by identifierKey: the edited block is looked
+  // up in `values` by its identifier, never by its displayed position.
+  const sourceIndex = (item: IdAbleInterface) => {
+    if (Object.hasOwn(item, "id")) {
+      return values.findIndex((value) => value.id === item.id)
+    }
+
+    if (Object.hasOwn(item, "@id")) {
+      return values.findIndex((value) => value["@id"] === item["@id"])
+    }
+
+    // A block without identifier is the very object held in `values`.
+    return values.indexOf(item)
+  }
+
+  const handleItemChange = (
+    childInput: FormInputInterface,
+    item: IdAbleInterface
+  ) => {
+    const index = sourceIndex(item)
+    if (index === -1) return
+
+    // The order is owned by the block header: the body still holds the one it
+    // was mounted with, which a reorder has since reindexed.
+    const current = values[index]
+    const value = Object.hasOwn(current, identifierKey)
+      ? { ...childInput.value, [identifierKey]: current[identifierKey] }
+      : childInput.value
+
+    changeValues(updateByIndex<object>(values, index, value))
   }
 
   // Moves a block within the ordered list and reindexes every identifierKey
@@ -574,7 +602,7 @@ export const FormArrayInputController = ({
               <ItemContent>
                 <FormInputController
                   validateOnMount={revealedKeys.includes(key)}
-                  onChange={(childInput) => handleItemChange(childInput, index)}
+                  onChange={(childInput) => handleItemChange(childInput, item)}
                   formInput={{
                     value: item as Required<object>,
                     form: withoutOrderInput(currentForm),
